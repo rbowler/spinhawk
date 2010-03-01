@@ -260,14 +260,23 @@ static void do_shutdown_wait()
 void do_shutdown()
 {
 TID tid;
-    if(is_wait_sigq_pending())
-        cancel_wait_sigq();
+#if defined(_MSVC_)
+    if ( sysblk.shutimmed )
+        do_shutdown_now();
     else
-        if(can_signal_quiesce() && !signal_quiesce(0,0))
-            create_thread(&tid, DETACHED, do_shutdown_wait,
-                          NULL, "do_shutdown_wait");
+    {
+#endif // defined(_MSVC_)
+        if(is_wait_sigq_pending())
+            cancel_wait_sigq();
         else
-            do_shutdown_now();
+            if(can_signal_quiesce() && !signal_quiesce(0,0))
+                create_thread(&tid, DETACHED, do_shutdown_wait,
+                              NULL, "do_shutdown_wait");
+            else
+                do_shutdown_now();
+#if defined(_MSVC_)
+    }
+#endif // defined(_MSVC_)
 }
 /*-------------------------------------------------------------------*/
 /* The following 2 routines display an array of 32/64 registers      */
@@ -350,7 +359,7 @@ static void display_regs64(char *hdr,U16 cpuad,U64 *r,int numcpus)
 void display_inst_regs (REGS *regs, BYTE *inst, BYTE opcode)
 {
     /* Display the general purpose registers */
-    if (!(opcode == 0xB3 || (opcode >= 0x20 && opcode <= 0x3F)) 
+    if (!(opcode == 0xB3 || (opcode >= 0x20 && opcode <= 0x3F))
         || (opcode == 0xB3 && (
                 (inst[1] >= 0x80 && inst[1] <= 0xCF)
                 || (inst[1] >= 0xE1 && inst[1] <= 0xFE)
@@ -797,7 +806,7 @@ BYTE    c;                              /* Character work area       */
     if(ITIMER_ACCESS(raddr,16))
         ARCH_DEP(store_int_timer)(regs);
 #endif
-    
+
     if (draflag)
     {
         n = sprintf (buf, "R:"F_RADR":", raddr);
@@ -1278,7 +1287,7 @@ REGS   *regs;                           /* Copied regs               */
         || opcode == 0xC6)
     {
         S64 offset = 2LL*(S32)(fetch_fw(inst+2));
-        addr1 = (likely(!regs->execflag)) ? 
+        addr1 = (likely(!regs->execflag)) ?
                         PSW_IA(regs, offset) : \
                         (regs->ET + offset) & ADDRESS_MAXWRAP(regs);
         b1 = 0;
@@ -1292,7 +1301,7 @@ REGS   *regs;                           /* Copied regs               */
                                                 ACCTYPE_READ);
         else
             n = ARCH_DEP(display_virt) (regs, addr1, buf, b1,
-                                (opcode == 0x44 
+                                (opcode == 0x44
 #if defined(FEATURE_EXECUTE_EXTENSIONS_FACILITY)
                                  || (opcode == 0xc6 && !(inst[1] & 0x0f))
 #endif /*defined(FEATURE_EXECUTE_EXTENSIONS_FACILITY)*/
@@ -1484,7 +1493,7 @@ int herc_system (char* command)
 
   #define  SHELL_CMD_SHIM_PGM   "conspawn "
 
-    int rc = strlen(SHELL_CMD_SHIM_PGM) + strlen(command) + 1;
+    int rc = (int)(strlen(SHELL_CMD_SHIM_PGM) + strlen(command) + 1);
     char* pszNewCommandLine = malloc( rc );
     strlcpy( pszNewCommandLine, SHELL_CMD_SHIM_PGM, rc );
     strlcat( pszNewCommandLine, command,            rc );

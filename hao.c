@@ -116,7 +116,7 @@ static char     ao_msgbuf[LOG_DEFSIZE+1];   /* (plus+1 for NULL termination) */
 /*---------------------------------------------------------------------------*/
 /* function prototypes                                                       */
 /*---------------------------------------------------------------------------*/
-DLL_EXPORT void  hao_initialize(void);
+DLL_EXPORT int   hao_initialize(void);
 DLL_EXPORT void  hao_command(char *cmd);
 DLL_EXPORT void  hao_message(char *buf);
 static     void  hao_clear(void);
@@ -133,7 +133,7 @@ static     void* hao_thread(void* dummy);
 /* This function is called at system startup by impl.c 'process_rc_file'     */
 /* It initializes all global variables.                                      */
 /*---------------------------------------------------------------------------*/
-DLL_EXPORT void hao_initialize(void)
+DLL_EXPORT int hao_initialize(void)
 {
   int i = 0;
 
@@ -156,11 +156,14 @@ DLL_EXPORT void hao_initialize(void)
   if ( create_thread (&sysblk.haotid, JOINABLE,
     hao_thread, NULL, "hao_thread") )
   {
-    logmsg(_("HHCIN004S Cannot create HAO thread: %s\n"),
-      strerror(errno));
+    i = FALSE;
   }
+  else
+    i = TRUE;
 
   release_lock(&ao_lock);
+
+  return(i);
 }
 
 /*---------------------------------------------------------------------------*/

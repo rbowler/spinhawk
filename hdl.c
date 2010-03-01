@@ -102,7 +102,7 @@ HDLSHD **tmpcall;
     }
     return -1;
 }
-    
+
 
 /* hdl_shut - call all shutdown call entries in LIFO order
  */
@@ -110,33 +110,68 @@ DLL_EXPORT void hdl_shut (void)
 {
 HDLSHD *shdent;
 
+#if defined( _MSVC_ )
+HDLSHD *loggercall;
+int logger_flag = 0;
+#endif // defined( _MSVC_ )
+
     logmsg("HHCHD900I Begin shutdown sequence\n");
 
     obtain_lock (&hdl_sdlock);
 
     for(shdent = hdl_shdlist; shdent; shdent = hdl_shdlist)
     {
-        logmsg("HHCHD901I Calling %s\n",shdent->shdname);
+#if defined( _MSVC_ )
+        if ( strcmp( shdent->shdname, "logger_term" ) == 0 )
         {
-            (shdent->shdcall) (shdent->shdarg);
+            loggercall = malloc(sizeof(HDLSHD));
+            loggercall->shdname = shdent->shdname;
+            loggercall->shdcall = shdent->shdcall;
+            loggercall->shdarg = shdent->shdarg;
+            logger_flag = 1;
         }
-        logmsg("HHCHD902I %s complete\n",shdent->shdname);
-
+        else
+#endif // defined( _MSVC_ )
+        {
+            logmsg("HHCHD901I Calling %s\n",shdent->shdname);
+            {
+                (shdent->shdcall) (shdent->shdarg);
+            }
+            logmsg("HHCHD902I %s complete\n",shdent->shdname);
+        }
         /* Remove shutdown call entry to ensure it is called once */
         hdl_shdlist = shdent->next;
         free(shdent);
     }
 
     release_lock (&hdl_sdlock);
+#if defined( _MSVC_ )
+    if ( logger_flag == 1 )
+    {
+        if ( sysblk.shutimmed )
+            /* shutdown of logger is skipped in a Windows Environment
+             * because we still have messages to write to the log file
+             */
+            logmsg("HHCHD903I (%s) skipped during Windows SHUTDOWN immediate\n",
+                    loggercall->shdname);
+        else
+        {
+            logmsg("HHCHD901I Calling %s\n",loggercall->shdname);
+            {
+                (loggercall->shdcall) (loggercall->shdarg);
+            }
+            logmsg("HHCHD902I %s complete\n",loggercall->shdname);
+        }
+    }
+#endif // defined( _MSVC_ )
 
     logmsg("HHCHD909I Shutdown sequence complete\n");
 }
 
-
 #if defined(OPTION_DYNAMIC_LOAD)
 
 
-/* hdl_setpath - set path for module load 
+/* hdl_setpath - set path for module load
  */
 DLL_EXPORT void hdl_setpath(char *path)
 {
@@ -230,7 +265,7 @@ size_t fulllen = 0;
 
     return dlopen(filename,flag);
 }
-    
+
 
 /* hdl_dvad - register device type
  */
@@ -346,7 +381,7 @@ MODENT *modent;
         logmsg("\n");
 
         for(modent = dllent->modent; modent; modent = modent->modnext)
-            if((flags & HDL_LIST_ALL) 
+            if((flags & HDL_LIST_ALL)
               || !((dllent->flags & HDL_LOAD_MAIN) && !modent->fep))
             {
                 logmsg(" symbol = %s",modent->name);
@@ -935,7 +970,7 @@ char *modname;
             if((*dllent)->hdlfini)
             {
             int rc;
-                
+
                 if((rc = ((*dllent)->hdlfini)()))
                 {
                     logmsg(_("HHCHD017E Unload of %s rejected by final section\n"),(*dllent)->name);
@@ -948,7 +983,7 @@ char *modname;
             while(modent)
             {
                 tmpmod = modent;
-                
+
                 /* remove current entry from chain */
                 modent = modent->modnext;
 
@@ -993,7 +1028,7 @@ char *modname;
 
             return 0;
         }
-        
+
     }
 
     release_lock(&hdl_lock);
