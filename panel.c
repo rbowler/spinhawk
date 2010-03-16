@@ -2879,7 +2879,7 @@ FinishShutdown:
                 len = sprintf (buf, "CPU%4.4X ", sysblk.pcpu);
                 if (IS_CPU_ONLINE(sysblk.pcpu))
                 {
-                    char ibuf[32];
+                    char ibuf[64];
                     len += sprintf(buf+len, "PSW=%8.8X%8.8X ",
                                    fetch_fw(curpsw), fetch_fw(curpsw+4));
                     if (regs->arch_mode == ARCH_900)
