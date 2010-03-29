@@ -164,6 +164,9 @@ int main(int ac,char *av[])
 
     timeEndPeriod( 1 );     // (no longer care about accurate time intervals)
 
+    EnableMenuItem( GetSystemMenu( FindConsoleHandle(), FALSE ),
+                SC_CLOSE, MF_BYCOMMAND | MF_ENABLED );
+
     return rc;
 }
 
