@@ -1678,8 +1678,7 @@ static void*  LCS_PortThread( PLCSPORT pLCSPORT )
                 break;
             logmsg( _("HHCLC042E Port %2.2X: Read error: %s\n"),
                 pLCSPORT->bPort, strerror( errno ) );
-            SLEEP(1);           // (purposeful long delay)
-            continue;
+            break;
         }
 
         if( pLCSPORT->pLCSBLK->fDebug )

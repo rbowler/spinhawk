@@ -980,8 +980,7 @@ static void*  CTCI_ReadThread( PCTCBLK pCTCBLK )
             logmsg( _("HHCCT048E %4.4X: Error reading from %s: %s\n"),
                 pDEVBLK->devnum, pCTCBLK->szTUNDevName,
                 strerror( errno ) );
-            SLEEP(1);           // (purposeful long delay)
-            continue;
+            break;
         }
 
         if( iLength == 0 )      // (probably EINTR; ignore)
