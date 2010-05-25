@@ -1,3 +1,7 @@
+/* COMMADPT.C   (c) Copyright Roger Bowler & Others, 2002-2011       */
+/*              (c) Copyright, MHP, 2007-2008 (see below)            */
+/*              Hercules Communication Line Driver                   */
+
 /*-------------------------------------------------------------------*/
 /* Hercules Communication Line Driver                                */
 /* (c) 1999-2006 Roger Bowler & Others                               */
@@ -5,35 +9,6 @@
 /* Original Author : Ivan Warren                                     */
 /* Prime Maintainer : Ivan Warren                                    */
 /*-------------------------------------------------------------------*/
-
-// $Id$
-//
-// $Log$
-// Revision 1.46  2008/11/03 15:31:58  rbowler
-// Back out consistent create_thread ATTR modification
-//
-// Revision 1.45  2008/10/18 09:32:20  fish
-// Ensure consistent create_thread ATTR usage
-//
-// Revision 1.44  2008/03/04 01:10:29  ivan
-// Add LEGACYSENSEID config statement to allow X'E4' Sense ID on devices
-// that originally didn't support it. Defaults to off for compatibility reasons
-//
-// Revision 1.43  2008/02/15 22:51:39  rbowler
-// Move Solaris specific definition of INADDR_NONE to hostopts.h
-//
-// Revision 1.42  2008/02/07 00:29:04  rbowler
-// Solaris build support by Jeff Savit
-//
-// Revision 1.41  2007/12/14 17:48:52  rbowler
-// Enable SENSE ID CCW for 2703,3410,3420
-//
-// Revision 1.40  2007/11/21 22:54:14  fish
-// Use new BEGIN_DEVICE_CLASS_QUERY macro
-//
-// Revision 1.39  2006/12/08 09:43:18  jj
-// Add CVS message log
-//
 
 /* ********************************************************************
 
@@ -210,81 +185,81 @@ static BYTE byte_reverse_table[256] = {
 /* 2741 EBCD code tables */
 /* directly copied from mvs src file iedq27 */
 static BYTE xlate_table_ebcd_toebcdic[256] = {
-	0x3F, 0x40, 0xF1, 0x3F, 0xF2, 0x3F, 0x3F, 0xF3, 0xF4, 0x3F, 0x3F, 0xF5, 0x3F, 0xF6, 0xF7, 0x3F, 
-	0xF8, 0x3F, 0x3F, 0xF9, 0x3F, 0xF0, 0x7B, 0x3F, 0x3F, 0x3F, 0x35, 0x3F, 0x36, 0x3F, 0x3F, 0x37, 
-	0x7C, 0x3F, 0x3F, 0x61, 0x3F, 0xA2, 0xA3, 0x3F, 0x3F, 0xA4, 0xA5, 0x3F, 0xA6, 0x3F, 0x3F, 0xA7, 
-	0x3F, 0xA8, 0xA9, 0x3F, 0x3F, 0x3F, 0x3F, 0x6B, 0x24, 0x3F, 0x3F, 0x25, 0x3F, 0x26, 0x27, 0x3F, 
-	0x60, 0x3F, 0x3F, 0x91, 0x3F, 0x92, 0x93, 0x3F, 0x3F, 0x94, 0x95, 0x3F, 0x96, 0x3F, 0x3F, 0x97, 
-	0x3F, 0x98, 0x99, 0x3F, 0x3F, 0x3F, 0x3F, 0x5B, 0x14, 0x3F, 0x3F, 0x15, 0x3F, 0x16, 0x17, 0x3F, 
-	0x3F, 0x50, 0x81, 0x3F, 0x82, 0x3F, 0x3F, 0x83, 0x84, 0x3F, 0x3F, 0x85, 0x3F, 0x86, 0x87, 0x3F, 
-	0x88, 0x3F, 0x3F, 0x89, 0x3F, 0x3F, 0x4B, 0x3F, 0x3F, 0x3F, 0x05, 0x3F, 0x06, 0x3F, 0x3F, 0x07, 
-	0x3F, 0x40, 0x7E, 0x3F, 0x4C, 0x3F, 0x3F, 0x5E, 0x7A, 0x3F, 0x3F, 0x6C, 0x3F, 0x7D, 0x6E, 0x3F, 
-	0x5C, 0x3F, 0x3F, 0x4D, 0x3F, 0x5D, 0x7F, 0x3F, 0x3F, 0x3F, 0x35, 0x3F, 0x36, 0x3F, 0x3F, 0x3F, 
-	0x4A, 0x3F, 0x3F, 0x6F, 0x3F, 0xE2, 0xE3, 0x3F, 0x3F, 0xE4, 0xE5, 0x3F, 0xE6, 0x3F, 0x3F, 0xE7, 
-	0x3F, 0xE8, 0xE9, 0x3F, 0x3F, 0x3F, 0x3F, 0x4F, 0x24, 0x3F, 0x3F, 0x25, 0x3F, 0x26, 0x27, 0x3F, 
-	0x6D, 0x3F, 0x3F, 0xD1, 0x3F, 0xD2, 0xD3, 0x3F, 0x3F, 0xD4, 0xD5, 0x3F, 0xD6, 0x3F, 0x3F, 0xD7, 
-	0x3F, 0xD8, 0xD9, 0x3F, 0x3F, 0x3F, 0x3F, 0x5A, 0x14, 0x3F, 0x3F, 0x15, 0x3F, 0x16, 0x17, 0x3F, 
-	0x3F, 0x4E, 0xC1, 0x3F, 0xC2, 0x3F, 0x3F, 0xC3, 0xC4, 0x3F, 0x3F, 0xC5, 0x3F, 0xC6, 0xC7, 0x3F, 
-	0xC8, 0x3F, 0x3F, 0xC9, 0x3F, 0x3F, 0x5F, 0x3F, 0x3F, 0x3F, 0x05, 0x3F, 0x06, 0x3F, 0x3F, 0x07
+    0x3F, 0x40, 0xF1, 0x3F, 0xF2, 0x3F, 0x3F, 0xF3, 0xF4, 0x3F, 0x3F, 0xF5, 0x3F, 0xF6, 0xF7, 0x3F,
+    0xF8, 0x3F, 0x3F, 0xF9, 0x3F, 0xF0, 0x7B, 0x3F, 0x3F, 0x3F, 0x35, 0x3F, 0x36, 0x3F, 0x3F, 0x37,
+    0x7C, 0x3F, 0x3F, 0x61, 0x3F, 0xA2, 0xA3, 0x3F, 0x3F, 0xA4, 0xA5, 0x3F, 0xA6, 0x3F, 0x3F, 0xA7,
+    0x3F, 0xA8, 0xA9, 0x3F, 0x3F, 0x3F, 0x3F, 0x6B, 0x24, 0x3F, 0x3F, 0x25, 0x3F, 0x26, 0x27, 0x3F,
+    0x60, 0x3F, 0x3F, 0x91, 0x3F, 0x92, 0x93, 0x3F, 0x3F, 0x94, 0x95, 0x3F, 0x96, 0x3F, 0x3F, 0x97,
+    0x3F, 0x98, 0x99, 0x3F, 0x3F, 0x3F, 0x3F, 0x5B, 0x14, 0x3F, 0x3F, 0x15, 0x3F, 0x16, 0x17, 0x3F,
+    0x3F, 0x50, 0x81, 0x3F, 0x82, 0x3F, 0x3F, 0x83, 0x84, 0x3F, 0x3F, 0x85, 0x3F, 0x86, 0x87, 0x3F,
+    0x88, 0x3F, 0x3F, 0x89, 0x3F, 0x3F, 0x4B, 0x3F, 0x3F, 0x3F, 0x05, 0x3F, 0x06, 0x3F, 0x3F, 0x07,
+    0x3F, 0x40, 0x7E, 0x3F, 0x4C, 0x3F, 0x3F, 0x5E, 0x7A, 0x3F, 0x3F, 0x6C, 0x3F, 0x7D, 0x6E, 0x3F,
+    0x5C, 0x3F, 0x3F, 0x4D, 0x3F, 0x5D, 0x7F, 0x3F, 0x3F, 0x3F, 0x35, 0x3F, 0x36, 0x3F, 0x3F, 0x3F,
+    0x4A, 0x3F, 0x3F, 0x6F, 0x3F, 0xE2, 0xE3, 0x3F, 0x3F, 0xE4, 0xE5, 0x3F, 0xE6, 0x3F, 0x3F, 0xE7,
+    0x3F, 0xE8, 0xE9, 0x3F, 0x3F, 0x3F, 0x3F, 0x4F, 0x24, 0x3F, 0x3F, 0x25, 0x3F, 0x26, 0x27, 0x3F,
+    0x6D, 0x3F, 0x3F, 0xD1, 0x3F, 0xD2, 0xD3, 0x3F, 0x3F, 0xD4, 0xD5, 0x3F, 0xD6, 0x3F, 0x3F, 0xD7,
+    0x3F, 0xD8, 0xD9, 0x3F, 0x3F, 0x3F, 0x3F, 0x5A, 0x14, 0x3F, 0x3F, 0x15, 0x3F, 0x16, 0x17, 0x3F,
+    0x3F, 0x4E, 0xC1, 0x3F, 0xC2, 0x3F, 0x3F, 0xC3, 0xC4, 0x3F, 0x3F, 0xC5, 0x3F, 0xC6, 0xC7, 0x3F,
+    0xC8, 0x3F, 0x3F, 0xC9, 0x3F, 0x3F, 0x5F, 0x3F, 0x3F, 0x3F, 0x05, 0x3F, 0x06, 0x3F, 0x3F, 0x07
 };
 
 static BYTE xlate_table_ebcd_fromebcdic[256] = {
-	0x88, 0x88, 0x88, 0x88, 0x88, 0x7A, 0x7C, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x5B, 0x88, 0x88, 
-	0x88, 0x88, 0x88, 0x88, 0x58, 0x5B, 0x5D, 0x5E, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 
-	0x88, 0x88, 0x88, 0x88, 0x38, 0x3B, 0x88, 0x3E, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 
-	0x88, 0x88, 0x5E, 0x88, 0x88, 0x88, 0x1C, 0x1F, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 
-	0x01, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0xA0, 0x76, 0x84, 0x93, 0xE1, 0xB7, 
-	0x61, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0xD7, 0x57, 0x90, 0x95, 0x87, 0xF6, 
-	0x40, 0x23, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x37, 0x8B, 0xC0, 0x8E, 0xA3, 
-	0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x16, 0x20, 0x8D, 0x82, 0x96, 
-	0x88, 0x62, 0x64, 0x67, 0x68, 0x6B, 0x6D, 0x6E, 0x70, 0x73, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 
-	0x88, 0x43, 0x45, 0x46, 0x49, 0x4A, 0x4C, 0x4F, 0x51, 0x52, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 
-	0x88, 0x88, 0x25, 0x26, 0x29, 0x2A, 0x2C, 0x2F, 0x31, 0x32, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 
-	0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 
-	0x88, 0xE2, 0xE4, 0xE7, 0xE8, 0xEB, 0xED, 0xEE, 0xF0, 0xF3, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 
-	0x88, 0xC3, 0xC5, 0xC6, 0xC9, 0xCA, 0xCC, 0xCF, 0xD1, 0xD2, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 
-	0x88, 0x88, 0xA5, 0xA6, 0xA9, 0xAA, 0xAC, 0xAF, 0xB1, 0xB2, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 
-	0x15, 0x02, 0x04, 0x07, 0x08, 0x0B, 0x0D, 0x0E, 0x10, 0x13, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88
+    0x88, 0x88, 0x88, 0x88, 0x88, 0x7A, 0x7C, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x5B, 0x88, 0x88,
+    0x88, 0x88, 0x88, 0x88, 0x58, 0x5B, 0x5D, 0x5E, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88,
+    0x88, 0x88, 0x88, 0x88, 0x38, 0x3B, 0x88, 0x3E, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88,
+    0x88, 0x88, 0x5E, 0x88, 0x88, 0x88, 0x1C, 0x1F, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88,
+    0x01, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0xA0, 0x76, 0x84, 0x93, 0xE1, 0xB7,
+    0x61, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0xD7, 0x57, 0x90, 0x95, 0x87, 0xF6,
+    0x40, 0x23, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x37, 0x8B, 0xC0, 0x8E, 0xA3,
+    0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x16, 0x20, 0x8D, 0x82, 0x96,
+    0x88, 0x62, 0x64, 0x67, 0x68, 0x6B, 0x6D, 0x6E, 0x70, 0x73, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88,
+    0x88, 0x43, 0x45, 0x46, 0x49, 0x4A, 0x4C, 0x4F, 0x51, 0x52, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88,
+    0x88, 0x88, 0x25, 0x26, 0x29, 0x2A, 0x2C, 0x2F, 0x31, 0x32, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88,
+    0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88,
+    0x88, 0xE2, 0xE4, 0xE7, 0xE8, 0xEB, 0xED, 0xEE, 0xF0, 0xF3, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88,
+    0x88, 0xC3, 0xC5, 0xC6, 0xC9, 0xCA, 0xCC, 0xCF, 0xD1, 0xD2, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88,
+    0x88, 0x88, 0xA5, 0xA6, 0xA9, 0xAA, 0xAC, 0xAF, 0xB1, 0xB2, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88,
+    0x15, 0x02, 0x04, 0x07, 0x08, 0x0B, 0x0D, 0x0E, 0x10, 0x13, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88
 };
 
 /* 2741 correspondence code tables */
 /* directly copied from mvs src file iedq28 */
 static BYTE xlate_table_cc_toebcdic[256] = {
-	0x3F, 0x40, 0xF1, 0x3F, 0xF2, 0x3F, 0x3F, 0xF3, 0xF5, 0x3F, 0x3F, 0xF7, 0x3F, 0xF6, 0xF8, 0x3F, 
-	0xF4, 0x3F, 0x3F, 0xF0, 0x3F, 0xA9, 0xF9, 0x3F, 0x3F, 0x34, 0x35, 0x3F, 0x36, 0x3F, 0x3F, 0x37, 
-	0xA3, 0x3F, 0x3F, 0xA7, 0x3F, 0x95, 0xA4, 0x3F, 0x3F, 0x85, 0x84, 0x3F, 0x92, 0x3F, 0x3F, 0x83, 
-	0x3F, 0x93, 0x88, 0x3F, 0x3F, 0x3F, 0x3F, 0x82, 0x24, 0x3F, 0x3F, 0x25, 0x3F, 0x26, 0x27, 0x3F, 
-	0x5A, 0x3F, 0x3F, 0x94, 0x3F, 0x4B, 0xA5, 0x3F, 0x3F, 0x7D, 0x99, 0x3F, 0x89, 0x3F, 0x3F, 0x81, 
-	0x3F, 0x96, 0xA2, 0x3F, 0x3F, 0x3F, 0x3F, 0xA6, 0x14, 0x3F, 0x3F, 0x15, 0x3F, 0x16, 0x17, 0x3F, 
-	0x3F, 0x91, 0x87, 0x3F, 0x7E, 0x3F, 0x3F, 0x86, 0x97, 0x3F, 0x3F, 0x5E, 0x3F, 0x98, 0x6B, 0x3F, 
-	0x61, 0x3F, 0x3F, 0xA8, 0x3F, 0x3F, 0x60, 0x3F, 0x3F, 0x04, 0x05, 0x3F, 0x06, 0x3F, 0x3F, 0x07, 
-	0x3F, 0x40, 0x4F, 0x3F, 0x7C, 0x3F, 0x3F, 0x7B, 0x6C, 0x3F, 0x3F, 0x50, 0x3F, 0x4C, 0x5C, 0x3F, 
-	0x5B, 0x3F, 0x3F, 0x5D, 0x3F, 0xE9, 0x4D, 0x3F, 0x3F, 0x3F, 0x3F, 0x3F, 0x36, 0x3F, 0x3F, 0x37, 
-	0xE3, 0x3F, 0x3F, 0xE7, 0x3F, 0xD5, 0xE4, 0x3F, 0x3F, 0xC5, 0xC4, 0x3F, 0xD2, 0x3F, 0x3F, 0xC3, 
-	0x3F, 0xD3, 0xC8, 0x3F, 0x3F, 0x3F, 0x3F, 0xC2, 0x24, 0x3F, 0x3F, 0x25, 0x3F, 0x3F, 0x27, 0x3F, 
-	0x6E, 0x3F, 0x3F, 0xD4, 0x3F, 0x4B, 0xE5, 0x3F, 0x3F, 0x7F, 0xD9, 0x3F, 0xC9, 0x3F, 0x3F, 0xC1, 
-	0x3F, 0xD6, 0xE2, 0x3F, 0x3F, 0x3F, 0x3F, 0xE6, 0x14, 0x3F, 0x3F, 0x15, 0x3F, 0x16, 0x3F, 0x3F, 
-	0x3F, 0xD1, 0xC7, 0x3F, 0x4E, 0x3F, 0x3F, 0xC6, 0xD7, 0x3F, 0x3F, 0x7A, 0x3F, 0xD8, 0x6B, 0x3F, 
-	0x6F, 0x3F, 0x3F, 0xE8, 0x3F, 0x3F, 0x6D, 0x3F, 0x3F, 0x3F, 0x05, 0x3F, 0x06, 0x3F, 0x3F, 0x3F, 
+    0x3F, 0x40, 0xF1, 0x3F, 0xF2, 0x3F, 0x3F, 0xF3, 0xF5, 0x3F, 0x3F, 0xF7, 0x3F, 0xF6, 0xF8, 0x3F,
+    0xF4, 0x3F, 0x3F, 0xF0, 0x3F, 0xA9, 0xF9, 0x3F, 0x3F, 0x34, 0x35, 0x3F, 0x36, 0x3F, 0x3F, 0x37,
+    0xA3, 0x3F, 0x3F, 0xA7, 0x3F, 0x95, 0xA4, 0x3F, 0x3F, 0x85, 0x84, 0x3F, 0x92, 0x3F, 0x3F, 0x83,
+    0x3F, 0x93, 0x88, 0x3F, 0x3F, 0x3F, 0x3F, 0x82, 0x24, 0x3F, 0x3F, 0x25, 0x3F, 0x26, 0x27, 0x3F,
+    0x5A, 0x3F, 0x3F, 0x94, 0x3F, 0x4B, 0xA5, 0x3F, 0x3F, 0x7D, 0x99, 0x3F, 0x89, 0x3F, 0x3F, 0x81,
+    0x3F, 0x96, 0xA2, 0x3F, 0x3F, 0x3F, 0x3F, 0xA6, 0x14, 0x3F, 0x3F, 0x15, 0x3F, 0x16, 0x17, 0x3F,
+    0x3F, 0x91, 0x87, 0x3F, 0x7E, 0x3F, 0x3F, 0x86, 0x97, 0x3F, 0x3F, 0x5E, 0x3F, 0x98, 0x6B, 0x3F,
+    0x61, 0x3F, 0x3F, 0xA8, 0x3F, 0x3F, 0x60, 0x3F, 0x3F, 0x04, 0x05, 0x3F, 0x06, 0x3F, 0x3F, 0x07,
+    0x3F, 0x40, 0x4F, 0x3F, 0x7C, 0x3F, 0x3F, 0x7B, 0x6C, 0x3F, 0x3F, 0x50, 0x3F, 0x4C, 0x5C, 0x3F,
+    0x5B, 0x3F, 0x3F, 0x5D, 0x3F, 0xE9, 0x4D, 0x3F, 0x3F, 0x3F, 0x3F, 0x3F, 0x36, 0x3F, 0x3F, 0x37,
+    0xE3, 0x3F, 0x3F, 0xE7, 0x3F, 0xD5, 0xE4, 0x3F, 0x3F, 0xC5, 0xC4, 0x3F, 0xD2, 0x3F, 0x3F, 0xC3,
+    0x3F, 0xD3, 0xC8, 0x3F, 0x3F, 0x3F, 0x3F, 0xC2, 0x24, 0x3F, 0x3F, 0x25, 0x3F, 0x3F, 0x27, 0x3F,
+    0x6E, 0x3F, 0x3F, 0xD4, 0x3F, 0x4B, 0xE5, 0x3F, 0x3F, 0x7F, 0xD9, 0x3F, 0xC9, 0x3F, 0x3F, 0xC1,
+    0x3F, 0xD6, 0xE2, 0x3F, 0x3F, 0x3F, 0x3F, 0xE6, 0x14, 0x3F, 0x3F, 0x15, 0x3F, 0x16, 0x3F, 0x3F,
+    0x3F, 0xD1, 0xC7, 0x3F, 0x4E, 0x3F, 0x3F, 0xC6, 0xD7, 0x3F, 0x3F, 0x7A, 0x3F, 0xD8, 0x6B, 0x3F,
+    0x6F, 0x3F, 0x3F, 0xE8, 0x3F, 0x3F, 0x6D, 0x3F, 0x3F, 0x3F, 0x05, 0x3F, 0x06, 0x3F, 0x3F, 0x3F,
 };
 
 static BYTE xlate_table_cc_fromebcdic[256] = {
-	0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0x7A, 0x7C, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0x5B, 0xEB, 0xEB, 
-	0xEB, 0xEB, 0xEB, 0xEB, 0x58, 0x5B, 0x5D, 0x5E, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 
-	0xEB, 0xEB, 0xEB, 0xEB, 0x38, 0x3B, 0xEB, 0x3E, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 
-	0xEB, 0xEB, 0x5E, 0xEB, 0x19, 0x1A, 0x1C, 0x1F, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 
-	0x01, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0x45, 0x8D, 0x96, 0xE4, 0x82, 
-	0x8B, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0x40, 0x90, 0x8E, 0x93, 0x6B, 0xEB, 
-	0x76, 0x70, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0x6E, 0x88, 0xF6, 0xC0, 0xF0, 
-	0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0x87, 0x84, 0x49, 0x64, 0xC9, 
-	0xEB, 0x4F, 0x37, 0x2F, 0x2A, 0x29, 0x67, 0x62, 0x32, 0x4C, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 
-	0xEB, 0x61, 0x2C, 0x31, 0x43, 0x25, 0x51, 0x68, 0x6D, 0x4A, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 
-	0xEB, 0xEB, 0x52, 0x20, 0x26, 0x46, 0x57, 0x23, 0x73, 0x15, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 
-	0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 
-	0xEB, 0xCF, 0xB7, 0xAF, 0xAA, 0xA9, 0xE7, 0xE2, 0xB2, 0xCC, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 
-	0xEB, 0xE1, 0xAC, 0xB1, 0xC3, 0xA5, 0xD1, 0xE8, 0xED, 0xCA, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 
-	0xEB, 0xEB, 0xD2, 0xA0, 0xA6, 0xC6, 0xD7, 0xA3, 0xF3, 0x95, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 
-	0x13, 0x02, 0x04, 0x07, 0x10, 0x08, 0x0D, 0x0B, 0x0E, 0x16, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 
+    0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0x7A, 0x7C, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0x5B, 0xEB, 0xEB,
+    0xEB, 0xEB, 0xEB, 0xEB, 0x58, 0x5B, 0x5D, 0x5E, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB,
+    0xEB, 0xEB, 0xEB, 0xEB, 0x38, 0x3B, 0xEB, 0x3E, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB,
+    0xEB, 0xEB, 0x5E, 0xEB, 0x19, 0x1A, 0x1C, 0x1F, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB,
+    0x01, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0x45, 0x8D, 0x96, 0xE4, 0x82,
+    0x8B, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0x40, 0x90, 0x8E, 0x93, 0x6B, 0xEB,
+    0x76, 0x70, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0x6E, 0x88, 0xF6, 0xC0, 0xF0,
+    0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0x87, 0x84, 0x49, 0x64, 0xC9,
+    0xEB, 0x4F, 0x37, 0x2F, 0x2A, 0x29, 0x67, 0x62, 0x32, 0x4C, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB,
+    0xEB, 0x61, 0x2C, 0x31, 0x43, 0x25, 0x51, 0x68, 0x6D, 0x4A, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB,
+    0xEB, 0xEB, 0x52, 0x20, 0x26, 0x46, 0x57, 0x23, 0x73, 0x15, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB,
+    0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB,
+    0xEB, 0xCF, 0xB7, 0xAF, 0xAA, 0xA9, 0xE7, 0xE2, 0xB2, 0xCC, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB,
+    0xEB, 0xE1, 0xAC, 0xB1, 0xC3, 0xA5, 0xD1, 0xE8, 0xED, 0xCA, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB,
+    0xEB, 0xEB, 0xD2, 0xA0, 0xA6, 0xC6, 0xD7, 0xA3, 0xF3, 0x95, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB,
+    0x13, 0x02, 0x04, 0x07, 0x10, 0x08, 0x0D, 0x0B, 0x0E, 0x16, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB, 0xEB,
 };
 
 static BYTE byte_parity_table [128] = {
@@ -302,7 +277,7 @@ static BYTE byte_parity_table [128] = {
 static void logdump(char *txt,DEVBLK *dev,BYTE *bfr,size_t sz)
 {
     size_t i;
-    if(!dev->ccwtrace)
+    if ( !dev->ccwtrace )
     {
         return;
     }
@@ -313,17 +288,17 @@ static void logdump(char *txt,DEVBLK *dev,BYTE *bfr,size_t sz)
             dev->commadpt->in_xparmode?"YES":"NO",
             dev->commadpt->xparwwait?"YES":"NO");
     logmsg(_("HHCCA300D %4.4X:%s : Dump of %d (%x) byte(s)\n"),dev->devnum,txt,sz,sz);
-    for(i=0;i<sz;i++)
+    for( i=0; i<sz; i++ )
     {
-        if(i%16==0)
+        if( i%16 == 0 )
         {
-            if(i!=0)
+            if( i !=0 )
             {
                 logmsg("\n");
             }
             logmsg(_("HHCCA300D %4.4X:%s : %4.4X:"),dev->devnum,txt,i);
         }
-        if(i%4==0)
+        if( i%4 == 0 )
         {
             logmsg(" ");
         }
@@ -471,15 +446,15 @@ static void commadpt_clean_device(DEVBLK *dev)
         dev->commadpt=NULL;
         if(dev->ccwtrace)
         {
-                logmsg(_("HHCCA300D %4.4X:clean : Control block freed\n"),
-                        dev->devnum);
+            logmsg(_("HHCCA300D %4.4X:clean : Control block freed\n"),
+                dev->devnum);
         }
     }
     else
     {
         if(dev->ccwtrace)
         {
-                logmsg(_("HHCCA300D %4.4X:clean : Control block not freed : not allocated\n"),dev->devnum);
+            logmsg(_("HHCCA300D %4.4X:clean : Control block not freed : not allocated\n"),dev->devnum);
         }
     }
     return;
@@ -753,86 +728,101 @@ static void commadpt_read_tty(COMMADPT *ca, BYTE * bfr, int len)
     BYTE        c;
     int i1;
     int o1;
-	   for (i1 = 0, o1 = 0; i1 < len; i1++) {
-		c = (unsigned char) bfr[i1];
-		if (ca->telnet_opt) {
-			ca->telnet_opt = 0;
-		          if(ca->dev->ccwtrace)
-			    logmsg(_("HHCCA300D %4.4X: Received TELNET CMD 0x%02x 0x%02x\n"),
-			            ca->dev->devnum,
-				    ca->telnet_cmd, c);
-			bfr3[0] = 0xff;  /* IAC */
-			/* set won't/don't for all received commands */
-			bfr3[1] = (ca->telnet_cmd == 0xfd) ? 0xfc : 0xfe;
-			bfr3[2] = c;
-		          if(ca->dev->ccwtrace)
-			    logmsg(_("HHCCA300D %4.4X: Sending TELNET CMD 0x%02x 0x%02x\n"),
-			            ca->dev->devnum,
-				    bfr3[1], bfr3[2]);
-                    	commadpt_ring_pushbfr(&ca->outbfr,bfr3,3);
-			continue;
-		}
-		if (ca->telnet_iac) {
-			ca->telnet_iac = 0;
-		          if(ca->dev->ccwtrace)
-			    logmsg(_("HHCCA300D %4.4X: Received TELNET IAC 0x%02x\n"),
-			            ca->dev->devnum,
-				    c);
-			switch (c) {
-			case 0xFB:  /* TELNET WILL option cmd */
-			case 0xFD:  /* TELNET DO option cmd */
-				ca->telnet_opt = 1;
-				ca->telnet_cmd = c;
-				break;
-			case 0xF4:  /* TELNET interrupt */
-				if (!ca->telnet_int) {
-					ca->telnet_int = 1;
-					commadpt_ring_flush(&ca->inbfr);
-					commadpt_ring_flush(&ca->rdwrk);
-					commadpt_ring_flush(&ca->outbfr);
-				}
-				break;
-			}
-			continue;
-		}
-		if (c == 0xFF) {  /* TELNET IAC */
-			ca->telnet_iac = 1;
-			continue;
-		} else {
-			ca->telnet_iac = 0;
-		}
-		if (c == 0x0a)
-			continue;
-		c &= 0x7f;
-		if  (ca->uctrans && c >= 'a' && c <= 'z') {
-			c = toupper( c );     /* make uppercase */
-		}
-		if (ca->term == COMMADPT_TERM_TTY) {
+        for (i1 = 0, o1 = 0; i1 < len; i1++) 
+        {
+            c = (unsigned char) bfr[i1];
+            if (ca->telnet_opt) 
+            {
+                ca->telnet_opt = 0;
+                if(ca->dev->ccwtrace)
+                    logmsg(_("HHCCA300D %4.4X: Received TELNET CMD 0x%02x 0x%02x\n"),
+                            ca->dev->devnum,
+                            ca->telnet_cmd, c);
+                bfr3[0] = 0xff;  /* IAC */
+            /* set won't/don't for all received commands */
+                bfr3[1] = (ca->telnet_cmd == 0xfd) ? 0xfc : 0xfe;
+                bfr3[2] = c;
+                if(ca->dev->ccwtrace)
+                    logmsg(_("HHCCA300D %4.4X: Sending TELNET CMD 0x%02x 0x%02x\n"),
+                            ca->dev->devnum,
+                            bfr3[1], bfr3[2]);
+                commadpt_ring_pushbfr(&ca->outbfr,bfr3,3);
+                continue;
+            }
+            if (ca->telnet_iac) 
+            {
+                ca->telnet_iac = 0;
+                if(ca->dev->ccwtrace)
+                    logmsg(_("HHCCA300D %4.4X: Received TELNET IAC 0x%02x\n"),
+                            ca->dev->devnum,
+                            c);
+                switch (c) 
+                {
+                    case 0xFB:  /* TELNET WILL option cmd */
+                    case 0xFD:  /* TELNET DO option cmd */
+                        ca->telnet_opt = 1;
+                        ca->telnet_cmd = c;
+                        break;
+                    case 0xF4:  /* TELNET interrupt */
+                        if (!ca->telnet_int) 
+                        {
+                            ca->telnet_int = 1;
+                            commadpt_ring_flush(&ca->inbfr);
+                            commadpt_ring_flush(&ca->rdwrk);
+                            commadpt_ring_flush(&ca->outbfr);
+                        }
+                        break;
+                }
+                continue;
+            }
+            if (c == 0xFF) 
+            {  /* TELNET IAC */
+                ca->telnet_iac = 1;
+                continue;
+            } 
+            else 
+            {
+                ca->telnet_iac = 0;
+            }
+            if (c == 0x0a)
+                continue;
+            c &= 0x7f;
+            if  (ca->uctrans && c >= 'a' && c <= 'z') 
+            {
+                c = toupper( c );     /* make uppercase */
+            }
+            if (ca->term == COMMADPT_TERM_TTY) 
+            {
 #if 0
-		    if (c == 0x0d)  // char was CR ?
+                if (c == 0x0d)  // char was CR ?
 #endif
-			ca->eol_flag = 1;
-		    if (byte_parity_table[(unsigned int)(c & 0x7f)])
-			c |= 0x80;     // make even parity
-		    bfr2[o1++] = byte_reverse_table[(unsigned int)(c & 0xff)];
-		} else {   /* 2741 */
-		    if (c == 0x0d) { // char was CR ?
-			ca->eol_flag = 1;
+                    ca->eol_flag = 1;
+                if (byte_parity_table[(unsigned int)(c & 0x7f)])
+                    c |= 0x80;     // make even parity
+                bfr2[o1++] = byte_reverse_table[(unsigned int)(c & 0xff)];
+            } 
+            else 
+            {   /* 2741 */
+                if (c == 0x0d) 
+                {   // char was CR ?
+                    ca->eol_flag = 1;
 #if 0
- 			continue;   // ignore
+                    continue;   // ignore
 #endif
-		    }
-		    if (ca->code_table_fromebcdic) {  // do only if code != none
-		        c = host_to_guest(c & 0x7f);  // first translate to EBCDIC
-                        bfr2[o1++] = ca->code_table_fromebcdic[ c ];   // then to 2741 code
-		    }
-		}
-	    }
-	 if (o1) {
-          commadpt_ring_pushbfr(&ca->inbfr,bfr2,(size_t)o1);
-          logdump("RCV2",ca->dev,bfr2,o1);
-	  ca->readcomp = 1;
-	 }
+                }
+                if (ca->code_table_fromebcdic) 
+                {  // do only if code != none
+                    c = host_to_guest(c & 0x7f);  // first translate to EBCDIC
+                    bfr2[o1++] = ca->code_table_fromebcdic[ c ];   // then to 2741 code
+                }
+            }
+        }
+        if (o1) 
+        {
+            commadpt_ring_pushbfr(&ca->inbfr,bfr2,(size_t)o1);
+            logdump("RCV2",ca->dev,bfr2,o1);
+        ca->readcomp = 1;
+        }
 }
 
 /*-------------------------------------------------------------------*/
@@ -840,28 +830,36 @@ static void commadpt_read_tty(COMMADPT *ca, BYTE * bfr, int len)
 /*-------------------------------------------------------------------*/
 static void commadpt_read(COMMADPT *ca)
 {
-    BYTE        bfr[256];
-    int gotdata;
-    int rc;
+BYTE    bfr[256];
+int     gotdata;
+int     rc;
+    
     gotdata=0;
-    for (;;) {
-        if (IS_BSC_LNCTL(ca)) {
-          rc=read_socket(ca->sfd,bfr,256);
-        } else {
-        /* read_socket has changed from 3.04 to 3.06 - async needs old way */
-        /* is BSC similarly broken? */
+    for (;;) 
+    {
+        if (IS_BSC_LNCTL(ca)) 
+        {
+            rc=read_socket(ca->sfd,bfr,256);
+        } 
+        else 
+        {
+            /* read_socket has changed from 3.04 to 3.06 - async needs old way */
+            /* is BSC similarly broken? */
 #ifdef _MSVC_
-          rc=recv(ca->sfd,bfr,256,0);
+            rc=recv(ca->sfd,bfr,256,0);
 #else
-          rc=read(ca->sfd,bfr,256);
+            rc=read(ca->sfd,bfr,256);
 #endif
         }
         if (rc <= 0)
             break;
         logdump("RECV",ca->dev,bfr,rc);
-        if (IS_ASYNC_LNCTL(ca)) {
+        if (IS_ASYNC_LNCTL(ca)) 
+        {
             commadpt_read_tty(ca, bfr, rc);
-        } else {
+        } 
+        else 
+        {
             commadpt_ring_pushbfr(&ca->inbfr,bfr,(size_t)rc);
         }  /* end of else (async) */
         gotdata=1;
@@ -1086,7 +1084,9 @@ static void *commadpt_thread(void *vca)
         seltv=NULL;
         if(ca->dev->ccwtrace)
         {
-                logmsg(_("HHCCA300D %4.4X:cthread - Entry - DevExec = %s\n"),devnum,commadpt_pendccw_text[ca->curpending]);
+            logmsg(_("HHCCA300D %4.4X:cthread - Entry - DevExec = %s\n"),
+                    devnum,
+                    commadpt_pendccw_text[ca->curpending]);
         }
         writecont=0;
         switch(ca->curpending)
@@ -1209,10 +1209,10 @@ static void *commadpt_thread(void *vca)
                         }
                     }
                     if (IS_ASYNC_LNCTL(ca)) {
-			/* Sleep for 0.01 sec - for faithful emulation we would
-			 * slow everything down to 110 or 150 baud or worse :)
-			 * Without this sleep, CPU use is excessive.
-			 */
+            /* Sleep for 0.01 sec - for faithful emulation we would
+             * slow everything down to 110 or 150 baud or worse :)
+             * Without this sleep, CPU use is excessive.
+             */
                         usleep(10000);
                     }
                 }
@@ -1805,62 +1805,85 @@ static int commadpt_init_handler (DEVBLK *dev, int argc, char *argv[])
                     break;
                 case COMMADPT_KW_LNCTL:
                     if(strcasecmp(res.text,"tele2")==0
-                    || strcasecmp(res.text,"ibm1")==0 ) {
+                    || strcasecmp(res.text,"ibm1")==0 ) 
+                    {
                         dev->commadpt->lnctl = COMMADPT_LNCTL_ASYNC;
                         dev->commadpt->rto=28000;        /* Read Time-Out in milis */
-                    } else if(strcasecmp(res.text,"bsc")) {
-                        dev->commadpt->lnctl = COMMADPT_LNCTL_BSC;
-		    } else {
-			    msg013e(dev,"LNCTL",res.text);
-		    }
+                    } 
+                    else 
+                        if(strcasecmp(res.text,"bsc")) 
+                        {
+                            dev->commadpt->lnctl = COMMADPT_LNCTL_BSC;
+                        } 
+                        else 
+                        {
+                            msg013e(dev,"LNCTL",res.text);
+                        }
                     break;
                 case COMMADPT_KW_TERM:
-                    if(strcasecmp(res.text,"tty")==0) {
+                    if(strcasecmp(res.text,"tty")==0) 
+                    {
                         dev->commadpt->term = COMMADPT_TERM_TTY;
-		    }
-		    else if(strcasecmp(res.text,"2741")==0) {
-                        dev->commadpt->term = COMMADPT_TERM_2741;
-		    } else {
-			    msg013e(dev,"TERM",res.text);
-		    }
+                    }
+                    else 
+                        if(strcasecmp(res.text,"2741")==0) 
+                        {
+                            dev->commadpt->term = COMMADPT_TERM_2741;
+                        } 
+                        else 
+                        {
+                            msg013e(dev,"TERM",res.text);
+                        }
                     break;
                 case COMMADPT_KW_CODE:
-                    if(strcasecmp(res.text,"corr")==0) {
+                    if(strcasecmp(res.text,"corr")==0) 
+                    {
                         dev->commadpt->code_table_toebcdic   = xlate_table_cc_toebcdic;
                         dev->commadpt->code_table_fromebcdic = xlate_table_cc_fromebcdic;
-		    }
-		    else if(strcasecmp(res.text,"ebcd")==0) {
-                        dev->commadpt->code_table_toebcdic   = xlate_table_ebcd_toebcdic;
-                        dev->commadpt->code_table_fromebcdic = xlate_table_ebcd_fromebcdic;
-		    }
-		    else if(strcasecmp(res.text,"none")==0) {
-                        dev->commadpt->code_table_toebcdic   = NULL;
-                        dev->commadpt->code_table_fromebcdic = NULL;
-		    }
-		    else {
-			    msg013e(dev,"CODE",res.text);
-		    }
+                    }
+                    else 
+                        if(strcasecmp(res.text,"ebcd")==0) 
+                        {
+                            dev->commadpt->code_table_toebcdic   = xlate_table_ebcd_toebcdic;
+                            dev->commadpt->code_table_fromebcdic = xlate_table_ebcd_fromebcdic;
+                        }
+                        else 
+                            if(strcasecmp(res.text,"none")==0) 
+                            {
+                                dev->commadpt->code_table_toebcdic   = NULL;
+                                dev->commadpt->code_table_fromebcdic = NULL;
+                            }
+                            else 
+                            {
+                                msg013e(dev,"CODE",res.text);
+                            }
                     break;
                 case COMMADPT_KW_UCTRANS:
-                    if(strcasecmp(res.text,"no")==0) {
+                    if(strcasecmp(res.text,"no")==0) 
+                    {
                         dev->commadpt->uctrans = FALSE;
-		    }
-		    else if(strcasecmp(res.text,"yes")==0) {
-                        dev->commadpt->uctrans = TRUE;
-		    } else {
-                        msg013e(dev,"UCTRANS",res.text);
-		    }
+                    }
+                    else 
+                        if(strcasecmp(res.text,"yes")==0) 
+                        {
+                            dev->commadpt->uctrans = TRUE;
+                        } 
+                        else 
+                        {
+                            msg013e(dev,"UCTRANS",res.text);
+                        }
                     break;
                 case COMMADPT_KW_SKIP:
-		    if  (strlen(res.text) < 2)
-			    break;
-		    for (i=0; i < (int)strlen(res.text); i+= 2) {
-			    bf[0] = res.text[i+0];
-			    bf[1] = res.text[i+1];
-			    bf[2] = 0;
-			    sscanf(bf, "%x", &ix);
-			    dev->commadpt->byte_skip_table[ix] = 1;
-		    }
+                    if  (strlen(res.text) < 2)
+                        break;
+                    for (i=0; i < (int)strlen(res.text); i+= 2) 
+                    {
+                        bf[0] = res.text[i+0];
+                        bf[1] = res.text[i+1];
+                        bf[2] = 0;
+                        sscanf(bf, "%x", &ix);
+                        dev->commadpt->byte_skip_table[ix] = 1;
+                    }
                     break;
                 case COMMADPT_KW_SWITCHED:
                 case COMMADPT_KW_DIAL:
@@ -2073,7 +2096,8 @@ static int commadpt_init_handler (DEVBLK *dev, int argc, char *argv[])
         thread_name[sizeof(thread_name)-1]=0;
 
         dev->commadpt->curpending=COMMADPT_PEND_TINIT;
-        if(create_thread(&dev->commadpt->cthread,DETACHED,commadpt_thread,dev->commadpt,thread_name))
+        rc = create_thread(&dev->commadpt->cthread,DETACHED,commadpt_thread,dev->commadpt,thread_name);
+        if(rc)
         {
             logmsg(D_("HHCCA022E create_thread: %s\n"),strerror(errno));
             release_lock(&dev->commadpt->lock);
@@ -2189,181 +2213,182 @@ BYTE    gotdle;                 /* Write routine DLE marker */
         logmsg(_("HHCCA300D %4.4X:CCW Exec - Entry code = %x\n"),dev->devnum,code);
     }
     obtain_lock(&dev->commadpt->lock);
-    switch (code) {
+    switch (code) 
+    {
         /*---------------------------------------------------------------*/
         /* CONTROL NO-OP                                                 */
         /*---------------------------------------------------------------*/
         case 0x03:
-                *residual=0;
-                *unitstat=CSW_CE|CSW_DE;
-                break;
+            *residual=0;
+            *unitstat=CSW_CE|CSW_DE;
+            break;
 
         /*---------------------------------------------------------------*/
         /* BASIC SENSE                                                   */
         /*---------------------------------------------------------------*/
         case 0x04:
-                num=count<dev->numsense?count:dev->numsense;
-                *more=count<dev->numsense?1:0;
-                memcpy(iobuf,dev->sense,num);
-                *residual=count-num;
-                *unitstat=CSW_CE|CSW_DE;
-                break;
+            num=count<dev->numsense?count:dev->numsense;
+            *more=count<dev->numsense?1:0;
+            memcpy(iobuf,dev->sense,num);
+            *residual=count-num;
+            *unitstat=CSW_CE|CSW_DE;
+            break;
 
         /*---------------------------------------------------------------*/
         /* SENSE ID                                                      */
         /*---------------------------------------------------------------*/
         case 0xE4:
-                /* Calculate residual byte count */
-                num = (count < dev->numdevid) ? count : dev->numdevid;
-                *residual = count - num;
-                *more = count < dev->numdevid ? 1 : 0;
+            /* Calculate residual byte count */
+            num = (count < dev->numdevid) ? count : dev->numdevid;
+            *residual = count - num;
+            *more = count < dev->numdevid ? 1 : 0;
 
-                /* Copy device identifier bytes to channel I/O Buffer */
-                memcpy (iobuf, dev->devid, num);
+            /* Copy device identifier bytes to channel I/O Buffer */
+            memcpy (iobuf, dev->devid, num);
 
-                /* Return unit status */
-                *unitstat = CSW_CE | CSW_DE;
-                break;
+            /* Return unit status */
+            *unitstat = CSW_CE | CSW_DE;
+            break;
 
         /*---------------------------------------------------------------*/
         /* ENABLE                                                        */
         /*---------------------------------------------------------------*/
         case 0x27:
-                if(dev->commadpt->dialin+dev->commadpt->dialout*2==2)
-                {
-                    /* Enable makes no sense on a dial out only line */
-                    *unitstat=CSW_CE|CSW_DE|CSW_UC;
-                    dev->sense[0]=SENSE_IR;
-                    dev->sense[1]=0x2E; /* Simulate Failed Call In */
-                    break;
-                }
-                if(dev->commadpt->connect)
-                {
-                    /* Already connected */
-                    dev->commadpt->enabled=1;
-                    *unitstat=CSW_CE|CSW_DE;
-                    break;
-                }
-                dev->commadpt->curpending=COMMADPT_PEND_ENABLE;
-                commadpt_wakeup(dev->commadpt,0);
-                commadpt_wait(dev);
-                /* If the line is not connected now, then ENABLE failed */
-                if(dev->commadpt->connect)
-                {
-                    *unitstat=CSW_CE|CSW_DE;
-                    dev->commadpt->enabled=1;
-                    /* Clean the input buffer */
-                    commadpt_ring_flush(&dev->commadpt->inbfr);
-                    break;
-                }
-                if(dev->commadpt->haltpending)
-                {
-                    *unitstat=CSW_CE|CSW_DE|CSW_UX;
-                    dev->commadpt->haltpending=0;
-                    break;
-                }
-                if(dev->commadpt->dialin)
-                {
-                    *unitstat=CSW_CE|CSW_DE|CSW_UC;
-                    dev->sense[0]=SENSE_IR;
-                    dev->sense[1]=0x2e;
-                }
-                else
-                {
-                    *unitstat=CSW_CE|CSW_DE|CSW_UC;
-                    dev->sense[0]=SENSE_IR;
-                    dev->sense[1]=0x21;
-                }
+            if(dev->commadpt->dialin+dev->commadpt->dialout*2==2)
+            {
+                /* Enable makes no sense on a dial out only line */
+                *unitstat=CSW_CE|CSW_DE|CSW_UC;
+                dev->sense[0]=SENSE_IR;
+                dev->sense[1]=0x2E; /* Simulate Failed Call In */
                 break;
+            }
+            if(dev->commadpt->connect)
+            {
+                /* Already connected */
+                dev->commadpt->enabled=1;
+                *unitstat=CSW_CE|CSW_DE;
+                break;
+            }
+            dev->commadpt->curpending=COMMADPT_PEND_ENABLE;
+            commadpt_wakeup(dev->commadpt,0);
+            commadpt_wait(dev);
+            /* If the line is not connected now, then ENABLE failed */
+            if(dev->commadpt->connect)
+            {
+                *unitstat=CSW_CE|CSW_DE;
+                dev->commadpt->enabled=1;
+                /* Clean the input buffer */
+                commadpt_ring_flush(&dev->commadpt->inbfr);
+                break;
+            }
+            if(dev->commadpt->haltpending)
+            {
+                *unitstat=CSW_CE|CSW_DE|CSW_UX;
+                dev->commadpt->haltpending=0;
+                break;
+            }
+            if(dev->commadpt->dialin)
+            {
+                *unitstat=CSW_CE|CSW_DE|CSW_UC;
+                dev->sense[0]=SENSE_IR;
+                dev->sense[1]=0x2e;
+            }
+            else
+            {
+                *unitstat=CSW_CE|CSW_DE|CSW_UC;
+                dev->sense[0]=SENSE_IR;
+                dev->sense[1]=0x21;
+            }
+            break;
 
         /*---------------------------------------------------------------*/
         /* DISABLE                                                       */
         /*---------------------------------------------------------------*/
         case 0x2F:
-                /* Reset some flags */
-                dev->commadpt->xparwwait=0;
-                commadpt_ring_flush(&dev->commadpt->inbfr);      /* Flush buffers */
-                commadpt_ring_flush(&dev->commadpt->outbfr);      /* Flush buffers */
+            /* Reset some flags */
+            dev->commadpt->xparwwait=0;
+            commadpt_ring_flush(&dev->commadpt->inbfr);      /* Flush buffers */
+            commadpt_ring_flush(&dev->commadpt->outbfr);      /* Flush buffers */
 
-                if((!dev->commadpt->dialin && !dev->commadpt->dialout) || !dev->commadpt->connect)
-                {
-                    *unitstat=CSW_CE|CSW_DE;
-                    dev->commadpt->enabled=0;
-                    break;
-                }
-                dev->commadpt->curpending=COMMADPT_PEND_DISABLE;
-                commadpt_wakeup(dev->commadpt,0);
-                commadpt_wait(dev);
-                dev->commadpt->enabled=0;
+            if((!dev->commadpt->dialin && !dev->commadpt->dialout) || !dev->commadpt->connect)
+            {
                 *unitstat=CSW_CE|CSW_DE;
+                dev->commadpt->enabled=0;
                 break;
+            }
+            dev->commadpt->curpending=COMMADPT_PEND_DISABLE;
+            commadpt_wakeup(dev->commadpt,0);
+            commadpt_wait(dev);
+            dev->commadpt->enabled=0;
+            *unitstat=CSW_CE|CSW_DE;
+            break;
         /*---------------------------------------------------------------*/
         /* SET MODE                                                      */
         /*---------------------------------------------------------------*/
         case 0x23:
-                /* Transparent Write Wait State test */
-                if(dev->commadpt->xparwwait)
-                {
-                    *unitstat=CSW_CE|CSW_DE|CSW_UC;
-                    dev->sense[0]=SENSE_CR;
-                    return;
-                }
-                num=1;
-                *residual=count-num;
-                *unitstat=CSW_CE|CSW_DE;
-                if(dev->ccwtrace)
-                {
-                        logmsg(_("HHCCA300D %4.4X Set Mode : %s\n"),dev->devnum,iobuf[0]&0x40 ? "EIB":"NO EIB");
-                }
-                dev->commadpt->eibmode=(iobuf[0]&0x40)?1:0;
-                break;
+            /* Transparent Write Wait State test */
+            if(dev->commadpt->xparwwait)
+            {
+                *unitstat=CSW_CE|CSW_DE|CSW_UC;
+                dev->sense[0]=SENSE_CR;
+                return;
+            }
+            num=1;
+            *residual=count-num;
+            *unitstat=CSW_CE|CSW_DE;
+            if(dev->ccwtrace)
+            {
+                logmsg(_("HHCCA300D %4.4X Set Mode : %s\n"),dev->devnum,iobuf[0]&0x40 ? "EIB":"NO EIB");
+            }
+            dev->commadpt->eibmode=(iobuf[0]&0x40)?1:0;
+            break;
         /*---------------------------------------------------------------*/
         /* POLL Command                                                  */
         /*---------------------------------------------------------------*/
         case 0x09:
-                /* Transparent Write Wait State test */
-                if(dev->commadpt->xparwwait)
-                {
-                    *unitstat=CSW_CE|CSW_DE|CSW_UC;
-                    dev->sense[0]=SENSE_CR;
-                    return;
-                }
-                /* Save POLL data */
-                commadpt_ring_flush(&dev->commadpt->pollbfr);
-                commadpt_ring_pushbfr(&dev->commadpt->pollbfr,iobuf,count);
-                /* Set some utility variables */
-                dev->commadpt->pollused=0;
-                dev->commadpt->badpoll=0;
-                /* Tell thread */
-                dev->commadpt->curpending=COMMADPT_PEND_POLL;
-                commadpt_wakeup(dev->commadpt,0);
-                commadpt_wait(dev);
-                /* Flush the output & poll rings */
-                commadpt_ring_flush(&dev->commadpt->outbfr);
-                commadpt_ring_flush(&dev->commadpt->pollbfr);
-                /* Check for HALT */
-                if(dev->commadpt->haltpending)
-                {
-                    *unitstat=CSW_CE|CSW_DE|CSW_UX;
-                    dev->commadpt->haltpending=0;
-                    break;
-                }
-                /* Check for bad poll data */
-                if(dev->commadpt->badpoll)
-                {
-                    *unitstat=CSW_CE|CSW_DE|CSW_UC;
-                    dev->sense[0]=0x08;
-                    dev->sense[1]=0x84;
-                    break;
-                }
-                /* Determine remaining length */
-                *residual=count-dev->commadpt->pollused;
-                /* Determine if SM should be set (succesfull or unsucessfull POLLs) */
-                /* exhausting poll data when all stations reported NO data          */
-                /* does not set Status Modifier                                     */
-                *unitstat=CSW_CE|CSW_DE|(dev->commadpt->pollsm?CSW_SM:0);
-                /* NOTE : The index byte (and rest) are in the Input Ring */
+            /* Transparent Write Wait State test */
+            if(dev->commadpt->xparwwait)
+            {
+                *unitstat=CSW_CE|CSW_DE|CSW_UC;
+                dev->sense[0]=SENSE_CR;
+                return;
+            }
+            /* Save POLL data */
+            commadpt_ring_flush(&dev->commadpt->pollbfr);
+            commadpt_ring_pushbfr(&dev->commadpt->pollbfr,iobuf,count);
+            /* Set some utility variables */
+            dev->commadpt->pollused=0;
+            dev->commadpt->badpoll=0;
+            /* Tell thread */
+            dev->commadpt->curpending=COMMADPT_PEND_POLL;
+            commadpt_wakeup(dev->commadpt,0);
+            commadpt_wait(dev);
+            /* Flush the output & poll rings */
+            commadpt_ring_flush(&dev->commadpt->outbfr);
+            commadpt_ring_flush(&dev->commadpt->pollbfr);
+            /* Check for HALT */
+            if(dev->commadpt->haltpending)
+            {
+                *unitstat=CSW_CE|CSW_DE|CSW_UX;
+                dev->commadpt->haltpending=0;
                 break;
+            }
+            /* Check for bad poll data */
+            if(dev->commadpt->badpoll)
+            {
+                *unitstat=CSW_CE|CSW_DE|CSW_UC;
+                dev->sense[0]=0x08;
+                dev->sense[1]=0x84;
+                break;
+            }
+            /* Determine remaining length */
+            *residual=count-dev->commadpt->pollused;
+            /* Determine if SM should be set (succesfull or unsucessfull POLLs) */
+            /* exhausting poll data when all stations reported NO data          */
+            /* does not set Status Modifier                                     */
+            *unitstat=CSW_CE|CSW_DE|(dev->commadpt->pollsm?CSW_SM:0);
+            /* NOTE : The index byte (and rest) are in the Input Ring */
+            break;
 
         /*---------------------------------------------------------------*/
         /* DIAL                                                          */
@@ -2380,118 +2405,120 @@ BYTE    gotdle;                 /* Write routine DLE marker */
         /* This perfoms an outgoing call to AAA.BBB.CCC.DDD port PPPP    */
         /*---------------------------------------------------------------*/
         case 0x29:
-                /* The line must have dial-out capability */
-                if(!dev->commadpt->dialout)
-                {
-                    *unitstat=CSW_CE|CSW_DE|CSW_UC;
-                    dev->sense[0]=SENSE_CR;
-                    dev->sense[1]=0x04;
-                    break;
-                }
-                /* The line must be disabled */
-                if(dev->commadpt->enabled)
-                {
-                    *unitstat=CSW_CE|CSW_DE|CSW_UC;
-                    dev->sense[0]=SENSE_CR;
-                    dev->sense[1]=0x05;
-                    break;
-                }
-                num=count>sizeof(dev->commadpt->dialdata) ? sizeof(dev->commadpt->dialdata) : count;
-                memcpy(dev->commadpt->dialdata,iobuf,num);
-                dev->commadpt->curpending=COMMADPT_PEND_DIAL;
-                commadpt_wakeup(dev->commadpt,0);
-                commadpt_wait(dev);
-                *residual=count-num;
-                if(dev->commadpt->haltpending)
-                {
-                    *unitstat=CSW_CE|CSW_DE|CSW_UX;
-                    dev->commadpt->haltpending=0;
-                    break;
-                }
-                if(!dev->commadpt->connect)
-                {
-                    *unitstat=CSW_CE|CSW_DE|CSW_UC;
-                    dev->sense[0]=SENSE_IR;
-                    dev->commadpt->enabled=0;
-                }
-                else
-                {
-                    *unitstat=CSW_CE|CSW_DE;
-                    dev->commadpt->enabled=1;
-                }
+            /* The line must have dial-out capability */
+            if(!dev->commadpt->dialout)
+            {
+                *unitstat=CSW_CE|CSW_DE|CSW_UC;
+                dev->sense[0]=SENSE_CR;
+                dev->sense[1]=0x04;
                 break;
+            }
+            /* The line must be disabled */
+            if(dev->commadpt->enabled)
+            {
+                *unitstat=CSW_CE|CSW_DE|CSW_UC;
+                dev->sense[0]=SENSE_CR;
+                dev->sense[1]=0x05;
+                break;
+            }
+            num=count>sizeof(dev->commadpt->dialdata) ? sizeof(dev->commadpt->dialdata) : count;
+            memcpy(dev->commadpt->dialdata,iobuf,num);
+            dev->commadpt->curpending=COMMADPT_PEND_DIAL;
+            commadpt_wakeup(dev->commadpt,0);
+            commadpt_wait(dev);
+            *residual=count-num;
+            if(dev->commadpt->haltpending)
+            {
+                *unitstat=CSW_CE|CSW_DE|CSW_UX;
+                dev->commadpt->haltpending=0;
+                break;
+            }
+            if(!dev->commadpt->connect)
+            {
+                *unitstat=CSW_CE|CSW_DE|CSW_UC;
+                dev->sense[0]=SENSE_IR;
+                dev->commadpt->enabled=0;
+            }
+            else
+            {
+                *unitstat=CSW_CE|CSW_DE;
+                dev->commadpt->enabled=1;
+            }
+            break;
 
         /*---------------------------------------------------------------*/
         /* READ                                                          */
         /*---------------------------------------------------------------*/
         case 0x02:
         case 0x0a:          /* also INHIBIT */
-                setux=0;
-                /* Check the line is enabled */
-                if(!dev->commadpt->enabled)
+            setux=0;
+            /* Check the line is enabled */
+            if(!dev->commadpt->enabled)
+            {
+                *unitstat=CSW_CE|CSW_DE|CSW_UC;
+                dev->sense[0]=SENSE_CR;
+                dev->sense[1]=0x06;
+                break;
+            }
+            /* Transparent Write Wait State test */
+            if(dev->commadpt->xparwwait)
+            {
+                *unitstat=CSW_CE|CSW_DE|CSW_UC;
+                dev->sense[0]=SENSE_CR;
+                break;
+            }
+            /* Check for any remaining data in read work buffer */
+            if(dev->commadpt->readcomp)
+            {
+                if (IS_ASYNC_LNCTL(dev->commadpt)) 
                 {
-                    *unitstat=CSW_CE|CSW_DE|CSW_UC;
-                    dev->sense[0]=SENSE_CR;
-                    dev->sense[1]=0x06;
-                    break;
-                }
-                /* Transparent Write Wait State test */
-                if(dev->commadpt->xparwwait)
-                {
-                    *unitstat=CSW_CE|CSW_DE|CSW_UC;
-                    dev->sense[0]=SENSE_CR;
-                    break;
-                }
-                /* Check for any remaining data in read work buffer */
-                if(dev->commadpt->readcomp)
-                {
-		  if (IS_ASYNC_LNCTL(dev->commadpt)) {
-		    while (dev->commadpt->inbfr.havedata) {
-			commadpt_ring_push(&dev->commadpt->rdwrk, commadpt_ring_pop(&dev->commadpt->inbfr));
-		    }
-		  }
-                    if (( IS_BSC_LNCTL(dev->commadpt) && dev->commadpt->rdwrk.havedata)
-                    || (IS_ASYNC_LNCTL(dev->commadpt) && dev->commadpt->rdwrk.havedata && dev->commadpt->eol_flag))
+                    while (dev->commadpt->inbfr.havedata) 
                     {
-                        if(IS_ASYNC_LNCTL(dev->commadpt) && dev->commadpt->term == COMMADPT_TERM_2741)
-				dev->commadpt->eol_flag = 0;
-                        num=commadpt_ring_popbfr(&dev->commadpt->rdwrk,iobuf,count);
-                        if(dev->commadpt->rdwrk.havedata)
-                        {
-                            *more=1;
-                        }
-                        *residual=count-num;
-                        *unitstat=CSW_CE|CSW_DE;
-                        if(IS_ASYNC_LNCTL(dev->commadpt) && dev->commadpt->term == COMMADPT_TERM_2741)
-                            *unitstat|=CSW_UX;   // 2741 EOT
-                        break;
+                        commadpt_ring_push(&dev->commadpt->rdwrk, commadpt_ring_pop(&dev->commadpt->inbfr));
                     }
                 }
-                if(IS_ASYNC_LNCTL(dev->commadpt) && dev->commadpt->telnet_int)
+                if (( IS_BSC_LNCTL(dev->commadpt) && dev->commadpt->rdwrk.havedata)
+                    || (IS_ASYNC_LNCTL(dev->commadpt) && dev->commadpt->rdwrk.havedata && dev->commadpt->eol_flag))
                 {
-                        dev->commadpt->telnet_int = 0;
-                        *residual=count;
-                        *unitstat=CSW_CE|CSW_DE|CSW_UC;
-                        dev->sense[0]=SENSE_IR;
-                        break;
-		}
+                    if(IS_ASYNC_LNCTL(dev->commadpt) && dev->commadpt->term == COMMADPT_TERM_2741)
+                        dev->commadpt->eol_flag = 0;
+                        num=commadpt_ring_popbfr(&dev->commadpt->rdwrk,iobuf,count);
+                    if(dev->commadpt->rdwrk.havedata)
+                    {
+                        *more=1;
+                    }
+                    *residual=count-num;
+                    *unitstat=CSW_CE|CSW_DE;
+                    if(IS_ASYNC_LNCTL(dev->commadpt) && dev->commadpt->term == COMMADPT_TERM_2741)
+                        *unitstat|=CSW_UX;   // 2741 EOT
+                    break;
+                }
+            }
+            if(IS_ASYNC_LNCTL(dev->commadpt) && dev->commadpt->telnet_int)
+            {
+                dev->commadpt->telnet_int = 0;
+                *residual=count;
+                *unitstat=CSW_CE|CSW_DE|CSW_UC;
+                dev->sense[0]=SENSE_IR;
+                break;
+            }
 #if 0
-		// MHP TEST 2740
+            // MHP TEST 2740
+            *residual=count;
+            *unitstat=CSW_CE|CSW_DE;
+            break;
+#endif
+            if(dev->commadpt->datalostcond)
+            {
+                dev->commadpt->datalostcond=0;
+                commadpt_ring_flush(&dev->commadpt->inbfr);
                 *residual=count;
                 *unitstat=CSW_CE|CSW_DE;
                 break;
-#endif
-                if(dev->commadpt->datalostcond)
-                {
-                        dev->commadpt->datalostcond=0;
-                        commadpt_ring_flush(&dev->commadpt->inbfr);
-                        *residual=count;
-                        *unitstat=CSW_CE|CSW_DE;
-                        break;
-                }
-                dev->commadpt->readcomp=0;
-                *unitstat=0;
-                num=0;
+            }
+            dev->commadpt->readcomp=0;
+            *unitstat=0;
+            num=0;
                 /* The following is the BIG READ ROUTINE MESS */
                 /* the manual's indications on when to exit   */
                 /* a read and what to transfer to the main    */
@@ -2511,57 +2538,58 @@ BYTE    gotdle;                 /* Write routine DLE marker */
 
                 /* We will remain in READ state with the thread */
                 /* as long as we haven't met a read ending condition */
-                while(1)
+            while(1)
+            {
+                /* READ state */
+                dev->commadpt->curpending=COMMADPT_PEND_READ;
+                /* Tell worker thread */
+                commadpt_wakeup(dev->commadpt,0);
+                /* Wait for some data */
+                commadpt_wait(dev);
+
+                /* If we are not connected, the read fails */
+                if(!dev->commadpt->connect)
                 {
-                    /* READ state */
-                    dev->commadpt->curpending=COMMADPT_PEND_READ;
-                    /* Tell worker thread */
-                    commadpt_wakeup(dev->commadpt,0);
-                    /* Wait for some data */
-                    commadpt_wait(dev);
+                    *unitstat=CSW_DE|CSW_CE|CSW_UC;
+                    dev->sense[0]=SENSE_IR;
+                    break;
+                }
 
-                    /* If we are not connected, the read fails */
-                    if(!dev->commadpt->connect)
-                    {
-                        *unitstat=CSW_DE|CSW_CE|CSW_UC;
-                        dev->sense[0]=SENSE_IR;
-                        break;
-                    }
+                /* If the I/O was halted - indicate Unit Check */
+                if(dev->commadpt->haltpending)
+                {
+                    *unitstat=CSW_CE|CSW_DE|CSW_UX;
+                    dev->commadpt->haltpending=0;
+                    break;
+                }
 
-                    /* If the I/O was halted - indicate Unit Check */
-                    if(dev->commadpt->haltpending)
-                    {
-                        *unitstat=CSW_CE|CSW_DE|CSW_UX;
-                        dev->commadpt->haltpending=0;
-                        break;
-                    }
+                if (IS_ASYNC_LNCTL(dev->commadpt) && dev->commadpt->telnet_int) 
+                {
+                    dev->commadpt->telnet_int = 0;
+                    *residual=count;
+                    *unitstat=CSW_CE|CSW_DE|CSW_UC;
+                    dev->sense[0]=SENSE_IR;
+                    break;
+                }
 
-                    if (IS_ASYNC_LNCTL(dev->commadpt) && dev->commadpt->telnet_int) {
-                            dev->commadpt->telnet_int = 0;
-                            *residual=count;
-                            *unitstat=CSW_CE|CSW_DE|CSW_UC;
-                            dev->sense[0]=SENSE_IR;
-                            break;
-                    }
-
-                    /* If no data is present - 3 seconds have passed without */
-                    /* receiving data (or a SYNC)                            */
-                    /* (28 seconds for LNCTL_ASYNC)                          */
-                    /* INHIBIT command does not time out                     */
-                    if(!dev->commadpt->inbfr.havedata && code != 0x0a)
-                    {
-                        *unitstat=CSW_DE|CSW_CE|CSW_UC;
-                        dev->sense[0]=0x01;
-                        dev->sense[1]=0xe3;
-                        break;
-                    }
-		if (IS_BSC_LNCTL(dev->commadpt)) {
+                /* If no data is present - 3 seconds have passed without */
+                /* receiving data (or a SYNC)                            */
+                /* (28 seconds for LNCTL_ASYNC)                          */
+                /* INHIBIT command does not time out                     */
+                if(!dev->commadpt->inbfr.havedata && code != 0x0a)
+                {
+                    *unitstat=CSW_DE|CSW_CE|CSW_UC;
+                    dev->sense[0]=0x01;
+                    dev->sense[1]=0xe3;
+                    break;
+                }
+                if (IS_BSC_LNCTL(dev->commadpt)) 
+                {
                     /* Start processing data flow here */
                     /* Pop bytes until we run out of data or */
                     /* until the processing indicates the read */
                     /* should now terminate */
-                    while(
-                            dev->commadpt->inbfr.havedata
+                    while( dev->commadpt->inbfr.havedata
                             && !dev->commadpt->readcomp)
                     {
                         /* fetch 1 byte from the input ring */
@@ -2578,7 +2606,7 @@ BYTE    gotdle;                 /* Write routine DLE marker */
                         {
                             if(dev->commadpt->in_xparmode)
                             {
-                                        /* TRANSPARENT MODE READ */
+                                /* TRANSPARENT MODE READ */
                                 if(dev->commadpt->gotdle)
                                 {
                                     switch(b)
@@ -2748,33 +2776,35 @@ BYTE    gotdle;                 /* Write routine DLE marker */
                         }
                         dev->commadpt->gotdle=0;
                     } /* END WHILE - READ FROM DATA BUFFER */
-		} /* end of if (bsc) */
-                    /* If readcomp is set, then we may exit the read loop */
-                    if(dev->commadpt->readcomp)
+                } /* end of if (bsc) */
+                /* If readcomp is set, then we may exit the read loop */
+                if(dev->commadpt->readcomp)
+                {
+                    if (IS_ASYNC_LNCTL(dev->commadpt)) 
                     {
-                     if (IS_ASYNC_LNCTL(dev->commadpt)) {
-		      while (dev->commadpt->inbfr.havedata) {
-			commadpt_ring_push(&dev->commadpt->rdwrk, commadpt_ring_pop(&dev->commadpt->inbfr));
-		      }
-		     }  /* end of if(async) */
-                        if (( IS_BSC_LNCTL(dev->commadpt) && dev->commadpt->rdwrk.havedata)
-                        || (IS_ASYNC_LNCTL(dev->commadpt) && dev->commadpt->rdwrk.havedata && dev->commadpt->eol_flag))
+                        while (dev->commadpt->inbfr.havedata) 
                         {
-                            num=commadpt_ring_popbfr(&dev->commadpt->rdwrk,iobuf,count);
-                            if(dev->commadpt->rdwrk.havedata)
-                            {
-                                *more=1;
-                            }
-                            *residual=count-num;
-                            *unitstat=CSW_CE|CSW_DE|(setux?CSW_UX:0);
-                            logdump("Read",dev,iobuf,num);
-                            if(IS_ASYNC_LNCTL(dev->commadpt) && dev->commadpt->term == COMMADPT_TERM_2741)
-                                dev->commadpt->eol_flag = 0;
-                            break;
+                            commadpt_ring_push(&dev->commadpt->rdwrk, commadpt_ring_pop(&dev->commadpt->inbfr));
                         }
+                    }  /* end of if(async) */
+                    if (( IS_BSC_LNCTL(dev->commadpt) && dev->commadpt->rdwrk.havedata)
+                        || (IS_ASYNC_LNCTL(dev->commadpt) && dev->commadpt->rdwrk.havedata && dev->commadpt->eol_flag))
+                    {
+                            num=commadpt_ring_popbfr(&dev->commadpt->rdwrk,iobuf,count);
+                        if(dev->commadpt->rdwrk.havedata)
+                        {
+                            *more=1;
+                        }
+                        *residual=count-num;
+                        *unitstat=CSW_CE|CSW_DE|(setux?CSW_UX:0);
+                        logdump("Read",dev,iobuf,num);
+                        if(IS_ASYNC_LNCTL(dev->commadpt) && dev->commadpt->term == COMMADPT_TERM_2741)
+                            dev->commadpt->eol_flag = 0;
+                        break;
                     }
-                } /* END WHILE - READ FROM THREAD */
-                break;
+                }
+            } /* END WHILE - READ FROM THREAD */
+            break;
 
         /*---------------------------------------------------------------*/
         /* WRITE                                                         */
@@ -2802,25 +2832,29 @@ BYTE    gotdle;                 /* Write routine DLE marker */
 
                 /* read 1 byte to check for pending input */
                 i=read_socket(dev->commadpt->sfd,&b,1);
-               if (IS_ASYNC_LNCTL(dev->commadpt)) {
-                if(i>0) {
-                  logdump("RCV0",dev,&b,1);
-                  commadpt_read_tty(dev->commadpt,&b,1);
-                }
-               } else {
-                if(i>0)
+                if (IS_ASYNC_LNCTL(dev->commadpt)) 
                 {
+                    if(i>0) 
+                    {
+                        logdump("RCV0",dev,&b,1);
+                        commadpt_read_tty(dev->commadpt,&b,1);
+                    }
+                } 
+                else 
+                {
+                    if(i>0)
+                    {
                     /* Push it in the communication input buffer ring */
-                    commadpt_ring_push(&dev->commadpt->inbfr,b);
-                }
-                /* Set UX on write if line has pending inbound data */
-                if(dev->commadpt->inbfr.havedata)
-                {
-                    dev->commadpt->datalostcond=1;
-                    *unitstat=CSW_CE|CSW_DE|CSW_UX;
-                    break;
-                }
-               }  /* end of else (async) */
+                        commadpt_ring_push(&dev->commadpt->inbfr,b);
+                    }
+                    /* Set UX on write if line has pending inbound data */
+                    if(dev->commadpt->inbfr.havedata)
+                    {
+                        dev->commadpt->datalostcond=1;
+                        *unitstat=CSW_CE|CSW_DE|CSW_UX;
+                        break;
+                    }
+                }  /* end of else (async) */
                 /*
                  * Fill in the Write Buffer
                  */
@@ -2828,16 +2862,16 @@ BYTE    gotdle;                 /* Write routine DLE marker */
                 /* To start : not transparent mode, no DLE received yet */
                 turnxpar=0;
                 gotdle=0;
-               if(IS_ASYNC_LNCTL(dev->commadpt) && dev->commadpt->telnet_int
+                if(IS_ASYNC_LNCTL(dev->commadpt) && dev->commadpt->telnet_int
                    /* ugly hack for TSO ATTN to fix IEA000I 0C3,IOE,01,0E40,40008900002C,,,TCAM */
                    && !(iobuf[0] == 0xdf && iobuf[1] == 0xdf && iobuf[2] == 0xdf && count == 3))
-               {
+                {
                        dev->commadpt->telnet_int = 0;
                        *residual=count;
                        *unitstat=CSW_CE|CSW_DE|CSW_UC;
                        dev->sense[0]=SENSE_IR;
                        break;
-               }
+                }
 
                 /* Scan the I/O buffer */
                 for(i=0;i<count;i++)
@@ -2845,38 +2879,45 @@ BYTE    gotdle;                 /* Write routine DLE marker */
                     /* Get 1 byte */
                     b=iobuf[i];
 
-                   if (IS_ASYNC_LNCTL(dev->commadpt)) {
-		    if (dev->commadpt->byte_skip_table[b])
-			continue;
-		    if (dev->commadpt->term == COMMADPT_TERM_TTY) {
-                        b = byte_reverse_table[b] & 0x7f;
-		    } else { /* 2741 */
-		        if (dev->commadpt->code_table_toebcdic) {   // only if code != none
-		            b = dev->commadpt->code_table_toebcdic[b];  // first translate to EBCDIC
-		            b = guest_to_host(b) & 0x7f; // then EBCDIC to ASCII
-			}
-		    }
-                   } else {   /* line is BSC */
-                    /* If we are in transparent mode, we must double the DLEs */
-                    if(turnxpar)
+                    if (IS_ASYNC_LNCTL(dev->commadpt)) 
                     {
-                        /* Check for a DLE */
-                        if(b==0x10)
+                        if (dev->commadpt->byte_skip_table[b])
+                        continue;
+                        if (dev->commadpt->term == COMMADPT_TERM_TTY) 
                         {
+                            b = byte_reverse_table[b] & 0x7f;
+                        } 
+                        else 
+                        { /* 2741 */
+                            if (dev->commadpt->code_table_toebcdic) 
+                            {   // only if code != none
+                                b = dev->commadpt->code_table_toebcdic[b];  // first translate to EBCDIC
+                                b = guest_to_host(b) & 0x7f; // then EBCDIC to ASCII
+                            }
+                        }
+                    } 
+                    else 
+                    {   /* line is BSC */
+                        /* If we are in transparent mode, we must double the DLEs */
+                        if(turnxpar)
+                        {
+                            /* Check for a DLE */
+                            if(b==0x10)
+                            {
                                 /* put another one in the output buffer */
                                 commadpt_ring_push(&dev->commadpt->outbfr,0x10);
+                            }
                         }
-                    }
-                    else        /* non transparent mode */
-                    {
-                        if(b==0x10)
+                        else        /* non transparent mode */
                         {
-                            gotdle=1;   /* Indicate we have a DLE for next pass */
-                        }
-                        else
-                        {
-                            /* If there was a DLE on previous pass */
-                            if(gotdle)
+                            if(b==0x10)
+                            {
+                                gotdle=1;   /* Indicate we have a DLE for next pass */
+                            }
+                            else
+                            {
+                                /* If there was a DLE on previous pass */
+                                if(gotdle)
                             {
                                 /* check for DLE/ETX */
                                 if(b==0x02)
@@ -2887,11 +2928,12 @@ BYTE    gotdle;                 /* Write routine DLE marker */
                             }
                         }
                     }
-                   }  /* end of else (async) */
-                    /* Put the current byte on the output ring */
-                    commadpt_ring_push(&dev->commadpt->outbfr,b);
-                }
-               if (IS_BSC_LNCTL(dev->commadpt)) {
+                }  /* end of else (async) */
+                /* Put the current byte on the output ring */
+                commadpt_ring_push(&dev->commadpt->outbfr,b);
+            }
+            if (IS_BSC_LNCTL(dev->commadpt)) 
+            {
                 /* If we had a DLE/STX, the line is now in Transparent Write Wait state */
                 /* meaning that no CCW codes except Write, No-Op, Sense are allowed     */
                 /* (that's what the manual says.. I doubt DISABLE is disallowed)        */
@@ -2908,36 +2950,36 @@ BYTE    gotdle;                 /* Write routine DLE marker */
                 {
                     dev->commadpt->xparwwait=0;
                 }
-               }  /* end of if(bsc line) */
-                /* Indicate to the worker thread the current operation is OUTPUT */
-                dev->commadpt->curpending=COMMADPT_PEND_WRITE;
+            }  /* end of if(bsc line) */
+            /* Indicate to the worker thread the current operation is OUTPUT */
+            dev->commadpt->curpending=COMMADPT_PEND_WRITE;
 
-                /* All bytes written out - residual = 0 */
-                *residual=0;
+            /* All bytes written out - residual = 0 */
+            *residual=0;
 
-                /* Wake-up the worker thread */
-                commadpt_wakeup(dev->commadpt,0);
+            /* Wake-up the worker thread */
+            commadpt_wakeup(dev->commadpt,0);
 
-                /* Wait for operation completion */
-                commadpt_wait(dev);
+            /* Wait for operation completion */
+            commadpt_wait(dev);
 
-                /* Check if the line is still connected */
-                if(!dev->commadpt->connect)
-                {
-                    *unitstat=CSW_CE|CSW_DE|CSW_UC;
-                    dev->sense[0]=SENSE_IR;
-                    break;
-                }
-
-                /* Check if the I/O was interrupted */
-                if(dev->commadpt->haltpending)
-                {
-                    *unitstat=CSW_CE|CSW_DE|CSW_UX;
-                    dev->commadpt->haltpending = 0;
-                    break;
-                }
-                *unitstat=CSW_CE|CSW_DE;
+            /* Check if the line is still connected */
+            if(!dev->commadpt->connect)
+            {
+                *unitstat=CSW_CE|CSW_DE|CSW_UC;
+                dev->sense[0]=SENSE_IR;
                 break;
+            }
+
+            /* Check if the I/O was interrupted */
+            if(dev->commadpt->haltpending)
+            {
+                *unitstat=CSW_CE|CSW_DE|CSW_UX;
+                dev->commadpt->haltpending = 0;
+                break;
+            }
+            *unitstat=CSW_CE|CSW_DE;
+            break;
 
         /*---------------------------------------------------------------*/
         /* PREPARE                                                       */
@@ -2947,68 +2989,70 @@ BYTE    gotdle;                 /* Write routine DLE marker */
         /*        pseudo-read operation                                  */
         /*---------------------------------------------------------------*/
         case 0x06:
-                *residual=count;
-                /* PREPARE not allowed unless line is enabled */
-                if(!dev->commadpt->enabled)
+            *residual=count;
+            /* PREPARE not allowed unless line is enabled */
+            if(!dev->commadpt->enabled)
+            {
+                *unitstat=CSW_CE|CSW_DE|CSW_UC;
+                dev->sense[0]=SENSE_CR;
+                dev->sense[1]=0x06;
+                break;
+            }
+
+            if (IS_ASYNC_LNCTL(dev->commadpt)) 
+            {
+                *unitstat=CSW_CE|CSW_DE;
+                if(dev->commadpt->haltpending) 
                 {
-                    *unitstat=CSW_CE|CSW_DE|CSW_UC;
-                    dev->sense[0]=SENSE_CR;
-                    dev->sense[1]=0x06;
-                    break;
-                }
-
-                if (IS_ASYNC_LNCTL(dev->commadpt)) {
-                    *unitstat=CSW_CE|CSW_DE;
-                    if(dev->commadpt->haltpending) {
-                        dev->commadpt->haltpending=0;
-                        *unitstat |= CSW_UX;
-		    }
-                    break;
-               } /* end of if(async) */
-
-                /* Transparent Write Wait State test */
-                if(dev->commadpt->xparwwait)
-                {
-                    *unitstat=CSW_CE|CSW_DE|CSW_UC;
-                    dev->sense[0]=SENSE_CR;
-                    return;
-                }
-
-                /* If data is present, prepare ends immediatly */
-                if(dev->commadpt->inbfr.havedata)
-                {
-                    *unitstat=CSW_CE|CSW_DE;
-                    break;
-                }
-
-                /* Indicate to the worker thread to notify us when data arrives */
-                dev->commadpt->curpending=COMMADPT_PEND_PREPARE;
-
-                /* Wakeup worker thread */
-                commadpt_wakeup(dev->commadpt,0);
-
-                /* Wait for completion */
-                commadpt_wait(dev);
-
-                /* If I/O was halted (this one happens often) */
-                if(dev->commadpt->haltpending)
-                {
-                    *unitstat=CSW_CE|CSW_DE|CSW_UX;
                     dev->commadpt->haltpending=0;
-                    break;
+                    *unitstat |= CSW_UX;
                 }
+                break;
+            } /* end of if(async) */
 
-                /* Check if the line is still connected */
-                if(!dev->commadpt->connect)
-                {
-                    *unitstat=CSW_CE|CSW_DE|CSW_UC;
-                    dev->sense[0]=SENSE_IR;
-                    break;
-                }
+            /* Transparent Write Wait State test */
+            if(dev->commadpt->xparwwait)
+            {
+                *unitstat=CSW_CE|CSW_DE|CSW_UC;
+                dev->sense[0]=SENSE_CR;
+                return;
+            }
 
-                /* Normal Prepare exit condition - data is present in the input buffer */
+            /* If data is present, prepare ends immediatly */
+            if(dev->commadpt->inbfr.havedata)
+            {
                 *unitstat=CSW_CE|CSW_DE;
                 break;
+            }
+
+            /* Indicate to the worker thread to notify us when data arrives */
+            dev->commadpt->curpending=COMMADPT_PEND_PREPARE;
+
+            /* Wakeup worker thread */
+            commadpt_wakeup(dev->commadpt,0);
+
+            /* Wait for completion */
+            commadpt_wait(dev);
+
+            /* If I/O was halted (this one happens often) */
+            if(dev->commadpt->haltpending)
+            {
+                *unitstat=CSW_CE|CSW_DE|CSW_UX;
+                dev->commadpt->haltpending=0;
+                break;
+            }
+
+            /* Check if the line is still connected */
+            if(!dev->commadpt->connect)
+            {
+                *unitstat=CSW_CE|CSW_DE|CSW_UC;
+                dev->sense[0]=SENSE_IR;
+                break;
+            }
+
+            /* Normal Prepare exit condition - data is present in the input buffer */
+            *unitstat=CSW_CE|CSW_DE;
+            break;
 
         default:
         /*---------------------------------------------------------------*/
