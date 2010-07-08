@@ -3913,6 +3913,8 @@ int sns4mat = 0x20;
     switch(ERCode)
     {
     case TAPE_BSENSE_TAPEUNLOADED:
+        dev->sense[0] = SENSE_IR;
+        dev->sense[3] = 0x43; /* ERA 43 = Drive Not Ready */
         switch(ccwcode)
         {
         case 0x01: // write
@@ -3923,15 +3925,19 @@ int sns4mat = 0x20;
         case 0x03: // nop
             *unitstat = CSW_UC;
             break;
+        case 0x04: // sense
+            *unitstat = CSW_CE | CSW_UC | CSW_DE;
+            dev->sense[3] = 0x2B; // ERA 2B
+            break;
         case 0x0f: // rewind unload
             *unitstat = CSW_CE | CSW_UC | CSW_DE | CSW_CUE;
+            dev->sense[3] = 0x2B; /* ERA 2B = Env Data present after a rewind unload command */
             break;
         default:
+            dev->sense[3] = 0x2B; // ERA 2B
             *unitstat = CSW_CE | CSW_UC | CSW_DE;
             break;
         } // end switch(ccwcode)
-        dev->sense[0] = SENSE_IR;
-        dev->sense[3] = 0x43; /* ERA 43 = Int Req */
         break;
     case TAPE_BSENSE_RUN_SUCCESS:        /* Not an error */
         /* NOT an error, But according to GA32-0219-02 2.1.2.2
