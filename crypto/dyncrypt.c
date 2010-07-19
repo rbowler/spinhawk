@@ -1056,7 +1056,7 @@ static void ARCH_DEP(kmc_dea)(int r1, int r2, REGS *regs)
   BYTE message_block[8];
   int modifier_bit;
   BYTE ocv[8];
-  BYTE parameter_block[16];
+  BYTE parameter_block[32];
   int parameter_blocklen;
   int r1_is_not_r2;
 
