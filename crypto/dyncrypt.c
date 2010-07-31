@@ -95,9 +95,6 @@
 
 #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_3
   #define KMF_BITS      { 0xf0, 0x00, 0x38, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
-#endif /* FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_3 */
-
-#ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_3
   #define KMO_BITS      { 0xf0, 0x00, 0x38, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 #endif /* FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_3 */
 
@@ -1157,22 +1154,18 @@ static void ARCH_DEP(kmc_dea)(int r1, int r2, REGS *regs)
       case 1: /* dea */
         if(modifier_bit)
         {
-          /* Save the ocv */
+          /* Save, decrypt and XOR */
           memcpy(ocv, message_block, 8);
-
-          /* Decrypt and XOR */
           des_decrypt(&context1, message_block, message_block);
           for(i = 0; i < 8; i++)
             message_block[i] ^= parameter_block[i];
         }
         else
         {
-          /* XOR and encrypt */
+          /* XOR, encrypt and save */
           for(i = 0; i < 8; i++)
             message_block[i] ^= parameter_block[i];
           des_encrypt(&context1, message_block, message_block);
-
-          /* Save the ocv */
           memcpy(ocv, message_block, 8);
         }
         break;
@@ -1180,10 +1173,8 @@ static void ARCH_DEP(kmc_dea)(int r1, int r2, REGS *regs)
       case 2: /* tdea-128 */
         if(modifier_bit)
         {
-          /* Save the ocv */
+          /* Save, decrypt and XOR */
           memcpy(ocv, message_block, 8);
-
-          /* Decrypt and XOR */
           des_decrypt(&context1, message_block, message_block);
           des_encrypt(&context2, message_block, message_block);
           des_decrypt(&context1, message_block, message_block);
@@ -1192,14 +1183,12 @@ static void ARCH_DEP(kmc_dea)(int r1, int r2, REGS *regs)
         }
         else
         {
-          /* XOR and encrypt */
+          /* XOR, encrypt and save */
           for(i = 0 ; i < 8; i++)
             message_block[i] ^= parameter_block[i];
           des_encrypt(&context1, message_block, message_block);
           des_decrypt(&context2, message_block, message_block);
           des_encrypt(&context1, message_block, message_block);
-
-          /* Save the ocv */
           memcpy(ocv, message_block, 8);
         }
         break;
@@ -1207,10 +1196,8 @@ static void ARCH_DEP(kmc_dea)(int r1, int r2, REGS *regs)
       case 3: /* tdea-192 */
         if(modifier_bit)
         {
-          /* Save the ocv */
+          /* Save, decrypt and XOR */
           memcpy(ocv, message_block, 8);
-
-          /* Decrypt and XOR */
           des_decrypt(&context3, message_block, message_block);
           des_encrypt(&context2, message_block, message_block);
           des_decrypt(&context1, message_block, message_block);
@@ -1219,14 +1206,12 @@ static void ARCH_DEP(kmc_dea)(int r1, int r2, REGS *regs)
         }
         else
         {
-          /* XOR and encrypt */
+          /* XOR, encrypt and save */
           for(i = 0; i < 8; i++)
             message_block[i] ^= parameter_block[i];
           des_encrypt(&context1, message_block, message_block);
           des_decrypt(&context2, message_block, message_block);
           des_encrypt(&context3, message_block, message_block);
-
-          /* Save the ocv */
           memcpy(ocv, message_block, 8);
         }
         break;
@@ -1335,22 +1320,18 @@ static void ARCH_DEP(kmc_aes)(int r1, int r2, REGS *regs)
     if(modifier_bit)
     {
 
-      /* Save the ovc */
+      /* Save, decrypt and XOR */
       memcpy(ocv, message_block, 16);
-
-      /* Decrypt and XOR */
       aes_decrypt(&context, message_block, message_block);
       for(i = 0; i < 16; i++)
         message_block[i] ^= parameter_block[i];
     }
     else
     {
-      /* XOR and encrypt */
+      /* XOR, encrypt and save */
       for(i = 0; i < 16; i++)
         message_block[i] ^= parameter_block[i];
       aes_encrypt(&context, message_block, message_block);
-
-      /* Save the ovc */
       memcpy(ocv, message_block, 16);
     }
 
@@ -1630,22 +1611,18 @@ static void ARCH_DEP(kmf_dea)(int r1, int r2, REGS *regs)
       case 1: /* dea */
         if(modifier_bit)
         {
-          /* Save the ocv */
+          /* Save, encrypt and XOR */
           memcpy(ocv, message_block, 8);
-
-          /* Encrypt and XOR */
           des_encrypt(&context1, parameter_block, parameter_block);
           for(i = 0; i < 8; i++)
             message_block[i] ^= parameter_block[i];
         }
         else
         {
-          /* Encrypt and XOR */
+          /* Encrypt, XOR and save */
           des_encrypt(&context1, parameter_block, parameter_block);
           for(i = 0; i < 8; i++)
             message_block[i] ^= parameter_block[i];
-
-          /* Save the ocv */
           memcpy(ocv, message_block, 8);
         }
         break;
@@ -1653,10 +1630,8 @@ static void ARCH_DEP(kmf_dea)(int r1, int r2, REGS *regs)
       case 2: /* tdea-128 */
         if(modifier_bit)
         {
-          /* Save the ocv */
+          /* Save, encrypt and XOR */
           memcpy(ocv, message_block, 8);
-
-          /* Encrypt and XOR */
           des_encrypt(&context1, parameter_block, parameter_block);
           des_decrypt(&context2, parameter_block, parameter_block);
           des_encrypt(&context1, parameter_block, parameter_block);
@@ -1665,14 +1640,12 @@ static void ARCH_DEP(kmf_dea)(int r1, int r2, REGS *regs)
         }
         else
         {
-          /* Encrypt and XOR */
+          /* Encrypt, XOR and save */
           des_encrypt(&context1, parameter_block, parameter_block);
           des_decrypt(&context2, parameter_block, parameter_block);
           des_encrypt(&context1, parameter_block, parameter_block);
           for(i = 0 ; i < 8; i++)
             message_block[i] ^= parameter_block[i];
-          
-          /* Save the ocv */
           memcpy(ocv, message_block, 8);
         }
         break;
@@ -1680,10 +1653,8 @@ static void ARCH_DEP(kmf_dea)(int r1, int r2, REGS *regs)
       case 3: /* tdea-192 */
         if(modifier_bit)
         {
-          /* Save the ocv */
+          /* Save, encrypt and XOR */
           memcpy(ocv, message_block, 8);
-
-          /* Encrypt and XOR */
           des_encrypt(&context1, parameter_block, parameter_block);
           des_decrypt(&context2, parameter_block, parameter_block);
           des_encrypt(&context3, parameter_block, parameter_block);
@@ -1692,14 +1663,12 @@ static void ARCH_DEP(kmf_dea)(int r1, int r2, REGS *regs)
         }
         else
         {
-          /* Encrypt and XOR */
+          /* Encrypt, XOR and save */
           des_encrypt(&context1, parameter_block, parameter_block);
           des_decrypt(&context2, parameter_block, parameter_block);
           des_encrypt(&context3, parameter_block, parameter_block);
           for(i = 0; i < 8; i++)
             message_block[i] ^= parameter_block[i];
-
-          /* Save the ocv */
           memcpy(ocv, message_block, 8);
         }
         break;
@@ -1806,22 +1775,18 @@ static void ARCH_DEP(kmf_aes)(int r1, int r2, REGS *regs)
     /* Do the job */
     if(modifier_bit)
     {
-      /* Save the ovc */
+      /* Save, encrypt and XOR */
       memcpy(ocv, message_block, 16);
-
-      /* Encrypt and XOR */
       aes_encrypt(&context, parameter_block, parameter_block);
       for(i = 0; i < 16; i++)
         message_block[i] ^= parameter_block[i];
     }
     else
     {
-      /* Encrypt and XOR */
+      /* Encrypt, XOR and save */
       aes_encrypt(&context, parameter_block, parameter_block);
       for(i = 0; i < 16; i++)
         message_block[i] ^= parameter_block[i];
-
-      /* Save the ovc */
       memcpy(ocv, message_block, 16);
     }
 
@@ -1967,81 +1932,31 @@ static void ARCH_DEP(kmo_dea)(int r1, int r2, REGS *regs)
     switch(fc)
     {
       case 1: /* dea */
-        if(modifier_bit)
-        {
-          /* Encrypt and XOR */
-          des_encrypt(&context1, parameter_block, parameter_block);
-          
-          /* Save the ocv */
-          memcpy(ocv, message_block, 8);
-          for(i = 0; i < 8; i++)
-            message_block[i] ^= parameter_block[i];
-        }
-        else
-        {
-          /* Encrypt and XOR */
-          des_encrypt(&context1, parameter_block, parameter_block);
-
-          /* Save the ocv */
-          memcpy(ocv, message_block, 8);
-          for(i = 0; i < 8; i++)
-            message_block[i] ^= parameter_block[i];
-        }
+        /* Encrypt, save and XOR */
+        des_encrypt(&context1, parameter_block, parameter_block);
+        memcpy(ocv, message_block, 8);
+        for(i = 0; i < 8; i++)
+          message_block[i] ^= parameter_block[i];
         break;
 
       case 2: /* tdea-128 */
-        if(modifier_bit)
-        {
-          /* Encrypt and XOR */
-          des_encrypt(&context1, parameter_block, parameter_block);
-          des_decrypt(&context2, parameter_block, parameter_block);
-          des_encrypt(&context1, parameter_block, parameter_block);
-
-          /* Save the ocv */
-          memcpy(ocv, message_block, 8);
-          for(i = 0; i < 8; i++)
+        /* Encrypt, save and XOR */
+        des_encrypt(&context1, parameter_block, parameter_block);
+        des_decrypt(&context2, parameter_block, parameter_block);
+        des_encrypt(&context1, parameter_block, parameter_block);
+        memcpy(ocv, message_block, 8);
+        for(i = 0 ; i < 8; i++)
             message_block[i] ^= parameter_block[i];
-        }
-        else
-        {
-          /* Encrypt and XOR */
-          des_encrypt(&context1, parameter_block, parameter_block);
-          des_decrypt(&context2, parameter_block, parameter_block);
-          des_encrypt(&context1, parameter_block, parameter_block);
-
-          /* Save the ocv */
-          memcpy(ocv, message_block, 8);
-          for(i = 0 ; i < 8; i++)
-            message_block[i] ^= parameter_block[i];
-          
-        }
         break;
 
       case 3: /* tdea-192 */
-        if(modifier_bit)
-        {
-          /* Encrypt and XOR */
-          des_encrypt(&context1, parameter_block, parameter_block);
-          des_decrypt(&context2, parameter_block, parameter_block);
-          des_encrypt(&context3, parameter_block, parameter_block);
-
-          /* Save the ocv */
-          memcpy(ocv, message_block, 8);
-          for(i = 0; i < 8; i++)
-            message_block[i] ^= parameter_block[i];
-        }
-        else
-        {
-          /* Encrypt and XOR */
-          des_encrypt(&context1, parameter_block, parameter_block);
-          des_decrypt(&context2, parameter_block, parameter_block);
-          des_encrypt(&context3, parameter_block, parameter_block);
-          
-          /* Save the ocv */
-          memcpy(ocv, message_block, 8);
-          for(i = 0; i < 8; i++)
-            message_block[i] ^= parameter_block[i];
-        }
+        /* Encrypt, save and XOR */
+        des_encrypt(&context1, parameter_block, parameter_block);
+        des_decrypt(&context2, parameter_block, parameter_block);
+        des_encrypt(&context3, parameter_block, parameter_block);
+        memcpy(ocv, message_block, 8);
+        for(i = 0; i < 8; i++)
+          message_block[i] ^= parameter_block[i];
         break;
     }
 
@@ -2144,26 +2059,11 @@ static void ARCH_DEP(kmo_aes)(int r1, int r2, REGS *regs)
 #endif
 
     /* Do the job */
-    if(modifier_bit)
-    {
-      /* Encrypt and XOR */
-      aes_encrypt(&context, parameter_block, parameter_block);
-      
-      /* Save the ovc */
-      memcpy(ocv, message_block, 16);
-      for(i = 0; i < 16; i++)
-        message_block[i] ^= parameter_block[i];
-    }
-    else
-    {
-      /* Encrypt and XOR */
-      aes_encrypt(&context, parameter_block, parameter_block);
-      
-      /* Save the ovc */
-      memcpy(ocv, message_block, 16);
-      for(i = 0; i < 16; i++)
-        message_block[i] ^= parameter_block[i];
-    }
+    /* Encrypt, save and XOR */
+    aes_encrypt(&context, parameter_block, parameter_block);
+    memcpy(ocv, message_block, 16);
+    for(i = 0; i < 16; i++)
+      message_block[i] ^= parameter_block[i];
 
     /* Store the output */
     ARCH_DEP(vstorec)(message_block, 15, GR_A(r1, regs), r1, regs);
