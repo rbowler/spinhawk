@@ -1936,13 +1936,12 @@ DEF_INST(add_logical_high_high_high_register)                   /*810*/
 {
 int     r1, r2, r3;                     /* Values of R fields        */
 
-    RRR(inst, regs, r1, r2, r3);
+    RRR0(inst, regs, r1, r2, r3);
 
     /* Add signed operands and set condition code */
-    regs->psw.cc =
-            add_logical (&(regs->GR_H(r1)),
-                    regs->GR_H(r2),
-                    regs->GR_H(r3));
+    regs->psw.cc = add_logical (&(regs->GR_H(r1)),
+                                  regs->GR_H(r2),
+                                  regs->GR_H(r3));
 
 } /* end DEF_INST(add_logical_high_high_high_register) */
 
@@ -1954,13 +1953,12 @@ DEF_INST(add_logical_high_high_low_register)                    /*810*/
 {
 int     r1, r2, r3;                     /* Values of R fields        */
 
-    RRR(inst, regs, r1, r2, r3);
+    RRR0(inst, regs, r1, r2, r3);
 
     /* Add signed operands and set condition code */
-    regs->psw.cc =
-            add_logical (&(regs->GR_H(r1)),
-                    regs->GR_H(r2),
-                    regs->GR_L(r3));
+    regs->psw.cc = add_logical (&(regs->GR_H(r1)),
+                                  regs->GR_H(r2),
+                                  regs->GR_L(r3));
 
 } /* end DEF_INST(add_logical_high_high_low_register) */
 
@@ -1974,7 +1972,7 @@ int     r1;                             /* Register number           */
 int     opcd;                           /* Opcode                    */
 U32     i2;                             /* 32-bit operand value      */
 
-    RIL(inst, regs, r1, opcd, i2);
+    RIL0(inst, regs, r1, opcd, i2);
 
     /* Add operands and set condition code */
     regs->psw.cc = (S32)i2 < 0 ?
@@ -1993,7 +1991,7 @@ int     r1;                             /* Register number           */
 int     opcd;                           /* Opcode                    */
 U32     i2;                             /* 32-bit operand value      */
 
-    RIL(inst, regs, r1, opcd, i2);
+    RIL0(inst, regs, r1, opcd, i2);
 
     /* Add operands without setting condition code */
     if ((S32)i2 < 0) {
@@ -2032,7 +2030,7 @@ DEF_INST(compare_high_high_register)                            /*810*/
 {
 int     r1, r2;                         /* Values of R fields        */
 
-    RRE(inst, regs, r1, r2);
+    RRE0(inst, regs, r1, r2);
 
     /* Compare signed operands and set condition code */
     regs->psw.cc =
@@ -2049,7 +2047,7 @@ DEF_INST(compare_high_low_register)                             /*810*/
 {
 int     r1, r2;                         /* Values of R fields        */
 
-    RRE(inst, regs, r1, r2);
+    RRE0(inst, regs, r1, r2);
 
     /* Compare signed operands and set condition code */
     regs->psw.cc =
@@ -2201,7 +2199,6 @@ VADR    effective_addr2;                /* Effective address         */
     RXY(inst, regs, r1, b2, effective_addr2);
 
     /* Load R1 register bits 0-31 from second operand */
-
     regs->GR_H(r1) = ARCH_DEP(vfetch4) ( effective_addr2, b2, regs );
 
 } /* end DEF_INST(load_fullword_high) */
@@ -2362,7 +2359,7 @@ DEF_INST(subtract_logical_high_high_high_register)              /*810*/
 {
 int     r1, r2, r3;                     /* Values of R fields        */
 
-    RRR(inst, regs, r1, r2, r3);
+    RRR0(inst, regs, r1, r2, r3);
 
     /* Subtract unsigned operands and set condition code */
     regs->psw.cc = sub_logical (&(regs->GR_H(r1)),
@@ -2379,7 +2376,7 @@ DEF_INST(subtract_logical_high_high_low_register)               /*810*/
 {
 int     r1, r2, r3;                     /* Values of R fields        */
 
-    RRR(inst, regs, r1, r2, r3);
+    RRR0(inst, regs, r1, r2, r3);
 
     /* Subtract unsigned operands and set condition code */
     regs->psw.cc = sub_logical (&(regs->GR_H(r1)),
@@ -2629,7 +2626,7 @@ DEF_INST(add_logical_distinct_register)                         /*810*/
 {
 int     r1, r2, r3;                     /* Values of R fields        */
 
-    RRR(inst, regs, r1, r2, r3);
+    RRR0(inst, regs, r1, r2, r3);
 
     /* Add signed operands and set condition code */
     regs->psw.cc = add_logical (&(regs->GR_L(r1)),
@@ -2647,7 +2644,7 @@ DEF_INST(add_logical_distinct_long_register)                    /*810*/
 {
 int     r1, r2, r3;                     /* Values of R fields        */
 
-    RRR(inst, regs, r1, r2, r3);
+    RRR0(inst, regs, r1, r2, r3);
 
     /* Add unsigned operands and set condition code */
     regs->psw.cc = add_logical_long(&(regs->GR_G(r1)),
@@ -2666,7 +2663,7 @@ DEF_INST(add_logical_distinct_signed_halfword_immediate)        /*810*/
 int     r1, r3;                         /* Values of R fields        */
 U16     i2;                             /* 16-bit immediate operand  */
 
-    RIE(inst, regs, r1, r3, i2);
+    RIE0(inst, regs, r1, r3, i2);
 
     /* Add operands and set condition code */
     regs->psw.cc = (S16)i2 < 0 ?
@@ -2685,7 +2682,7 @@ DEF_INST(add_logical_distinct_long_signed_halfword_immediate)   /*810*/
 int     r1, r3;                         /* Values of R fields        */
 U16     i2;                             /* 16-bit immediate operand  */
 
-    RIE(inst, regs, r1, r3, i2);
+    RIE0(inst, regs, r1, r3, i2);
 
     /* Add operands and set condition code */
     regs->psw.cc = (S16)i2 < 0 ?
@@ -2703,7 +2700,7 @@ DEF_INST(and_distinct_register)                                 /*810*/
 {
 int     r1, r2, r3;                     /* Values of R fields        */
 
-    RRR(inst, regs, r1, r2, r3);
+    RRR0(inst, regs, r1, r2, r3);
 
     /* AND second and third operands and put result in first operand */
     regs->GR_L(r1) = regs->GR_L(r2) & regs->GR_L(r3);
@@ -2722,7 +2719,7 @@ DEF_INST(and_distinct_long_register)                            /*810*/
 {
 int     r1, r2, r3;                     /* Values of R fields        */
 
-    RRR(inst, regs, r1, r2, r3);
+    RRR0(inst, regs, r1, r2, r3);
 
     /* AND second and third operands and put result in first operand */
     regs->GR_G(r1) = regs->GR_G(r2) & regs->GR_G(r3);
@@ -2741,7 +2738,7 @@ DEF_INST(exclusive_or_distinct_register)                        /*810*/
 {
 int     r1, r2, r3;                     /* Values of R fields        */
 
-    RRR(inst, regs, r1, r2, r3);
+    RRR0(inst, regs, r1, r2, r3);
 
     /* XOR second and third operands and put result in first operand */
     regs->GR_L(r1) = regs->GR_L(r2) ^ regs->GR_L(r3);
@@ -2760,7 +2757,7 @@ DEF_INST(exclusive_or_distinct_long_register)                   /*810*/
 {
 int     r1, r2, r3;                     /* Values of R fields        */
 
-    RRR(inst, regs, r1, r2, r3);
+    RRR0(inst, regs, r1, r2, r3);
 
     /* XOR second and third operands and put result in first operand */
     regs->GR_G(r1) = regs->GR_G(r2) ^ regs->GR_G(r3);
@@ -2779,7 +2776,7 @@ DEF_INST(or_distinct_register)                                  /*810*/
 {
 int     r1, r2, r3;                     /* Values of R fields        */
 
-    RRR(inst, regs, r1, r2, r3);
+    RRR0(inst, regs, r1, r2, r3);
 
     /* OR second and third operands and put result in first operand */
     regs->GR_L(r1) = regs->GR_L(r2) | regs->GR_L(r3);
@@ -2798,7 +2795,7 @@ DEF_INST(or_distinct_long_register)                             /*810*/
 {
 int     r1, r2, r3;                     /* Values of R fields        */
 
-    RRR(inst, regs, r1, r2, r3);
+    RRR0(inst, regs, r1, r2, r3);
 
     /* OR second and third operands and put result in first operand */
     regs->GR_G(r1) = regs->GR_G(r2) | regs->GR_G(r3);
@@ -2989,7 +2986,7 @@ DEF_INST(subtract_logical_distinct_register)                    /*810*/
 {
 int     r1, r2, r3;                     /* Values of R fields        */
 
-    RRR(inst, regs, r1, r2, r3);
+    RRR0(inst, regs, r1, r2, r3);
 
     /* Subtract unsigned operands and set condition code */
     regs->psw.cc = sub_logical (&(regs->GR_L(r1)),
@@ -3007,7 +3004,7 @@ DEF_INST(subtract_logical_distinct_long_register)               /*810*/
 {
 int     r1, r2, r3;                     /* Values of R fields        */
 
-    RRR(inst, regs, r1, r2, r3);
+    RRR0(inst, regs, r1, r2, r3);
 
     /* Subtract unsigned operands and set condition code */
     regs->psw.cc = sub_logical_long(&(regs->GR_G(r1)),
