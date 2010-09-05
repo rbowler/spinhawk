@@ -5133,6 +5133,12 @@ BYTE ARCH_DEP(stfl_data)[] = {
 #if defined(FEATURE_EXECUTE_EXTENSIONS_FACILITY)                /*208*/
                  | STFL_4_EXECUTE_EXTN                          /*208*/
 #endif /*defined(FEATURE_EXECUTE_EXTENSIONS_FACILITY)*/         /*208*/
+#if defined(FEATURE_ENHANCED_MONITOR_FACILITY)                  /*810*/
+                 | STFL_4_ENH_MONITOR                           /*810*/
+#endif /*defined(FEATURE_ENHANCED_MONITOR_FACILITY)*/           /*810*/
+#if defined(FEATURE_FLOATING_POINT_EXTENSION_FACILITY)          /*810*/
+                 | STFL_4_FP_EXTENSION                          /*810*/
+#endif /*defined(FEATURE_FLOATING_POINT_EXTENSION_FACILITY)*/   /*810*/
                  ,
                  0
 #if defined(FEATURE_SET_PROGRAM_PARAMETER_FACILITY)
@@ -5148,12 +5154,18 @@ BYTE ARCH_DEP(stfl_data)[] = {
 #if defined(FEATURE_PFPO)
                  | STFL_5_PFPO
 #endif /*defined(FEATURE_PFPO)*/
+#if defined(FEATURE_FAST_BCR_SERIALIZATION_FACILITY)            /*810*/
+                 | STFL_5_FAST_BCR_SERIAL                       /*810*/
+#endif /*defined(FEATURE_FAST_BCR_SERIALIZATION_FACILITY)*/     /*810*/
                  ,
                  0
                  ,
                  0
                  ,
                  0
+#if defined(FEATURE_FAST_BCR_SERIALIZATION_FACILITY)            /*810*/
+                 | STFL_5_FAST_BCR_SERIAL                       /*810*/
+#endif /*defined(FEATURE_FAST_BCR_SERIALIZATION_FACILITY)*/     /*810*/
 #if defined(FEATURE_CPU_MEASUREMENT_COUNTER_FACILITY)
                  | STFL_8_CPU_MEAS_COUNTER
 #endif /*defined(FEATURE_CPU_MEASUREMENT_COUNTER_FACILITY)*/
@@ -5162,6 +5174,12 @@ BYTE ARCH_DEP(stfl_data)[] = {
 #endif /*defined(FEATURE_CPU_MEASUREMENT_SAMPLING_FACILITY)*/
                  ,
                  0
+#if defined(FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_3)        /*810*/
+                 | STFL_9_MSA_EXTENSION_3                       /*810*/
+#endif /*defined(FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_3)*/ /*810*/
+#if defined(FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_4)        /*810*/
+                 | STFL_9_MSA_EXTENSION_4                       /*810*/
+#endif /*defined(FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_4)*/ /*810*/
                  ,
                  0
                  ,

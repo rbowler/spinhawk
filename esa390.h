@@ -1360,10 +1360,12 @@ typedef struct _MBK {
                                            facility is installed  208*/
 #define STFL_4_EXECUTE_EXTN     0x10    /* Execute-Extensions     208
                                            facility is installed  208*/
-#define STFL_4_ENH_MONITOR      0x08    /* Enhanced-Monitor         810
+#define STFL_4_ENH_MONITOR      0x08    /* Enhanced-Monitor
+                                           facility installed     810*/
+#define STFL_4_FP_EXTENSION     0x04    /* Floating-point extension
                                            facility installed     810*/
 /* Byte STFL_5: STFLE bits 40-47 */
-#define STFL_5_SET_PROG_PARAM   0x80    /* 40:Set-Program-Parameter
+#define STFL_5_SET_PROG_PARAM   0x80    /* Set-Program-Parameter
                                            facility installed (ESAME)*/
 #define STFL_5_FPS_ENHANCEMENT  0x40    /* Floating point support
                                            enhancements (FPR-GR-loading
@@ -1373,23 +1375,25 @@ typedef struct _MBK {
                                            (DFP) facility            */
 #define STFL_5_DFP_HPERF        0x10    /* DFP has high performance  */
 #define STFL_5_PFPO             0x08    /* PFPO instruction installed*/
-#define STFL_5_FAST_BCR_SERIAL  0x04    /* Fast-BCR-serialization   810
+#define STFL_5_FAST_BCR_SERIAL  0x04    /* Fast-BCR-serialization
                                            Facility installed     810*/
-#define STFL_5_CMPSC_ENH        0x01    /* CMPSC-enhancement        810
+#define STFL_5_CMPSC_ENH        0x01    /* CMPSC-enhancement
                                            Facility installed     810*/
 /* Byte STFL_6: STFLE bits 48-55 */
 /* Byte STFL_7: STFLE bits 56-63 */
 /* Byte STFL_8: STFLE bits 64-71 */
-#define STFL_9_RES_REF_BITS_MUL 0x20    /* Reset-Reference-Bits-    810
-                                           Multiple Fac installed 810*/
-#define STFL_8_CPU_MEAS_COUNTER 0x10    /* 67:CPU-measurement counter
+#define STFL_8_RES_REF_BITS_MUL 0x20    /* Reset-Reference-Bits-Multiple
+                                           Facility installed 810*/
+#define STFL_8_CPU_MEAS_COUNTER 0x10    /* CPU-measurement counter
                                            facility installed (ESAME)*/
-#define STFL_8_CPU_MEAS_SAMPLNG 0x08    /* 68:CPU-measurement sampling
+#define STFL_8_CPU_MEAS_SAMPLNG 0x08    /* CPU-measurement sampling
                                            facility installed (ESAME)*/
 /* Byte STFL_9: STFLE bits 72-79 */
-#define STFL_9_MSA_EXTENSION_3  0x08    /* Message Security Assist  810  
+#define STFL_9_ACC_EX_FS_INDIC  0x10    /* Access-exception fetch/store
+                                           indication facility    810*/
+#define STFL_9_MSA_EXTENSION_3  0x08    /* Message Security Assist
                                            Extension 3 installed  810*/
-#define STFL_9_MSA_EXTENSION_4  0x04    /* Message Security Assist  810 
+#define STFL_9_MSA_EXTENSION_4  0x04    /* Message Security Assist
                                            Extension 4 installed  810*/
 
 /* Bit definitions for the Vector Facility */
