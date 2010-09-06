@@ -5377,6 +5377,9 @@ BYTE ARCH_DEP(stfl_data)[] = {
 #endif /*defined(FEATURE_CPU_MEASUREMENT_SAMPLING_FACILITY)*/
                  ,
                  0
+#if defined(FEATURE_ACCESS_EXCEPTION_FETCH_STORE_INDICATION)    /*810*/
+                 | STFL_9_ACC_EX_FS_INDIC                       /*810*/
+#endif /*defined(FEATURE_ACCESS_EXCEPTION_FETCH_STORE_INDICATION)*/
 #if defined(FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_3)        /*810*/
                  | STFL_9_MSA_EXTENSION_3                       /*810*/
 #endif /*defined(FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_3)*/ /*810*/
