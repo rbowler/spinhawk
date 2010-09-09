@@ -124,11 +124,13 @@
 /* e     : expansion operation                                                */
 /* f1    : format-1 sibling descriptors                                       */
 /* st    : symbol-translation option                                          */
+/* zp    : zero padding                                                       */
 /*----------------------------------------------------------------------------*/
 #define GR0_cdss(regs)       (((regs)->GR_L(0) & 0x0000F000) >> 12)
 #define GR0_e(regs)          ((regs)->GR_L(0) & 0x00000100)
 #define GR0_f1(regs)         ((regs)->GR_L(0) & 0x00000200)
 #define GR0_st(regs)         ((regs)->GR_L(0) & 0x00010000)
+#define GR0_zp(regs)         ((regs)->GR_L(0) & 0x00020000)
 
 /*----------------------------------------------------------------------------*/
 /* General Purpose Register 0 macro's (GR0) derived                           */
@@ -234,6 +236,7 @@ DEF_INST(compression_call)
   logmsg(" address : " F_VADR "\n", regs->GR(r2));
   logmsg(" length  : " F_GREG "\n", regs->GR(r2 + 1));
   logmsg(" GR00    : " F_GREG "\n", regs->GR(0));
+  logmsg("   zp    : %s\n", TRUEFALSE(GR0_zp(regs)));
   logmsg("   st    : %s\n", TRUEFALSE(GR0_st(regs)));
   logmsg("   cdss  : %d\n", GR0_cdss(regs));
   logmsg("   f1    : %s\n", TRUEFALSE(GR0_f1(regs)));
@@ -263,7 +266,7 @@ DEF_INST(compression_call)
   }
 
   /* Set possible Data Exception code right away */
-  regs->dxc = DXC_DECIMAL;     
+  regs->dxc = DXC_DECIMAL;
 
   /* Initialize intermediate registers */
   INITREGS(&iregs, regs, r1, r2);
@@ -1168,12 +1171,16 @@ static void ARCH_DEP(store_iss)(int r1, int r2, REGS *regs, REGS *iregs, struct 
 
   /* Fingers crossed that we stay within one page */
   ofst = GR_A(r1, iregs) & 0x7ff;
-  if(likely(ofst + cc->smbsz < 0x800))
+  if(likely(ofst + cc->smbsz <= 0x800))
   {
     if(unlikely(!cc->dest))
       cc->dest = MADDR((GR_A(r1, iregs) & ~0x7ff) & ADDRESS_MAXWRAP(regs), r1, regs, ACCTYPE_WRITE, regs->psw.pkey);
     memcpy(&cc->dest[ofst], mem, cc->smbsz);
     ITIMER_UPDATE(GR_A(r1, iregs), cc->smbsz - 1, regs);
+
+    /* Perfect fit? */
+    if(unlikely(ofst + cc->smbsz == 0x800))
+      cc->dest = NULL;
   }
   else
   {
@@ -1531,10 +1538,14 @@ static void ARCH_DEP(fetch_iss)(int r2, REGS *regs, REGS *iregs, struct ec *ec, 
   ofst = GR_A(r2, iregs) & 0x7ff;
   if(unlikely(!ec->src))
     ec->src = MADDR((GR_A(r2, iregs) & ~0x7ff) & ADDRESS_MAXWRAP(regs), r2, regs, ACCTYPE_READ, regs->psw.pkey);
-  if(likely(ofst + ec->smbsz < 0x800))
+  if(likely(ofst + ec->smbsz <= 0x800))
   { 
     ITIMER_SYNC(GR_A(r2, iregs), ec->smbsz - 1, regs);
     mem = &ec->src[ofst]; 
+
+    /* Perfect fit? */
+    if(unlikely(ofst + ec->smbsz == 0x800))
+      ec->src = NULL;
   } 
   else
   {
@@ -1696,6 +1707,14 @@ static int ARCH_DEP(vstore)(int r1, REGS *regs, REGS *iregs, struct ec *ec, BYTE
   unsigned ofst;                       /* Offset within page                  */
   BYTE *sk;                            /* Storage key                         */
 
+#ifdef OPTION_CMPSC_DEBUG
+  char buf2[256];
+  unsigned i;
+  unsigned j;
+  static BYTE pbuf[2060];
+  static unsigned plen = 2061;         /* Impossible value                    */
+#endif
+
   /* Check destination size */
   if(unlikely(GR_A(r1 + 1, iregs) < len))
   {
@@ -1762,13 +1781,17 @@ static int ARCH_DEP(vstore)(int r1, REGS *regs, REGS *iregs, struct ec *ec, BYTE
 #endif
 
   /* Fingers crossed that we stay within one page */
-  ofst = GR_A(r1, iregs) & 0x7ff;
-  if(likely(ofst + len < 0x800))
+  ofst = GR_A(r1, iregs) & 0x7ff; 
+  if(likely(ofst + len <= 0x800))
   {
     if(unlikely(!ec->dest))
       ec->dest = MADDR((GR_A(r1, iregs) & ~0x7ff) & ADDRESS_MAXWRAP(regs), r1, regs, ACCTYPE_WRITE, regs->psw.pkey);
     memcpy(&ec->dest[ofst], buf, len);
     ITIMER_UPDATE(GR_A(r1, iregs), len - 1, regs);
+
+    /* Perfect fit? */
+    if(unlikely(ofst + len == 0x800))
+      ec->dest = NULL;
   }
   else
   {
@@ -1790,7 +1813,12 @@ static int ARCH_DEP(vstore)(int r1, REGS *regs, REGS *iregs, struct ec *ec, BYTE
       {
         len1 += 0x800;
         len2 -= 0x800;
-        ec->dest = MADDR((GR_A(r1, iregs) + len1) & ADDRESS_MAXWRAP(regs), r1, regs, ACCTYPE_WRITE, regs->psw.pkey);
+
+        /* Perfect fit? */
+        if(unlikely(!len2))
+          ec->dest = NULL;
+        else
+          ec->dest = MADDR((GR_A(r1, iregs) + len1) & ADDRESS_MAXWRAP(regs), r1, regs, ACCTYPE_WRITE, regs->psw.pkey);
         sk = regs->dat.storkey;
       }
       else
