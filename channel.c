@@ -2410,6 +2410,7 @@ void *ARCH_DEP(execute_ccw_chain) (DEVBLK *dev)
 {
 int     sysid = DEV_SYS_LOCAL;          /* System Identifier         */
 U32     ccwaddr;                        /* Address of CCW        @IWZ*/
+U32     ticaddr = 0;                    /* Previous CCW was a TIC    */
 U16     idapmask;                       /* IDA page size - 1     @IWZ*/
 BYTE    idawfmt;                        /* IDAW format (1 or 2)  @IWZ*/
 BYTE    ccwfmt;                         /* CCW format (0 or 1)   @IWZ*/
@@ -2428,7 +2429,6 @@ BYTE    unitstat;                       /* Unit status               */
 BYTE    chanstat;                       /* Channel status            */
 U16     residual;                       /* Residual byte count       */
 BYTE    more;                           /* 1=Count exhausted         */
-BYTE    tic = 0;                        /* Previous CCW was a TIC    */
 BYTE    chain = 1;                      /* 1=Chain to next CCW       */
 BYTE    tracethis = 0;                  /* 1=Trace this CCW only     */
 BYTE    area[64];                       /* Message area              */
@@ -2769,6 +2769,10 @@ BYTE    iobuf[65536];                   /* Channel I/O buffer        */
         ARCH_DEP(fetch_ccw) (dev, ccwkey, ccwfmt, ccwaddr, &opcode, &addr,
                     &flags, &count, &chanstat);
 
+        /* For an invalid CCW address in a TIC we must backup to TIC+8 */
+        if(ticaddr && (chanstat & CSW_PROGC))
+            ccwaddr = ticaddr;
+
         /* Point to the CCW in main storage */
         ccw = dev->mainstor + ccwaddr;
 
@@ -2793,7 +2797,7 @@ BYTE    iobuf[65536];                   /* Channel I/O buffer        */
         if (IS_CCW_TIC(opcode))
         {
             /* Channel program check if TIC-to-TIC */
-            if (tic)
+            if (ticaddr)
             {
                 chanstat = CSW_PROGC;
                 break;
@@ -2809,7 +2813,7 @@ BYTE    iobuf[65536];                   /* Channel I/O buffer        */
 
             /* Set new CCW address (leaving the values of chained and
                code untouched to allow data-chaining through TIC) */
-            tic = 1;
+            ticaddr = ccwaddr;
             ccwaddr = addr;
             chain = 1;
             continue;
@@ -2819,7 +2823,7 @@ BYTE    iobuf[65536];                   /* Channel I/O buffer        */
         /* Commands other than TRANSFER IN CHANNEL      */
         /*----------------------------------------------*/
         /* Reset the TIC-to-TIC flag */
-        tic = 0;
+        ticaddr = 0;
 
         /* Update current CCW opcode, unless data chaining */
         if ((dev->chained & CCW_FLAGS_CD) == 0)
@@ -3012,7 +3016,7 @@ resume_suspend:
 
             /* Reset fields as if starting a new channel program */
             dev->code = 0;
-            tic = 0;
+            ticaddr = 0;
             chain = 1;
             dev->chained = 0;
             dev->prev_chained = 0;
