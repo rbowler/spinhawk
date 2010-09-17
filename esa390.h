@@ -275,6 +275,7 @@ typedef struct _DAT {
 /* CR7 is the secondary segment table descriptor or secondary ASCE */
 
 /* Bit definitions for control register 8 */
+#define CR8_ENHMCMASK   0x0000FFFF00000000ULL /* Enh Monitor masks   */
 #define CR8_EAX         0xFFFF0000      /* Extended auth index       */
 #define CR8_MCMASK      0x0000FFFF      /* Monitor masks             */
 
@@ -757,8 +758,9 @@ typedef struct _PSA_900 {               /* Prefixed storage area     */
 /*00F0*/ FWORD  mckext;                 /* Machine check int code ext*/
 /*00F4*/ FWORD  xdmgcode;               /* External damage code      */
 /*00F8*/ DBLWRD mcstorad;               /* Failing storage address   */
-/*0100*/ DBLWRD resv0100;               /* Reserved                  */
-/*0108*/ DBLWRD resv0108;               /* Reserved                  */
+/*0100*/ DBLWRD cao;                    /* Enh Mon Counter Array Orig*/
+/*0108*/ FWORD  cal;                    /* Enh Mon Counter Array Len */
+/*010C*/ FWORD  ec;                     /* Enh Mon Exception Count   */
 /*0110*/ DBLWRD bea;                    /* Breaking event address @Z9*/
 /*0118*/ DBLWRD resv0118;               /* Reserved                  */
 /*0120*/ QWORD  rstold;                 /* Restart old PSW           */
