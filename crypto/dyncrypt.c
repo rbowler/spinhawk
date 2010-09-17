@@ -386,10 +386,12 @@ static void aes_wrap(BYTE *key, int keylen)
   switch(keylen)
   {
     case 16:
+    {
       aes_encrypt(&context, key, key);
       break;
-      
+    } 
     case 24:
+    {
       aes_encrypt(&context, key, cv);
       memcpy(buf, &key[16], 8);
       memset(&buf[8], 0, 8);
@@ -399,13 +401,15 @@ static void aes_wrap(BYTE *key, int keylen)
       memcpy(key, cv, 8);
       memcpy(&key[8], buf, 16);
       break;
-      
+    }  
     case 32:
+    {
       aes_encrypt(&context, key, key);
       for(i = 0; i < 16; i++)
         key[i + 16] ^= key[i];
       aes_encrypt(&context, &key[16], &key[16]);
       break;
+    }
   }
 }
 
@@ -423,10 +427,12 @@ static void aes_unwrap(BYTE *key, int keylen)
   switch(keylen)
   {
     case 16:
+    {
       aes_decrypt(&context, key, key);
       break;
-      
+    }  
     case 24:
+    {
       memcpy(cv, key, 8);
       aes_decrypt(&context, &key[8], buf);
       memcpy(&key[8], &buf[8], 8);
@@ -434,14 +440,16 @@ static void aes_unwrap(BYTE *key, int keylen)
       for(i = 0; i < 8; i++)
         key[16 + i] = buf[i] ^ cv[i];
       break;
-      
+    }  
     case 32:
+    {
       memcpy(cv, key, 16);
       aes_decrypt(&context, key, key);
       aes_decrypt(&context, &key[16], &key[16]);
       for(i = 0; i < 16; i++)
         key[i + 16] ^= cv[i];
       break;
+    }
   }
 }
 
@@ -529,21 +537,27 @@ static void ARCH_DEP(kimd_sha)(int r1, int r2, REGS *regs, int klmd)
   switch(fc)
   {
     case 1: /* sha-1 */
+    {
       message_blocklen = 64;
       parameter_blocklen = 20;
       break;
-
+    }
+    
 #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_1
     case 2: /* sha-256 */
+    {
       message_blocklen = 64;
       parameter_blocklen = 32;
       break;
+    }
 #endif
 
 #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_2
     case 3: /* sha-512 */
+    {
       message_blocklen = 128;
       parameter_blocklen = 64;
+    }
 #endif
 
   }
@@ -580,19 +594,25 @@ static void ARCH_DEP(kimd_sha)(int r1, int r2, REGS *regs, int klmd)
   switch(fc)
   {
     case 1: /* sha-1 */
+    {
       sha1_seticv(&sha1_ctx, parameter_block);
       break;
-
+    }
+    
 #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_1
     case 2: /* sha-256 */
+    {
       sha256_seticv(&sha256_ctx, parameter_block);
       break;
+    }
 #endif
 
 #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_2
     case 3: /* sha-512 */
+    {
       sha512_seticv(&sha512_ctx, parameter_block);
       break;
+    }
 #endif
 
   }
@@ -610,22 +630,28 @@ static void ARCH_DEP(kimd_sha)(int r1, int r2, REGS *regs, int klmd)
     switch(fc)
     {
       case 1: /* sha-1 */
+      {
         sha1_process(&sha1_ctx, message_block);
         sha1_getcv(&sha1_ctx, parameter_block);
         break;
-
+      }
+      
 #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_1
       case 2: /* sha-256 */
+      {
         sha256_process(&sha256_ctx, message_block);
         sha256_getcv(&sha256_ctx, parameter_block);
         break;
+      }
 #endif
 
 #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_2
       case 3: /* sha-512 */
+      {
         sha512_process(&sha512_ctx, message_block);
         sha512_getcv(&sha512_ctx, parameter_block);
         break;
+      }
 #endif
 
     }
@@ -697,24 +723,30 @@ static void ARCH_DEP(klmd_sha)(int r1, int r2, REGS *regs)
   switch(fc)
   {
     case 1: /* sha-1 */
+    {
       mbllen = 8;
       message_blocklen = 64;
       parameter_blocklen = 20;
       break;
-
+    }
+    
 #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_1
     case 2: /* sha-256 */
+    {
       mbllen = 8;
       message_blocklen = 64;
       parameter_blocklen = 32;
       break;
+    }
 #endif
 
 #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_2
     case 3: /* sha-512 */
+    {
       mbllen = 16;
       message_blocklen = 128;
       parameter_blocklen = 64;
+    }
 #endif
 
   }
@@ -749,19 +781,25 @@ static void ARCH_DEP(klmd_sha)(int r1, int r2, REGS *regs)
   switch(fc)
   {
     case 1: /* sha-1 */
+    {
       sha1_seticv(&sha1_ctx, parameter_block);
       break;
-
+    }
+    
 #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_1
     case 2: /* sha-256 */
+    {
       sha256_seticv(&sha256_ctx, parameter_block);
       break;
+    }
 #endif
 
 #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_2
     case 3: /* sha-512 */
+    {
       sha512_seticv(&sha512_ctx, parameter_block);
       break;
+    }
 #endif
 
   }
@@ -793,19 +831,25 @@ static void ARCH_DEP(klmd_sha)(int r1, int r2, REGS *regs)
     switch(fc)
     {
       case 1: /* sha-1 */
+      {
         sha1_process(&sha1_ctx, message_block);
         break;
-
+      }
+      
 #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_1
       case 2: /* sha-256 */
+      {
         sha256_process(&sha256_ctx, message_block);
         break;
+      }
 #endif
 
 #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_2
       case 3: /* sha-512 */
+      {
         sha512_process(&sha512_ctx, message_block);
         break;
+      }
 #endif
 
     }
@@ -826,22 +870,28 @@ static void ARCH_DEP(klmd_sha)(int r1, int r2, REGS *regs)
   switch(fc)
   {
     case 1: /* sha-1 */
+    {
       sha1_process(&sha1_ctx, message_block);
       sha1_getcv(&sha1_ctx, parameter_block);
       break;
-
+    }
+    
 #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_1
     case 2: /* sha-256 */
+    {
       sha256_process(&sha256_ctx, message_block);
       sha256_getcv(&sha256_ctx, parameter_block);
       break;      
+    }
 #endif
 
 #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_2
     case 3: /* sha-512 */
+    {
       sha512_process(&sha512_ctx, message_block);
       sha512_getcv(&sha512_ctx, parameter_block);
       break;
+    }
 #endif
 
   }
@@ -914,19 +964,23 @@ static void ARCH_DEP(km_dea)(int r1, int r2, REGS *regs)
   switch(tfc)
   {
     case 1: /* dea */
+    {
       LOGBYTE("k     :", parameter_block, 8);
       break;
-
+    }
     case 2: /* tdea-128 */
+    {
       LOGBYTE("k1    :", parameter_block, 8);
       LOGBYTE("k2    :", &parameter_block[8], 8);
       break;
-
+    }
     case 3: /* tdea-192 */
+    {
       LOGBYTE("k1    :", parameter_block, 8);
       LOGBYTE("k2    :", &parameter_block[8], 8);
       LOGBYTE("k3    :", &parameter_block[16], 8);
       break;
+    }
   }
   if(wrap) 
     LOGBYTE("wkvp  :", &parameter_block[keylen], 24);
@@ -951,16 +1005,20 @@ static void ARCH_DEP(km_dea)(int r1, int r2, REGS *regs)
   switch(tfc)
   {
     case 1: /* dea */
+    {
       des_set_key(&context, parameter_block);
       break;
-   
+    }
     case 2: /* tdea-128 */
+    {
       des3_set_2keys(&des3_ctx, parameter_block, &parameter_block[8]);
       break;
-
+    }
     case 3: /* tdea-192 */
+    {
       des3_set_3keys(&des3_ctx, parameter_block, &parameter_block[8], &parameter_block[16]);
       break;
+    }
   }   
 
   /* Try to process the CPU-determined amount of data */
@@ -979,19 +1037,22 @@ static void ARCH_DEP(km_dea)(int r1, int r2, REGS *regs)
     switch(tfc)
     {
       case 1: /* dea */
+      {
         if(modifier_bit)
           des_decrypt(&context, message_block, message_block); 
         else
           des_encrypt(&context, message_block, message_block);
         break;
-
+      }
       case 2: /* tdea-128 */
       case 3: /* tdea-192 */
+      {
         if(modifier_bit)
           des3_decrypt(&des3_ctx, message_block, message_block);
         else
           des3_encrypt(&des3_ctx, message_block, message_block);
         break;
+      }
     }
 
     /* Store the output */
@@ -1187,19 +1248,23 @@ static void ARCH_DEP(kmac_dea)(int r1, int r2, REGS *regs)
   switch(tfc)
   {
     case 1: /* dea */
+    {
       LOGBYTE("k1    :", &parameter_block[8], 8);
       break;
-    
+    }
     case 2: /* tdea-128 */
+    {
       LOGBYTE("k1    :", &parameter_block[8], 8);
       LOGBYTE("k2    :", &parameter_block[16], 8);
       break;
-    
+    }
     case 3: /* tdea-192 */
+    {
       LOGBYTE("k1    :", &parameter_block[8], 8);
       LOGBYTE("k2    :", &parameter_block[16], 8);
       LOGBYTE("k3    :", &parameter_block[24], 8);
       break;
+    }
   }
   if(wrap) 
     LOGBYTE("wkvp  :", &parameter_block[keylen + 8], 24);
@@ -1224,19 +1289,23 @@ static void ARCH_DEP(kmac_dea)(int r1, int r2, REGS *regs)
   switch(tfc)
   {
     case 1: /* dea */
+    {
       des_set_key(&context1, &parameter_block[8]);
       break;
-    
+    }
     case 2: /* tdea-128 */
+    {
       des_set_key(&context1, &parameter_block[8]);
       des_set_key(&context2, &parameter_block[16]);
       break;
-    
+    }
     case 3: /* tdea-192 */
+    {
       des_set_key(&context1, &parameter_block[8]);
       des_set_key(&context2, &parameter_block[16]);
       des_set_key(&context3, &parameter_block[24]);
       break;
+    }
   }
 
   /* Try to process the CPU-determined amount of data */
@@ -1257,20 +1326,24 @@ static void ARCH_DEP(kmac_dea)(int r1, int r2, REGS *regs)
     switch(tfc)
     {
       case 1: /* dea */
+      {
         des_encrypt(&context1, message_block, parameter_block);
         break;
-      
+      }
       case 2: /* tdea-128 */
+      {
         des_encrypt(&context1, message_block, parameter_block);
         des_decrypt(&context2, parameter_block, parameter_block);
         des_encrypt(&context1, parameter_block, parameter_block);
         break;
-      
+      }
       case 3: /* tdea-192 */
+      {
         des_encrypt(&context1, message_block, parameter_block);
         des_decrypt(&context2, parameter_block, parameter_block);
         des_encrypt(&context3, parameter_block, parameter_block);
         break;
+      }
     }
 
     /* Store the output chaining value */
@@ -1348,20 +1421,20 @@ static void ARCH_DEP(kmac_aes)(int r1, int r2, REGS *regs)
   LOGBYTE("icv   :", parameter_block, 16);
   LOGBYTE("k     :", &parameter_block[16], keylen);
   if(wrap)
-    LOGBYTE("k     :", &parameter_block[16 + keylen], 32);
+    LOGBYTE("wkvp  :", &parameter_block[keylen + 16], 32);
 #endif
 
   /* Verify and unwrap */
   if(wrap)
   {
-    if(unlikely(memcmp(&parameter_block[keylen], wkvp_regs_aes, 32)))
+    if(unlikely(memcmp(&parameter_block[keylen + 16], wkvp_regs_aes, 32)))
     {
       regs->psw.cc = 1;
       return;
     }
 
     /* Unwrap the cryptographic key */
-    aes_unwrap(parameter_block, keylen);
+    aes_unwrap(&parameter_block[16], keylen);
   }
 
   /* Set the cryptographic key */
@@ -1411,7 +1484,7 @@ static void ARCH_DEP(kmac_aes)(int r1, int r2, REGS *regs)
   /* CPU-determined amount of data processed */
   regs->psw.cc = 3;
 }
-#endif
+#endif /* FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_4 */
 
 /*----------------------------------------------------------------------------*/
 /* B92F Cipher message with chaining (KMC) FC 1, 2, 3, 9, 10 and 11           */
@@ -1463,19 +1536,23 @@ static void ARCH_DEP(kmc_dea)(int r1, int r2, REGS *regs)
   switch(tfc)
   {
     case 1: /* dea */
+    {
       LOGBYTE("k     :", &parameter_block[8], 8);
       break;
-
+    }
     case 2: /* tdea-128 */
+    {
       LOGBYTE("k1    :", &parameter_block[8], 8);
       LOGBYTE("k2    :", &parameter_block[16], 8);
       break;
-
+    }
     case 3: /* tdea-192 */
+    {
       LOGBYTE("k1    :", &parameter_block[8], 8);
       LOGBYTE("k2    :", &parameter_block[16], 8);
       LOGBYTE("k3    :", &parameter_block[24], 8);
       break;
+    }
   }
   if(wrap) 
     LOGBYTE("wkvp  :", &parameter_block[keylen + 8], 24);
@@ -1500,19 +1577,23 @@ static void ARCH_DEP(kmc_dea)(int r1, int r2, REGS *regs)
   switch(tfc)
   {
     case 1: /* dea */
+    {
       des_set_key(&context1, &parameter_block[8]);
       break;
-
+    }
     case 2: /* tdea-128 */
+    {
       des_set_key(&context1, &parameter_block[8]);
       des_set_key(&context2, &parameter_block[16]);
       break;
-
+    }
     case 3: /* tdea-192 */
+    {
       des_set_key(&context1, &parameter_block[8]);
       des_set_key(&context2, &parameter_block[16]);
       des_set_key(&context3, &parameter_block[24]);
       break;
+    }
   }
 
   /* Try to process the CPU-determined amount of data */
@@ -1531,6 +1612,7 @@ static void ARCH_DEP(kmc_dea)(int r1, int r2, REGS *regs)
     switch(tfc)
     {
       case 1: /* dea */
+      {
         if(modifier_bit)
         {
           /* Save, decrypt and XOR */
@@ -1548,8 +1630,9 @@ static void ARCH_DEP(kmc_dea)(int r1, int r2, REGS *regs)
           memcpy(ocv, message_block, 8);
         }
         break;
-
+      }
       case 2: /* tdea-128 */
+      {
         if(modifier_bit)
         {
           /* Save, decrypt and XOR */
@@ -1571,8 +1654,9 @@ static void ARCH_DEP(kmc_dea)(int r1, int r2, REGS *regs)
           memcpy(ocv, message_block, 8);
         }
         break;
-
+      }
       case 3: /* tdea-192 */
+      {
         if(modifier_bit)
         {
           /* Save, decrypt and XOR */
@@ -1594,6 +1678,7 @@ static void ARCH_DEP(kmc_dea)(int r1, int r2, REGS *regs)
           memcpy(ocv, message_block, 8);
         }
         break;
+      }
     }
 
     /* Store the output */
@@ -1685,7 +1770,7 @@ static void ARCH_DEP(kmc_aes)(int r1, int r2, REGS *regs)
   LOGBYTE("icv   :", parameter_block, 16);
   LOGBYTE("k     :", &parameter_block[16], keylen);
   if(wrap)
-    LOGBYTE("wkvp  :", &parameter_block[16 + keylen], 32);
+    LOGBYTE("wkvp  :", &parameter_block[keylen + 16], 32);
 #endif
 
 #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_3
@@ -1955,19 +2040,23 @@ static void ARCH_DEP(kmctr_dea)(int r1, int r2, int r3, REGS *regs)
   switch(tfc)
   {
     case 1: /* dea */
+    {
       LOGBYTE("k     :", &parameter_block[8], 8);
       break;
-
+    }
     case 2: /* tdea-128 */
+    {
       LOGBYTE("k1    :", &parameter_block[8], 8);
       LOGBYTE("k2    :", &parameter_block[16], 8);
       break;
-
+    }
     case 3: /* tdea-192 */
+    {
       LOGBYTE("k1    :", &parameter_block[8], 8);
       LOGBYTE("k2    :", &parameter_block[16], 8);
       LOGBYTE("k3    :", &parameter_block[24], 8);
       break;
+    }
   }
   if(wrap)
     LOGBYTE("wkvp  :", &parameter_block[24], 24);
@@ -1990,19 +2079,23 @@ static void ARCH_DEP(kmctr_dea)(int r1, int r2, int r3, REGS *regs)
   switch(tfc)
   {
     case 1: /* dea */
+    {
       des_set_key(&context1, &parameter_block[8]);
       break;
-
+    }
     case 2: /* tdea-128 */
+    {
       des_set_key(&context1, &parameter_block[8]);
       des_set_key(&context2, &parameter_block[16]);
       break;
-
+    }
     case 3: /* tdea-192 */
+    {
       des_set_key(&context1, &parameter_block[8]);
       des_set_key(&context2, &parameter_block[16]);
       des_set_key(&context3, &parameter_block[24]);
       break;
+    }
   }
 
   /* Try to process the CPU-determined amount of data */
@@ -2024,23 +2117,27 @@ static void ARCH_DEP(kmctr_dea)(int r1, int r2, int r3, REGS *regs)
     switch(tfc)
     {
       case 1: /* dea */
+      {
         /* Encrypt and XOR */
         des_encrypt(&context1, countervalue_block, countervalue_block);
         break;
-
+      }
       case 2: /* tdea-128 */
+      {
         /* Encrypt and XOR */
         des_encrypt(&context1, countervalue_block, countervalue_block);
         des_decrypt(&context2, countervalue_block, countervalue_block);
         des_encrypt(&context1, countervalue_block, countervalue_block);
         break;
-
+      }
       case 3: /* tdea-192 */
+      {
         /* Encrypt, save and XOR */
         des_encrypt(&context1, countervalue_block, countervalue_block);
         des_decrypt(&context2, countervalue_block, countervalue_block);
         des_encrypt(&context3, countervalue_block, countervalue_block);
         break;
+      }
     }
     for(i = 0; i < 8; i++)
       countervalue_block[i] ^= message_block[i];
@@ -2230,22 +2327,26 @@ static void ARCH_DEP(kmf_dea)(int r1, int r2, REGS *regs)
   switch(fc)
   {
     case 1: /* dea */
+    {
       LOGBYTE("icv   :", parameter_block, 8);
       LOGBYTE("k     :", &parameter_block[8], 8);
       break;
-
+    }
     case 2: /* tdea-128 */
+    {
       LOGBYTE("icv   :", parameter_block, 8);
       LOGBYTE("k1    :", &parameter_block[8], 8);
       LOGBYTE("k2    :", &parameter_block[16], 8);
       break;
-
+    }
     case 3: /* tdea-192 */
+    {
       LOGBYTE("icv   :", parameter_block, 8);
       LOGBYTE("k1    :", &parameter_block[8], 8);
       LOGBYTE("k2    :", &parameter_block[16], 8);
       LOGBYTE("k3    :", &parameter_block[24], 8);
       break;
+    }
   }
 #endif
 
@@ -2253,19 +2354,23 @@ static void ARCH_DEP(kmf_dea)(int r1, int r2, REGS *regs)
   switch(fc)
   {
     case 1: /* dea */
+    {
       des_set_key(&context1, &parameter_block[8]);
       break;
-
+    }
     case 2: /* tdea-128 */
+    {
       des_set_key(&context1, &parameter_block[8]);
       des_set_key(&context2, &parameter_block[16]);
       break;
-
+    }
     case 3: /* tdea-192 */
+    {
       des_set_key(&context1, &parameter_block[8]);
       des_set_key(&context2, &parameter_block[16]);
       des_set_key(&context3, &parameter_block[24]);
       break;
+    }
   }
 
   /* Try to process the CPU-determined amount of data */
@@ -2284,6 +2389,7 @@ static void ARCH_DEP(kmf_dea)(int r1, int r2, REGS *regs)
     switch(fc)
     {
       case 1: /* dea */
+      {
         if(modifier_bit)
         {
           /* Save, encrypt and XOR */
@@ -2301,8 +2407,9 @@ static void ARCH_DEP(kmf_dea)(int r1, int r2, REGS *regs)
           memcpy(ocv, message_block, 8);
         }
         break;
-
+      }
       case 2: /* tdea-128 */
+      {
         if(modifier_bit)
         {
           /* Save, encrypt and XOR */
@@ -2324,8 +2431,9 @@ static void ARCH_DEP(kmf_dea)(int r1, int r2, REGS *regs)
           memcpy(ocv, message_block, 8);
         }
         break;
-
+      }
       case 3: /* tdea-192 */
+      {
         if(modifier_bit)
         {
           /* Save, encrypt and XOR */
@@ -2347,6 +2455,7 @@ static void ARCH_DEP(kmf_dea)(int r1, int r2, REGS *regs)
           memcpy(ocv, message_block, 8);
         }
         break;
+      }
     }
 
     /* Store the output */
@@ -2548,22 +2657,26 @@ static void ARCH_DEP(kmo_dea)(int r1, int r2, REGS *regs)
   switch(fc)
   {
     case 1: /* dea */
+    {
       LOGBYTE("icv   :", parameter_block, 8);
       LOGBYTE("k     :", &parameter_block[8], 8);
       break;
-
+    }
     case 2: /* tdea-128 */
+    {
       LOGBYTE("icv   :", parameter_block, 8);
       LOGBYTE("k1    :", &parameter_block[8], 8);
       LOGBYTE("k2    :", &parameter_block[16], 8);
       break;
-
+    }
     case 3: /* tdea-192 */
+    {
       LOGBYTE("icv   :", parameter_block, 8);
       LOGBYTE("k1    :", &parameter_block[8], 8);
       LOGBYTE("k2    :", &parameter_block[16], 8);
       LOGBYTE("k3    :", &parameter_block[24], 8);
       break;
+    }
   }
 #endif
 
@@ -2571,19 +2684,23 @@ static void ARCH_DEP(kmo_dea)(int r1, int r2, REGS *regs)
   switch(fc)
   {
     case 1: /* dea */
+    {
       des_set_key(&context1, &parameter_block[8]);
       break;
-
+    }
     case 2: /* tdea-128 */
+    {
       des_set_key(&context1, &parameter_block[8]);
       des_set_key(&context2, &parameter_block[16]);
       break;
-
+    }
     case 3: /* tdea-192 */
+    {
       des_set_key(&context1, &parameter_block[8]);
       des_set_key(&context2, &parameter_block[16]);
       des_set_key(&context3, &parameter_block[24]);
       break;
+    }
   }
 
   /* Try to process the CPU-determined amount of data */
@@ -2601,14 +2718,16 @@ static void ARCH_DEP(kmo_dea)(int r1, int r2, REGS *regs)
     switch(fc)
     {
       case 1: /* dea */
+      {
         /* Encrypt, save and XOR */
         des_encrypt(&context1, parameter_block, parameter_block);
         memcpy(ocv, message_block, 8);
         for(i = 0; i < 8; i++)
           message_block[i] ^= parameter_block[i];
         break;
-
+      }
       case 2: /* tdea-128 */
+      {
         /* Encrypt, save and XOR */
         des_encrypt(&context1, parameter_block, parameter_block);
         des_decrypt(&context2, parameter_block, parameter_block);
@@ -2617,8 +2736,9 @@ static void ARCH_DEP(kmo_dea)(int r1, int r2, REGS *regs)
         for(i = 0 ; i < 8; i++)
             message_block[i] ^= parameter_block[i];
         break;
-
+      }
       case 3: /* tdea-192 */
+      {
         /* Encrypt, save and XOR */
         des_encrypt(&context1, parameter_block, parameter_block);
         des_decrypt(&context2, parameter_block, parameter_block);
@@ -2627,6 +2747,7 @@ static void ARCH_DEP(kmo_dea)(int r1, int r2, REGS *regs)
         for(i = 0; i < 8; i++)
           message_block[i] ^= parameter_block[i];
         break;
+      }
     }
 
     /* Store the output */
@@ -2819,30 +2940,40 @@ DEF_INST(compute_intermediate_message_digest_d)
       return;
     }
     case 1: /* sha-1 */
+    {
       ARCH_DEP(kimd_sha)(r1, r2, regs, 0);
       break;
-
+    }
+    
 #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_1
     case 2: /* sha-256 */
+    {
       ARCH_DEP(kimd_sha)(r1, r2, regs, 0);
       break;
+    }
 #endif
 
 #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_2
     case 3: /* sha-512 */
+    {
       ARCH_DEP(kimd_sha)(r1, r2, regs, 0);
       break;
+    }
 #endif
 
 #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_4
     case 65: /* ghash */
+    {
       ARCH_DEP(kimd_ghash)(r1, r2, regs, 0);
       break;
+    }
 #endif
 
     default:
+    {
       ARCH_DEP(program_interrupt)(regs, PGM_SPECIFICATION_EXCEPTION);
       break;
+    }
   }
 }
 
@@ -2891,24 +3022,31 @@ DEF_INST(compute_last_message_digest_d)
       return;
     }
     case 1: /* sha-1 */
+    {
       ARCH_DEP(klmd_sha)(r1, r2, regs);
       break;
-
+    }
 #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_1
     case 2: /* sha-256 */
+    {
       ARCH_DEP(klmd_sha)(r1, r2, regs);
       break;
+    }
 #endif
 
 #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_2
     case 3: /* sha-512 */
+    {
       ARCH_DEP(klmd_sha)(r1, r2, regs);
       break;
+    }
 #endif
 
     default:
+    {
       ARCH_DEP(program_interrupt)(regs, PGM_SPECIFICATION_EXCEPTION);
       break;
+    }
   }
 }
 
@@ -2959,36 +3097,46 @@ DEF_INST(cipher_message_d)
     case 1: /* dea */
     case 2: /* tdea-128 */
     case 3: /* tdea-192 */
+    {
       ARCH_DEP(km_dea)(r1, r2, regs);
       break;
-
+    }
+    
 #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_3
     case 9: /* encrypted dea */
     case 10: /* encrypted tdea-128 */
     case 11: /* encrypted tdea-192 */
+    {
       ARCH_DEP(km_dea)(r1, r2, regs);
       break;
+    }
 #endif
       
 #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_1
     case 18: /* aes-128 */
+    {
       ARCH_DEP(km_aes)(r1, r2, regs);
       break;
+    }
 #endif
 
 #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_2
     case 19: /* aes-192 */
     case 20: /* aes-256 */
+    {
       ARCH_DEP(km_aes)(r1, r2, regs);
       break;
+    }
 #endif
 
 #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_3
     case 26: /* encrypted aes-128 */
     case 27: /* encrypted aes-192 */
     case 28: /* encrypted aes-256 */
+    {
       ARCH_DEP(km_aes)(r1, r2, regs);
       break;
+    }
 #endif
 
 #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_4
@@ -2996,13 +3144,17 @@ DEF_INST(cipher_message_d)
     case 52: /* xts aes-256 */
     case 58: /* encrypted xts aes-128 */
     case 60: /* encrypted xts aes-256 */
+    {
       ARCH_DEP(km_xts_aes)(r1, r2, regs);
       break;
+    }
 #endif
 
     default:
+    {
       ARCH_DEP(program_interrupt)(regs, PGM_SPECIFICATION_EXCEPTION);
       break;
+    }
   }
 }
 
@@ -3051,34 +3203,43 @@ DEF_INST(compute_message_authentication_code_d)
     case 1: /* dea */
     case 2: /* tdea-128 */
     case 3: /* tdea-192 */
+    {
       ARCH_DEP(kmac_dea)(r1, r2, regs);
       break;
+    }
 
 #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_3
     case 9: /* encrypted dea */
     case 10: /* encrypted tdea-128 */
     case 11: /* encrypted tdea-192 */
+    {
       ARCH_DEP(kmac_dea)(r1, r2, regs);
       break;
+    }
 #endif
 
 #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_4
     case 18: /* aes */
     case 19: /* aes-192 */
     case 20: /* aes-256 */
+    {
       ARCH_DEP(kmac_aes)(r1, r2, regs);
       break;
-
+    }
     case 26: /* encrypted aes */
     case 27: /* encrypted aes-192 */
     case 28: /* encrypted aes-256 */
+    {
       ARCH_DEP(kmac_encrypted_aes)(r1, r2, regs);
       break;
+    }
 #endif
 
     default:
+    {
       ARCH_DEP(program_interrupt)(regs, PGM_SPECIFICATION_EXCEPTION);
       break;
+    }
   }
 }
 
@@ -3129,47 +3290,61 @@ DEF_INST(cipher_message_with_chaining_d)
     case 1: /* dea */
     case 2: /* tdea-128 */
     case 3: /* tdea-192 */
+    {
       ARCH_DEP(kmc_dea)(r1, r2, regs);
       break;
-      
+    } 
+    
 #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_3
     case 9: /* encrypted dea */
     case 10: /* encrypted tdea-128 */
     case 11: /* encrypted tdea-192 */
+    {
       ARCH_DEP(kmc_dea)(r1, r2, regs);
       break;
+    }
 #endif
       
 #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_1
     case 18: /* aes-128 */
+    {
       ARCH_DEP(kmc_aes)(r1, r2, regs);
       break;
+    }
 #endif
 
 #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_2
     case 19: /* aes-192 */
     case 20: /* aes-256 */
+    {
       ARCH_DEP(kmc_aes)(r1, r2, regs);
       break;
+    }
 #endif
 
 #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_3
     case 26: /* encrypted aes-128 */
     case 27: /* encrypted aes-192 */
     case 28: /* encrypted aes-256 */
+    {
       ARCH_DEP(kmc_aes)(r1, r2, regs);
       break;
+    }
 #endif
 
 #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_1
     case 67: /* prng */
+    {
       ARCH_DEP(kmc_prng)(r1, r2, regs);
       break;
+    }
 #endif
 
     default:
+    {
       ARCH_DEP(program_interrupt)(regs, PGM_SPECIFICATION_EXCEPTION);
       break;
+    }
   }
 }
 
@@ -3226,21 +3401,25 @@ DEF_INST(cipher_message_with_counter_d)
     case 9: /* encrypted dea */
     case 10: /* encrypted tdea-128 */
     case 11: /* encrypted tdea-192 */
+    {
       ARCH_DEP(kmctr_dea)(r1, r2, r3, regs);
       break;
-    
+    }
     case 18: /* aes-128 */
     case 19: /* aes-192 */
     case 20: /* aes-256 */
     case 26: /* encrypted aes-128 */
     case 27: /* encrypted aes-192 */
     case 28: /* encrypted aes-256 */
+    {
       ARCH_DEP(kmctr_aes)(r1, r2, r3, regs);
       break;
-
+    }
     default:
+    {
       ARCH_DEP(program_interrupt)(regs, PGM_SPECIFICATION_EXCEPTION);
       break;
+    }
   }
 }
 
@@ -3292,30 +3471,28 @@ DEF_INST(cipher_message_with_cipher_feedback_d)
     case 1: /* dea */
     case 2: /* tdea-128 */
     case 3: /* tdea-192 */
-      ARCH_DEP(kmf_dea)(r1, r2, regs);
-      break;
-
     case 9: /* encrypted dea */
     case 10: /* encrypted tdea-128 */
     case 11: /* encrypted tdea-192 */
-      ARCH_DEP(kmf_encrypted_dea)(r1, r2, regs);
+    {
+      ARCH_DEP(kmf_dea)(r1, r2, regs);
       break;      
-      
+    } 
     case 18: /* aes-128 */
     case 19: /* aes-192 */
     case 20: /* aes-256 */
-      ARCH_DEP(kmf_aes)(r1, r2, regs);
-      break;
-
     case 26: /* encrypted aes-128 */
     case 27: /* encrypted aes-192 */
     case 28: /* encrypted aes-256 */
-      ARCH_DEP(kmf_encrypted_aes)(r1, r2, regs);
+    {
+      ARCH_DEP(kmf_aes)(r1, r2, regs);
       break;
-
+    }
     default:
+    {
       ARCH_DEP(program_interrupt)(regs, PGM_SPECIFICATION_EXCEPTION);
       break;
+    }
   }
 }
 
@@ -3362,34 +3539,31 @@ DEF_INST(cipher_message_with_output_feedback_d)
       regs->psw.cc = 0;
       return;
     }
-
     case 1: /* dea */
     case 2: /* tdea-128 */
     case 3: /* tdea-192 */
-      ARCH_DEP(kmo_dea)(r1, r2, regs);
-      break;
-
     case 9: /* encrypted dea */
     case 10: /* encrypted tdea-128 */
     case 11: /* encrypted tdea-192 */
-      ARCH_DEP(kmo_encrypted_dea)(r1, r2, regs);
+    {
+      ARCH_DEP(kmo_dea)(r1, r2, regs);
       break;      
-      
+    } 
     case 18: /* aes-128 */
     case 19: /* aes-192 */
     case 20: /* aes-256 */
-      ARCH_DEP(kmo_aes)(r1, r2, regs);
-      break;
-
     case 26: /* encrypted aes-128 */
     case 27: /* encrypted aes-192 */
     case 28: /* encrypted aes-256 */
-      ARCH_DEP(kmo_encrypted_aes)(r1, r2, regs);
+    {
+      ARCH_DEP(kmo_aes)(r1, r2, regs);
       break;
-
-   default:
-     ARCH_DEP(program_interrupt)(regs, PGM_SPECIFICATION_EXCEPTION);
-     break;
+    }
+    default:
+    {
+      ARCH_DEP(program_interrupt)(regs, PGM_SPECIFICATION_EXCEPTION);
+      break;
+    }
   }
 }
 
@@ -3436,44 +3610,39 @@ DEF_INST(perform_cryptographic_computation_d)
       regs->psw.cc = 0;
       return;
     }
-
     case 1: /* dea */
     case 2: /* tdea-128 */
     case 3: /* tdea-192 */
-      ARCH_DEP(pcc_cmac_dea)(r1, r2, regs);
-      break;
-
     case 9: /* encrypted dea */
     case 10: /* encrypted tdea-128 */
     case 11: /* encrypted tdea-192 */
-      ARCH_DEP(pcc_encrypted_cmac_dea)(r1, r2, regs);
+    {
+      ARCH_DEP(pcc_cmac_dea)(r1, r2, regs);
       break;
-      
+    } 
     case 18: /* aes-128 */
     case 19: /* aes-192 */
     case 20: /* aes-256 */
-      ARCH_DEP(pcc_cmac_aes)(r1, r2, regs);
-      break;
-
     case 26: /* encrypted aes-128 */
     case 27: /* encrypted aes-192 */
     case 28: /* encrypted aes-256 */
-      ARCH_DEP(pcc_encrypted_cmac_aes)(r1, r2, regs);
+    {
+      ARCH_DEP(pcc_cmac_aes)(r1, r2, regs);
       break;
-
+    }
     case 50: /* aes-128 */
     case 52: /* aes-256 */
-      ARCH_DEP(pcc_xts_aes)(r1, r2, regs);
-      break;
-
     case 58: /* aes-128 */
     case 60: /* aes-256 */
-      ARCH_DEP(pcc_xts_encrypted_aes)(r1, r2, regs);
+    {
+      ARCH_DEP(pcc_xts_aes)(r1, r2, regs);
       break;
-
+    }
     default:
+    {
       ARCH_DEP(program_interrupt)(regs, PGM_SPECIFICATION_EXCEPTION);
       break;
+    }
   }
 
 }
@@ -3486,9 +3655,9 @@ DEF_INST(perform_cryptographic_computation_d)
 DEF_INST(perform_cryptographic_key_management_operations_d)
 {
   int fc;
-  int keylen;
+  int keylen = 0;
   BYTE parameter_block[64];
-  int parameter_blocklen;
+  int parameter_blocklen = 0;
 
   UNREFERENCED(inst);
 
@@ -3524,59 +3693,66 @@ DEF_INST(perform_cryptographic_key_management_operations_d)
 
       return;
     }
-
     case 1: /* encrypt-dea */
     case 2: /* encrypt-tdea-128 */
     case 3: /* encrypt-tdea-192 */
+    {
+      keylen = fc * 8;
+      parameter_blocklen = keylen + 24;
+      break;
+    }  
     case 18: /* encrypt-aes-128 */
     case 19: /* encrypt-aes-192 */
     case 20: /* encrypt-aes-256 */
-      if(fc <= 3)
-      {
-        keylen = fc * 8;
-        parameter_blocklen = keylen + 24;
-      }
-      else
-      {
-        keylen = (fc - 17) * 8 + 8;
-        parameter_blocklen = keylen + 32;
-      }
-      
-      /* Test writeability */
-      ARCH_DEP(validate_operand)(GR_A(1, regs), 1, parameter_blocklen - 1, ACCTYPE_WRITE, regs);
-
-      /* Fetch the parameter block */
-      ARCH_DEP(vfetchc)(parameter_block, parameter_blocklen - 1, GR_A(1, regs), 1, regs);
-
-#ifdef OPTION_PCKMO_DEBUG
-      LOGBYTE("input :", parameter_block, parameter_blocklen);
-#endif
-      
-      /* Encrypt the key and fill the wrapping key verification pattern */
-      if(fc <= 3)
-      {
-        dea_wrap(parameter_block, keylen);
-        memcpy(&parameter_block[keylen], wkvp_regs_dea, 24);
-      }
-      else
-      {
-        aes_wrap(parameter_block, keylen);
-        memcpy(&parameter_block[keylen], wkvp_regs_aes, 32);
-      }
-        
-      /* Store the parameterblock */
-      ARCH_DEP(vstorec)(parameter_block, parameter_blocklen - 1, GR_A(1, regs), 1, regs);
-
-#ifdef OPTION_PCKMO_DEBUG
-      LOGBYTE("output:", parameter_block, parameter_blocklen);
-#endif
-
+    {
+      keylen = (fc - 16) * 8;
+      parameter_blocklen = keylen + 32;
       break;
-
+    }
     default:
+    {
       ARCH_DEP(program_interrupt)(regs, PGM_SPECIFICATION_EXCEPTION);
       break;
+    }
+  }      
+      
+  /* Test writeability */
+  ARCH_DEP(validate_operand)(GR_A(1, regs), 1, parameter_blocklen - 1, ACCTYPE_WRITE, regs);
+
+  /* Fetch the parameter block */
+  ARCH_DEP(vfetchc)(parameter_block, parameter_blocklen - 1, GR_A(1, regs), 1, regs);
+
+#ifdef OPTION_PCKMO_DEBUG
+  LOGBYTE("input :", parameter_block, parameter_blocklen);
+#endif
+      
+  /* Encrypt the key and fill the wrapping key verification pattern */
+  switch(fc)
+  {
+    case 1: /* encrypt-dea */
+    case 2: /* encrypt-tdea-128 */
+    case 3: /* encrypt-tdea-192 */
+    {
+      dea_wrap(parameter_block, keylen);
+      memcpy(&parameter_block[keylen], wkvp_regs_dea, 24);
+      break;
+    }
+    case 18: /* encrypt-aes-128 */
+    case 19: /* encrypt-aes-192 */
+    case 20: /* encrypt-aes-256 */
+    {
+      aes_wrap(parameter_block, keylen);
+      memcpy(&parameter_block[keylen], wkvp_regs_aes, 32);
+      break;
+    }
   }
+        
+  /* Store the parameterblock */
+  ARCH_DEP(vstorec)(parameter_block, parameter_blocklen - 1, GR_A(1, regs), 1, regs);
+
+#ifdef OPTION_PCKMO_DEBUG
+  LOGBYTE("output:", parameter_block, parameter_blocklen);
+#endif
 }
 #endif /* FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_3 */
 
