@@ -1351,7 +1351,6 @@ static void ARCH_DEP(kmac_aes)(int r1, int r2, REGS *regs)
     LOGBYTE("k     :", &parameter_block[16 + keylen], 32);
 #endif
 
-#ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_3
   /* Verify and unwrap */
   if(wrap)
   {
@@ -1364,7 +1363,6 @@ static void ARCH_DEP(kmac_aes)(int r1, int r2, REGS *regs)
     /* Unwrap the cryptographic key */
     aes_unwrap(parameter_block, keylen);
   }
-#endif		      
 
   /* Set the cryptographic key */
   aes_set_key(&context, &parameter_block[16], keylen * 8);
@@ -1922,7 +1920,7 @@ static void ARCH_DEP(kmctr_dea)(int r1, int r2, int r3, REGS *regs)
   int i;
   int keylen;
   BYTE message_block[8];
-  BYTE parameter_block[32];
+  BYTE parameter_block[48];
   int parameter_blocklen;
   int r1_is_not_r2;
   int r1_is_not_r3;
@@ -1948,9 +1946,6 @@ static void ARCH_DEP(kmctr_dea)(int r1, int r2, int r3, REGS *regs)
   parameter_blocklen = keylen;
   if(wrap)
     parameter_blocklen += 24;
-
-  /* Test writeability output chaining value */
-  ARCH_DEP(validate_operand)(GR_A(1, regs), 1, 7, ACCTYPE_WRITE, regs);
 
   /* Fetch the parameter block */
   ARCH_DEP(vfetchc)(parameter_block, parameter_blocklen - 1, GR_A(1, regs), 1, regs);
@@ -2031,8 +2026,6 @@ static void ARCH_DEP(kmctr_dea)(int r1, int r2, int r3, REGS *regs)
       case 1: /* dea */
         /* Encrypt and XOR */
         des_encrypt(&context1, countervalue_block, countervalue_block);
-        for(i = 0; i < 8; i++)
-          countervalue_block[i] ^= message_block[i];
         break;
 
       case 2: /* tdea-128 */
@@ -2040,8 +2033,6 @@ static void ARCH_DEP(kmctr_dea)(int r1, int r2, int r3, REGS *regs)
         des_encrypt(&context1, countervalue_block, countervalue_block);
         des_decrypt(&context2, countervalue_block, countervalue_block);
         des_encrypt(&context1, countervalue_block, countervalue_block);
-        for(i = 0 ; i < 8; i++)
-            countervalue_block[i] ^= message_block[i];
         break;
 
       case 3: /* tdea-192 */
@@ -2049,10 +2040,10 @@ static void ARCH_DEP(kmctr_dea)(int r1, int r2, int r3, REGS *regs)
         des_encrypt(&context1, countervalue_block, countervalue_block);
         des_decrypt(&context2, countervalue_block, countervalue_block);
         des_encrypt(&context3, countervalue_block, countervalue_block);
-        for(i = 0; i < 8; i++)
-          countervalue_block[i] ^= message_block[i];
         break;
     }
+    for(i = 0; i < 8; i++)
+      countervalue_block[i] ^= message_block[i];
 
     /* Store the output */
     ARCH_DEP(vstorec)(countervalue_block, 7, GR_A(r1, regs), r1, regs);
@@ -2067,7 +2058,7 @@ static void ARCH_DEP(kmctr_dea)(int r1, int r2, int r3, REGS *regs)
       SET_GR_A(r2, regs, GR_A(r2, regs) + 8);
     SET_GR_A(r2 + 1, regs, GR_A(r2 + 1, regs) - 8);
     if(likely(r1_is_not_r3 && r2_is_not_r3))
-      SET_GR_A(r2, regs, GR_A(r2, regs) + 8);
+      SET_GR_A(r3, regs, GR_A(r3, regs) + 8);
 
 #ifdef OPTION_KMCTR_DEBUG
     logmsg("  GR%02d  : " F_GREG "\n", r1, (regs)->GR(r1));
@@ -2095,6 +2086,7 @@ static void ARCH_DEP(kmctr_aes)(int r1, int r2, int r3, REGS *regs)
 {
   int carry;
   aes_context context;
+  BYTE countervalue_block[16];  
   int crypted;
   int i;
   int keylen;
@@ -2103,6 +2095,8 @@ static void ARCH_DEP(kmctr_aes)(int r1, int r2, int r3, REGS *regs)
   BYTE parameter_block[48];
   int parameter_blocklen;
   int r1_is_not_r2;
+  int r1_is_not_r3;
+  int r2_is_not_r3;
   int tfc;
   int wrap;
 
@@ -2120,13 +2114,10 @@ static void ARCH_DEP(kmctr_aes)(int r1, int r2, int r3, REGS *regs)
   /* Initialize values */
   tfc = GR0_tfc(regs);
   wrap = GR0_wrap(regs);
-  keylen = (fc - 17) * 8 + 8;
+  keylen = (tfc - 17) * 8 + 8;
   parameter_blocklen = keylen;
   if(wrap)
     parameter_blocklen += 32;
-
-  /* Test writeability output chaining value */
-  ARCH_DEP(validate_operand)(GR_A(1, regs), 1, 15, ACCTYPE_WRITE, regs);
 
   /* Fetch the parameter block */
   ARCH_DEP(vfetchc)(parameter_block, parameter_blocklen - 1, GR_A(1, regs), 1, regs);
@@ -2135,53 +2126,38 @@ static void ARCH_DEP(kmctr_aes)(int r1, int r2, int r3, REGS *regs)
   LOGBYTE("icv   :", parameter_block, 16);
   LOGBYTE("k     :", &parameter_block[16], parameter_blocklen - 16);
   if(wrap)
-    LOGBYTE("wkvp  :", &parameter_block[16 + keylen], 32);
+    LOGBYTE("wkvp  :", &parameter_block[keylen + 16], 32);
 #endif
 
   /* Set the cryptographic key */
-  aes_set_key(&context, &parameter_block[16], 64 * (fc + 1));
+  aes_set_key(&context, &parameter_block[16], keylen * 8);
 
   /* Try to process the CPU-determined amount of data */
   r1_is_not_r2 = r1 != r2;
+  r1_is_not_r3 = r1 != r3;
+  r2_is_not_r3 = r1 != r2;
   for(crypted = 0; crypted < PROCESS_MAX; crypted += 16)
   {
-    /* Fetch a block of data */
+    /* Fetch a block of data and counter-value */
     ARCH_DEP(vfetchc)(message_block, 15, GR_A(r2, regs), r2, regs);
+    ARCH_DEP(vfetchc)(countervalue_block, 15, GR_A(r3, regs), r3, regs);
 
 #ifdef OPTION_KMCTR_DEBUG
     LOGBYTE("input :", message_block, 16);
+    LOGBYTE("cv    :", countervalue_block, 16);
 #endif
 
     /* Do the job */
     /* Encrypt, save and XOR */
-    aes_encrypt(&context, parameter_block, parameter_block);
-    memcpy(ocv, message_block, 16);
+    aes_encrypt(&context, countervalue_block, countervalue_block);
     for(i = 0; i < 16; i++)
-      message_block[i] ^= parameter_block[i];
+      countervalue_block[i] ^= message_block[i];
 
     /* Store the output */
-    ARCH_DEP(vstorec)(message_block, 15, GR_A(r1, regs), r1, regs);
+    ARCH_DEP(vstorec)(countervalue_block, 15, GR_A(r1, regs), r1, regs);
 
 #ifdef OPTION_KMCTR_DEBUG
-    LOGBYTE("output:", message_block, 16);
-#endif
-
-    /* Increase OCV */
-    carry = 1;
-    for(i = 0; i < 16; i--)
-    {
-      ocv[15 - i] += carry;
-      if(!ocv[15 - i])
-        carry = 1;
-      else
-        carry = 0;
-    }
-
-    /* Store the output chaining value */
-    ARCH_DEP(vstorec)(ocv, 15, GR_A(1, regs), 1, regs);
-
-#ifdef OPTION_KMCTR_DEBUG
-    LOGBYTE("ocv   :", ocv, 16);
+    LOGBYTE("output:", countervalue_block, 16);
 #endif
 
     /* Update the registers */
@@ -2189,11 +2165,14 @@ static void ARCH_DEP(kmctr_aes)(int r1, int r2, int r3, REGS *regs)
     if(likely(r1_is_not_r2))
       SET_GR_A(r2, regs, GR_A(r2, regs) + 16);
     SET_GR_A(r2 + 1, regs, GR_A(r2 + 1, regs) - 16);
+    if(likely(r1_is_not_r3 && r2_is_not_r3))
+      SET_GR_A(r3, regs, GR_A(r3, regs) + 16);
 
 #ifdef OPTION_KMCTR_DEBUG
     logmsg("  GR%02d  : " F_GREG "\n", r1, (regs)->GR(r1));
     logmsg("  GR%02d  : " F_GREG "\n", r2, (regs)->GR(r2));
     logmsg("  GR%02d  : " F_GREG "\n", r2 + 1, (regs)->GR(r2 + 1));
+    logmsg("  GR%02d  : " F_GREG "\n", r3, (regs)->GR(r3));
 #endif
 
     /* check for end of data */
@@ -2202,9 +2181,6 @@ static void ARCH_DEP(kmctr_aes)(int r1, int r2, int r3, REGS *regs)
       regs->psw.cc = 0;
       return;
     }
-
-    /* Set cv for next 16 bytes */
-    memcpy(parameter_block, ocv, 16);
   }
 
   /* CPU-determined amount of data processed */
@@ -3018,12 +2994,9 @@ DEF_INST(cipher_message_d)
 #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_4
     case 50: /* xts aes-128 */
     case 52: /* xts aes-256 */
-      ARCH_DEP(km_xts_aes)(r1, r2, regs);
-      break;
-
     case 58: /* encrypted xts aes-128 */
     case 60: /* encrypted xts aes-256 */
-      ARCH_DEP(km_xts_encrypted_aes)(r1, r2, regs);
+      ARCH_DEP(km_xts_aes)(r1, r2, regs);
       break;
 #endif
 
@@ -3226,9 +3199,9 @@ DEF_INST(cipher_message_with_counter_d)
 #endif
 
   /* Check special conditions */
-  if(unlikely(!r1 || r1 & 0x01 || !r2 || r2 & 0x01))
+  if(unlikely(!r1 || r1 & 0x01 || !r2 || r2 & 0x01 || !r3 || r3 & 0x01))
     ARCH_DEP(program_interrupt)(regs, PGM_SPECIFICATION_EXCEPTION);
-
+  
   switch(GR0_fc(regs))
   {
     case 0: /* Query */
