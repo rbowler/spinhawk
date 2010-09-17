@@ -3691,12 +3691,12 @@ DEF_INST(perform_cryptographic_key_management_operations_d)
       if(fc <= 3)
       {
         dea_wrap(parameter_block, keylen);
-        memcpy(&parameter_block[parameter_blocklen], wkvp_regs_dea, 24);
+        memcpy(&parameter_block[keylen], wkvp_regs_dea, 24);
       }
       else
       {
         aes_wrap(parameter_block, keylen);
-        memcpy(&parameter_block[parameter_blocklen], wkvp_regs_aes, 32);
+        memcpy(&parameter_block[keylen], wkvp_regs_aes, 32);
       }
         
       /* Store the parameterblock */
