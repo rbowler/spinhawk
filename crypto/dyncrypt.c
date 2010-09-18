@@ -379,13 +379,13 @@ static BYTE wkvp_regs_dea[24] = "GFN5u46y%^%&mju%&$%tymty";
 /*----------------------------------------------------------------------------*/
 /* Wrap key using aes                                                         */
 /*----------------------------------------------------------------------------*/
-static void aes_wrap(BYTE *key, int keylen)
+static void wrap_aes(BYTE *key, int keylen)
 {
   BYTE buf[16];
   int i;
   aes_context context;
   BYTE cv[16];
-    
+  
   aes_set_key(&context, wk_regs_aes, 256);
   switch(keylen)
   {
@@ -418,54 +418,14 @@ static void aes_wrap(BYTE *key, int keylen)
 }
 
 /*----------------------------------------------------------------------------*/
-/* Unwrap key using aes                                                       */
-/*----------------------------------------------------------------------------*/
-static void aes_unwrap(BYTE *key, int keylen)
-{
-  BYTE buf[16];
-  aes_context context;
-  BYTE cv[16];
-  int i;
-  
-  aes_set_key(&context, wk_regs_aes, 256);
-  switch(keylen)
-  {
-    case 16:
-    {
-      aes_decrypt(&context, key, key);
-      break;
-    }  
-    case 24:
-    {
-      memcpy(cv, key, 8);
-      aes_decrypt(&context, &key[8], buf);
-      memcpy(&key[8], &buf[8], 8);
-      aes_decrypt(&context, key, key);
-      for(i = 0; i < 8; i++)
-        key[16 + i] = buf[i] ^ cv[i];
-      break;
-    }  
-    case 32:
-    {
-      memcpy(cv, key, 16);
-      aes_decrypt(&context, key, key);
-      aes_decrypt(&context, &key[16], &key[16]);
-      for(i = 0; i < 16; i++)
-        key[i + 16] ^= cv[i];
-      break;
-    }
-  }
-}
-
-/*----------------------------------------------------------------------------*/
 /* Wrap key using dea                                                         */
 /*----------------------------------------------------------------------------*/
-static void dea_wrap(BYTE *key, int keylen)
+static void wrap_dea(BYTE *key, int keylen)
 {
   des3_context context;
   int i;
   int j;
-  
+
   des3_set_3keys(&context, wk_regs_dea, &wk_regs_dea[8], &wk_regs_dea[16]);
   for(i = 0; i < keylen; i += 8)
   {
@@ -482,14 +442,63 @@ static void dea_wrap(BYTE *key, int keylen)
 }
 
 /*----------------------------------------------------------------------------*/
+/* Unwrap key using aes                                                       */
+/*----------------------------------------------------------------------------*/
+static int unwrap_aes(BYTE *key, int keylen, BYTE *wkvp)
+{
+  BYTE buf[16];
+  aes_context context;
+  BYTE cv[16];
+  int i;
+  
+  /* Verify verification pattern */
+  if(unlikely(memcmp(wkvp, wkvp_regs_aes, 32)))
+    return(1);
+  
+  aes_set_key(&context, wk_regs_aes, 256);
+  switch(keylen)
+  {
+    case 16:
+    {
+      aes_decrypt(&context, key, key);
+      break;
+    }  
+    case 24:
+    {
+      aes_decrypt(&context, &key[8], buf);
+      memcpy(&key[8], &buf[8], 8);
+      memcpy(cv, key, 8);
+      aes_decrypt(&context, key, key);
+      for(i = 0; i < 8; i++)
+        key[16 + i] = buf[i] ^ cv[i];
+      break;
+    }  
+    case 32:
+    {
+      memcpy(cv, key, 16);
+      aes_decrypt(&context, key, key);
+      aes_decrypt(&context, &key[16], &key[16]);
+      for(i = 0; i < 16; i++)
+        key[i + 16] ^= cv[i];
+      break;
+    }
+  }
+  return(0);
+}
+
+/*----------------------------------------------------------------------------*/
 /* Unwrap key using dea                                                       */
 /*----------------------------------------------------------------------------*/
-static void dea_unwrap(BYTE *key, int keylen)
+static int unwrap_dea(BYTE *key, int keylen, BYTE *wkvp)
 {
   BYTE cv[16];
   des3_context context;
   int i;
   int j;
+  
+  /* Verify verification pattern */
+  if(unlikely(memcmp(wkvp, wkvp_regs_aes, 32)))
+    return(1);
   
   des3_set_3keys(&context, wk_regs_dea, &wk_regs_dea[8], &wk_regs_dea[16]);
   for(i = 0; i < keylen; i += 8)
@@ -508,6 +517,7 @@ static void dea_unwrap(BYTE *key, int keylen)
         key[i + j] ^= cv[j];
     }
   }
+  return(0);
 }
 #endif /* __KEY_WRAP__ */
 #endif /* FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_3 */
@@ -992,16 +1002,10 @@ static void ARCH_DEP(km_dea)(int r1, int r2, REGS *regs)
 
 #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_3
   /* Verify and unwrap */
-  if(wrap)
+  if(wrap && unwrap_dea(parameter_block, keylen, &parameter_block[keylen]))
   {
-    if(unlikely(memcmp(&parameter_block[keylen], wkvp_regs_dea, 24)))
-    {
-      regs->psw.cc = 1;
-      return;
-    }
-      
-    /* Unwrap the cryptographic key */
-    dea_unwrap(parameter_block, keylen);
+    regs->psw.cc = 1;
+    return;
   }
 #endif  
 
@@ -1137,16 +1141,10 @@ static void ARCH_DEP(km_aes)(int r1, int r2, REGS *regs)
 
 #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_3
   /* Verify and unwrap */
-  if(wrap)
+  if(wrap && unwrap_aes(parameter_block, keylen, &parameter_block[keylen]))
   {
-    if(unlikely(memcmp(&parameter_block[keylen], wkvp_regs_aes, 32)))
-    {
-      regs->psw.cc = 1;
-      return;
-    }
-      
-    /* Unwrap the cryptographic key */
-    aes_unwrap(parameter_block, keylen);
+    regs->psw.cc = 1;
+    return;
   }
 #endif  
 
@@ -1276,16 +1274,10 @@ static void ARCH_DEP(kmac_dea)(int r1, int r2, REGS *regs)
 
 #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_3
   /* Verify and unwrap */
-  if(wrap)
+  if(wrap && unwrap_dea(&parameter_block[8], keylen, &parameter_block[keylen + 8]))
   {
-    if(unlikely(memcmp(&parameter_block[keylen + 8], wkvp_regs_dea, 24)))
-    {
-      regs->psw.cc = 1;
-      return;
-    }
-
-    /* Unwrap the cryptographic key */
-    dea_unwrap(&parameter_block[8], keylen);
+    regs->psw.cc = 1;
+    return;
   }
 #endif
 
@@ -1429,16 +1421,10 @@ static void ARCH_DEP(kmac_aes)(int r1, int r2, REGS *regs)
 #endif
 
   /* Verify and unwrap */
-  if(wrap)
+  if(wrap && unwrap_aes(&parameter_block[16], keylen, &parameter_block[keylen + 16]))
   {
-    if(unlikely(memcmp(&parameter_block[keylen + 16], wkvp_regs_aes, 32)))
-    {
-      regs->psw.cc = 1;
-      return;
-    }
-
-    /* Unwrap the cryptographic key */
-    aes_unwrap(&parameter_block[16], keylen);
+    regs->psw.cc = 1;
+    return;
   }
 
   /* Set the cryptographic key */
@@ -1564,16 +1550,10 @@ static void ARCH_DEP(kmc_dea)(int r1, int r2, REGS *regs)
 
 #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_3
   /* Verify and unwrap */
-  if(wrap)
+  if(wrap && unwrap_dea(&parameter_block[8], keylen, &parameter_block[keylen + 8]))
   {
-    if(unlikely(memcmp(&parameter_block[keylen + 8], wkvp_regs_dea, 24)))
-    {
-      regs->psw.cc = 1;
-      return;
-    }
-
-    /* Unwrap the cryptographic key */
-    dea_unwrap(&parameter_block[8], keylen);
+    regs->psw.cc = 1;
+    return;
   }
 #endif
 
@@ -1779,16 +1759,10 @@ static void ARCH_DEP(kmc_aes)(int r1, int r2, REGS *regs)
 
 #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_3
   /* Verify and unwrap */
-  if(wrap)
+  if(wrap && unwrap_aes(&parameter_block[16], keylen, &parameter_block[keylen + 16]))
   {
-    if(unlikely(memcmp(&parameter_block[keylen + 16], wkvp_regs_aes, 32)))
-    {
-      regs->psw.cc = 1;
-      return;
-    }
-
-    /* Unwrap the cryptographic key */
-    aes_unwrap(&parameter_block[16], keylen);
+    regs->psw.cc = 1;
+    return;
   }
 #endif
 
@@ -2066,16 +2040,10 @@ static void ARCH_DEP(kmctr_dea)(int r1, int r2, int r3, REGS *regs)
 #endif
 
   /* Verify and unwrap */
-  if(wrap)
+  if(wrap && unwrap_dea(parameter_block, keylen, &parameter_block[keylen]))
   {
-    if(memcmp(&parameter_block[keylen], wkvp_regs_dea, 24))
-    {
-      regs->psw.cc = 1;
-      return;
-    }
-
-    /* Unwrap the cryptographic key */
-    dea_unwrap(parameter_block, keylen);
+    regs->psw.cc = 1;
+    return;
   }
 
   /* Set the cryptographic key */
@@ -2227,6 +2195,12 @@ static void ARCH_DEP(kmctr_aes)(int r1, int r2, int r3, REGS *regs)
     LOGBYTE("wkvp  :", &parameter_block[keylen + 16], 32);
 #endif
 
+  if(wrap && unwrap_aes(parameter_block, keylen, &parameter_block[keylen]))
+  {
+    regs->psw.cc = 1;
+    return;
+  }
+
   /* Set the cryptographic key */
   aes_set_key(&context, &parameter_block[16], keylen * 8);
 
@@ -2362,16 +2336,10 @@ static void ARCH_DEP(kmf_dea)(int r1, int r2, REGS *regs)
 #endif
 
   /* Verify and unwrap */
-  if(wrap)
+  if(wrap && unwrap_dea(&parameter_block[8], keylen, &parameter_block[keylen + 8]))
   {
-    if(unlikely(memcmp(&parameter_block[keylen + 8], wkvp_regs_dea, 24)))
-    {
-      regs->psw.cc = 1;
-      return;
-    }
-
-    /* Unwrap the cryptographic key */
-    dea_unwrap(&parameter_block[8], keylen);
+    regs->psw.cc = 1;
+    return;
   }
 
   /* Set the cryptographic key */
@@ -2540,16 +2508,10 @@ static void ARCH_DEP(kmf_aes)(int r1, int r2, REGS *regs)
 #endif
 
   /* Verify and unwrap */
-  if(wrap)
+  if(wrap && unwrap_aes(&parameter_block[16], keylen, &parameter_block[keylen + 16]))
   {
-    if(unlikely(memcmp(&parameter_block[keylen + 16], wkvp_regs_aes, 32)))
-    {
-      regs->psw.cc = 1;
-      return;
-    }
-
-    /* Unwrap the cryptographic key */
-    aes_unwrap(&parameter_block[16], keylen);
+    regs->psw.cc = 1;
+    return;
   }
 
   /* Set the cryptographic key */
@@ -2692,16 +2654,10 @@ static void ARCH_DEP(kmo_dea)(int r1, int r2, REGS *regs)
 #endif
 
   /* Verify and unwrap */
-  if(wrap)
+  if(wrap && unwrap_dea(&parameter_block[8], keylen, &parameter_block[keylen + 8]))
   {
-    if(unlikely(memcmp(&parameter_block[keylen + 8], wkvp_regs_dea, 24)))
-    {
-      regs->psw.cc = 1;
-      return;
-    }
-
-    /* Unwrap the cryptographic key */
-    dea_unwrap(&parameter_block[8], keylen);
+    regs->psw.cc = 1;
+    return;
   }
 
   /* Set the cryptographic key */
@@ -2845,16 +2801,10 @@ static void ARCH_DEP(kmo_aes)(int r1, int r2, REGS *regs)
 #endif
 
   /* Verify and unwrap */
-  if(wrap)
+  if(wrap && unwrap_aes(&parameter_block[16], keylen, &parameter_block[keylen + 16]))
   {
-    if(unlikely(memcmp(&parameter_block[keylen + 16], wkvp_regs_aes, 32)))
-    {
-      regs->psw.cc = 1;
-      return;
-    }
-
-    /* Unwrap the cryptographic key */
-    aes_unwrap(&parameter_block[16], keylen);
+    regs->psw.cc = 1;
+    return;
   }
 
   /* Set the cryptographic key */
@@ -3742,7 +3692,7 @@ DEF_INST(perform_cryptographic_key_management_operations_d)
     case 2: /* encrypt-tdea-128 */
     case 3: /* encrypt-tdea-192 */
     {
-      dea_wrap(parameter_block, keylen);
+      wrap_dea(parameter_block, keylen);
       memcpy(&parameter_block[keylen], wkvp_regs_dea, 24);
       break;
     }
@@ -3750,7 +3700,7 @@ DEF_INST(perform_cryptographic_key_management_operations_d)
     case 19: /* encrypt-aes-192 */
     case 20: /* encrypt-aes-256 */
     {
-      aes_wrap(parameter_block, keylen);
+      wrap_aes(parameter_block, keylen);
       memcpy(&parameter_block[keylen], wkvp_regs_aes, 32);
       break;
     }
