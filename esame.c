@@ -5344,9 +5344,9 @@ BYTE ARCH_DEP(stfl_data)[] = {
 #endif /*defined(FEATURE_FLOATING_POINT_EXTENSION_FACILITY)*/   /*810*/
                  ,
                  0
-#if defined(FEATURE_SET_PROGRAM_PARAMETER_FACILITY)
-                 | STFL_5_SET_PROG_PARAM
-#endif /*defined(FEATURE_SET_PROGRAM_PARAMETER_FACILITY)*/
+#if defined(FEATURE_LOAD_PROGRAM_PARAMETER_FACILITY)
+                 | STFL_5_LOAD_PROG_PARAM
+#endif /*defined(FEATURE_LOAD_PROGRAM_PARAMETER_FACILITY)*/
 #if defined(FEATURE_FPS_ENHANCEMENT)
                  | STFL_5_FPS_ENHANCEMENT
 #endif /*defined(FEATURE_FPS_ENHANCEMENT)*/
@@ -8408,6 +8408,26 @@ int     n;                              /* Position of leftmost one  */
 } /* end DEF_INST(find_leftmost_one_long_register) */
 #endif /*defined(FEATURE_EXTENDED_IMMEDIATE)*/                  /*@Z9*/
 
+#if defined(FEATURE_LOAD_PROGRAM_PARAMETER_FACILITY)            /*810*/
+/*-------------------------------------------------------------------*/
+/* B280 LPP   - Load Program Parameter                           [S] */
+/*-------------------------------------------------------------------*/
+DEF_INST(load_program_parameter)
+{
+int     b2;                             /* Base of effective addr    */
+U64     effective_addr2;                /* Effective address         */
+BYTE    dword[8];
+
+    S(inst, regs, b2, effective_addr2);
+
+    PRIV_CHECK(regs);
+
+    /* Fetch data from operand address */
+    ARCH_DEP(vfetchc) ( dword, 8-1, effective_addr2, b2, regs );
+    memcpy(sysblk.program_parameter,dword,sizeof(sysblk.program_parameter));
+
+} /* end DEF_INST(load_program_parameter) */
+#endif /*defined(FEATURE_LOAD_PROGRAM_PARAMETER_FACILITY)*/     /*810*/ 
 
 #if !defined(_GEN_ARCH)
 

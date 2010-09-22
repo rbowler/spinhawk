@@ -100,6 +100,11 @@ int ARCH_DEP(system_reset) (int cpu, int clear)
         /* Perform I/O subsystem reset */
         io_reset ();
 
+#if defined(FEATURE_LOAD_PROGRAM_PARAMETER_FACILITY)
+        /* Clear the program-parameter register */
+        memset(sysblk.program_parameter,0,sizeof(sysblk.program_parameter));
+#endif /*defined(FEATURE_LOAD_PROGRAM_PARAMETER_FACILITY)*/
+
         /* Clear storage */
         sysblk.main_clear = sysblk.xpnd_clear = 0;
         storage_clear();
@@ -429,6 +434,7 @@ int ARCH_DEP(initial_cpu_reset) (REGS *regs)
     regs->fpc    = 0;
     regs->PX     = 0;
     regs->psw.AMASK_G = AMASK24;
+
     /* 
      * ISW20060125 : Since we reset the prefix, we must also adjust 
      * the PSA ptr

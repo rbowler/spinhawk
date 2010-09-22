@@ -436,6 +436,11 @@ struct SYSBLK {
         BYTE    wkvpdea_reg[24];        /* Pattern registers         */
 #endif /*defined(_FEATURE_MESSAGE_SECURITY_ASSIST)*/
 
+     /* CPU Measurement Counter facility 
+        CPU Measurement Sampling facility
+        Load Program Parameter facility */
+        BYTE    program_parameter[8];   /* Program Parameter Register*/
+
 #if defined(_FEATURE_VECTOR_FACILITY)
         VFREGS  vf[MAX_CPU_ENGINES];    /* Vector Facility           */
 #endif /*defined(_FEATURE_VECTOR_FACILITY)*/

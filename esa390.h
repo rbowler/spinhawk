@@ -1369,7 +1369,7 @@ typedef struct _MBK {
 #define STFL_4_FP_EXTENSION     0x04    /* Floating-point extension
                                            facility installed     810*/
 /* Byte STFL_5: STFLE bits 40-47 */
-#define STFL_5_SET_PROG_PARAM   0x80    /* Set-Program-Parameter
+#define STFL_5_LOAD_PROG_PARAM  0x80    /* Load-Program-Parameter
                                            facility installed (ESAME)*/
 #define STFL_5_FPS_ENHANCEMENT  0x40    /* Floating point support
                                            enhancements (FPR-GR-loading
