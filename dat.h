@@ -1232,6 +1232,12 @@ U16     sx, px;                         /* Segment and page index,
                 if ((rte & REGTAB_TT) != TT_R1TABL)
                     goto tran_spec_excp;
 
+#if defined(FEATURE_ENHANCED_DAT_FACILITY)
+                if ((regs->CR_L(0) & CR0_ZPAG_SZ_1M)
+                 && (rte & REGTAB_P))
+                    regs->dat.protect |= 1;
+#endif /*defined(FEATURE_ENHANCED_DAT_FACILITY)*/
+
                 /* Extract the region-second table origin, offset, and
                    length from the region-first table entry */
                 rto = rte & REGTAB_TO;
@@ -1279,6 +1285,12 @@ U16     sx, px;                         /* Segment and page index,
                 if ((rte & REGTAB_TT) != TT_R2TABL)
                     goto tran_spec_excp;
 
+#if defined(FEATURE_ENHANCED_DAT_FACILITY)
+                if ((regs->CR_L(0) & CR0_ZPAG_SZ_1M)
+                 && (rte & REGTAB_P))
+                    regs->dat.protect |= 1;
+#endif /*defined(FEATURE_ENHANCED_DAT_FACILITY)*/
+
                 /* Extract the region-third table origin, offset, and
                    length from the region-second table entry */
                 rto = rte & REGTAB_TO;
@@ -1325,6 +1337,12 @@ U16     sx, px;                         /* Segment and page index,
                    correct type of region table */
                 if ((rte & REGTAB_TT) != TT_R3TABL)
                     goto tran_spec_excp;
+
+#if defined(FEATURE_ENHANCED_DAT_FACILITY)
+                if ((regs->CR_L(0) & CR0_ZPAG_SZ_1M)
+                 && (rte & REGTAB_P))
+                    regs->dat.protect |= 1;
+#endif /*defined(FEATURE_ENHANCED_DAT_FACILITY)*/
 
                 /* Extract the segment table origin, offset, and
                    length from the region-third table entry */
@@ -1375,6 +1393,25 @@ U16     sx, px;                         /* Segment and page index,
                entry indicates a common segment */
             if (regs->dat.private && (ste & ZSEGTAB_C))
                 goto tran_spec_excp;
+
+#if defined(FEATURE_ENHANCED_DAT_FACILITY)
+            if ((regs->CR_L(0) & CR0_ZPAG_SZ_1M)
+              && (ste & ZSEGTAB_FC))
+            {
+            
+                /* Set protection indicator if page protection is indicated */
+                if (ste & ZSEGTAB_P)
+                    regs->dat.protect |= 1;
+
+                /* Combine the page frame real address with the byte index
+                   of the virtual address to form the real address */
+                regs->dat.raddr = (ste & ZSEGTAB_SFAA) | (vaddr & ~ZSEGTAB_SFAA);
+                regs->dat.rpfra = (ste & ZSEGTAB_SFAA);
+
+// ZZ: INCOMPLETE
+
+            }
+#endif /*defined(FEATURE_ENHANCED_DAT_FACILITY)*/
 
             /* Extract the page table origin from segment table entry */
             pto = ste & ZSEGTAB_PTO;
