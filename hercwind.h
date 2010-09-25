@@ -150,6 +150,9 @@ typedef int             mode_t;
 #define strerror        w32_strerror
 #define strerror_r      w32_strerror_r
 
+#define srandom         srand
+#define random          rand
+
 #define inline          __inline
 #define __inline__      __inline
 
