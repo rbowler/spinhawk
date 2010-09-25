@@ -470,6 +470,10 @@ int ARCH_DEP(initial_cpu_reset) (REGS *regs)
     if(regs->host && regs->guestregs)
       ARCH_DEP(initial_cpu_reset)(regs->guestregs);
 
+#if defined(_FEATURE_MESSAGE_SECURITY_ASSIST)
+    renew_wrapping_keys();
+#endif /*defined(_FEATURE_MESSAGE_SECURITY_ASSIST)*/
+
     return 0;
 } /* end function initial_cpu_reset */
 

@@ -427,6 +427,15 @@ struct SYSBLK {
         LOCK    todlock;                /* TOD clock update lock     */
         TID     todtid;                 /* Thread-id for TOD update  */
         REGS   *regs[MAX_CPU_ENGINES+1];   /* Registers for each CPU */
+
+#if defined(_FEATURE_MESSAGE_SECURITY_ASSIST)
+        LOCK    wklock;                 /* Update lock               */
+        BYTE    wkaes_reg[32];          /* Wrapping-key registers    */
+        BYTE    wkdea_reg[24];
+        BYTE    wkvpaes_reg[32];        /* Wrapping-key Verification */
+        BYTE    wkvpdea_reg[24];        /* Pattern registers         */
+#endif /*defined(_FEATURE_MESSAGE_SECURITY_ASSIST)*/
+
 #if defined(_FEATURE_VECTOR_FACILITY)
         VFREGS  vf[MAX_CPU_ENGINES];    /* Vector Facility           */
 #endif /*defined(_FEATURE_VECTOR_FACILITY)*/
