@@ -27,6 +27,9 @@
 #if defined(OPTION_FISHIO)
 #include "w32chan.h"
 #endif // defined(OPTION_FISHIO)
+#if defined(_FEATURE_MESSAGE_SECURITY_ASSIST)
+#include "hexterns.h"
+#endif
 
 /*-------------------------------------------------------------------*/
 /* Function to perform System Reset   (either 'normal' or 'clear')   */
