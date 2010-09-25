@@ -210,6 +210,7 @@
         logmsg("."); \
     } \
     logmsg(" |\n"); \
+    buf[0] = 0; \
   } \
 }
 
@@ -1429,7 +1430,7 @@ static void ARCH_DEP(km_xts_aes)(int r1, int r2, REGS *regs)
 
 #ifdef OPTION_KM_DEBUG
     LOGBYTE("output:", message_block, 16);
-    LOGBYTE("xtsp  :", &parameter_block[parameter_bloklen - 16]);
+    LOGBYTE("xtsp  :", &parameter_block[parameter_blocklen - 16], 16);
 #endif
 
     /* Update the registers */
