@@ -576,7 +576,7 @@ static int unwrap_dea(BYTE *key, int keylen, BYTE *wkvp)
   
   /* Verify verification pattern */
   obtain_lock(&sysblk.wklock);
-  if(unlikely(memcmp(wkvp, sysblk.wkvpaes_reg, 32)))
+  if(unlikely(memcmp(wkvp, sysblk.wkvpdea_reg, 24)))
   {
     release_lock(&sysblk.wklock);
     return(1);
@@ -1164,6 +1164,11 @@ static void ARCH_DEP(km_dea)(int r1, int r2, REGS *regs)
   /* Verify and unwrap */
   if(wrap && unwrap_dea(parameter_block, keylen, &parameter_block[keylen]))
   {
+
+#ifdef OPTION_KM_DEBUG
+    WRMSG(HHC90111, "D");
+#endif
+
     regs->psw.cc = 1;
     return;
   }
@@ -1303,6 +1308,11 @@ static void ARCH_DEP(km_aes)(int r1, int r2, REGS *regs)
   /* Verify and unwrap */
   if(wrap && unwrap_aes(parameter_block, keylen, &parameter_block[keylen]))
   {
+
+#ifdef OPTION_KM_DEBUG
+    WRMSG(HHC90111, "D");
+#endif
+
     regs->psw.cc = 1;
     return;
   }
@@ -1415,6 +1425,11 @@ static void ARCH_DEP(km_xts_aes)(int r1, int r2, REGS *regs)
   /* Verify and unwrap */
   if(wrap && unwrap_aes(parameter_block, keylen, &parameter_block[keylen]))
   {
+
+#ifdef OPTION_KM_DEBUG
+    WRMSG(HHC90111, "D");
+#endif
+
     regs->psw.cc = 1;
     return;
   }
@@ -1556,6 +1571,11 @@ static void ARCH_DEP(kmac_dea)(int r1, int r2, REGS *regs)
   /* Verify and unwrap */
   if(wrap && unwrap_dea(&parameter_block[8], keylen, &parameter_block[keylen + 8]))
   {
+
+#ifdef OPTION_KM_DEBUG
+    WRMSG(HHC90111, "D");
+#endif
+
     regs->psw.cc = 1;
     return;
   }
@@ -1703,6 +1723,11 @@ static void ARCH_DEP(kmac_aes)(int r1, int r2, REGS *regs)
   /* Verify and unwrap */
   if(wrap && unwrap_aes(&parameter_block[16], keylen, &parameter_block[keylen + 16]))
   {
+
+#ifdef OPTION_KM_DEBUG
+    WRMSG(HHC90111, "D");
+#endif
+
     regs->psw.cc = 1;
     return;
   }
@@ -1832,6 +1857,11 @@ static void ARCH_DEP(kmc_dea)(int r1, int r2, REGS *regs)
   /* Verify and unwrap */
   if(wrap && unwrap_dea(&parameter_block[8], keylen, &parameter_block[keylen + 8]))
   {
+
+#ifdef OPTION_KM_DEBUG
+    WRMSG(HHC90111, "D");
+#endif
+
     regs->psw.cc = 1;
     return;
   }
@@ -2041,6 +2071,11 @@ static void ARCH_DEP(kmc_aes)(int r1, int r2, REGS *regs)
   /* Verify and unwrap */
   if(wrap && unwrap_aes(&parameter_block[16], keylen, &parameter_block[keylen + 16]))
   {
+
+#ifdef OPTION_KM_DEBUG
+    WRMSG(HHC90111, "D");
+#endif
+
     regs->psw.cc = 1;
     return;
   }
@@ -2322,6 +2357,11 @@ static void ARCH_DEP(kmctr_dea)(int r1, int r2, int r3, REGS *regs)
   /* Verify and unwrap */
   if(wrap && unwrap_dea(parameter_block, keylen, &parameter_block[keylen]))
   {
+
+#ifdef OPTION_KM_DEBUG
+    WRMSG(HHC90111, "D");
+#endif
+
     regs->psw.cc = 1;
     return;
   }
@@ -2477,6 +2517,11 @@ static void ARCH_DEP(kmctr_aes)(int r1, int r2, int r3, REGS *regs)
 
   if(wrap && unwrap_aes(parameter_block, keylen, &parameter_block[keylen]))
   {
+
+#ifdef OPTION_KM_DEBUG
+    WRMSG(HHC90111, "D");
+#endif
+
     regs->psw.cc = 1;
     return;
   }
@@ -2618,6 +2663,11 @@ static void ARCH_DEP(kmf_dea)(int r1, int r2, REGS *regs)
   /* Verify and unwrap */
   if(wrap && unwrap_dea(&parameter_block[8], keylen, &parameter_block[keylen + 8]))
   {
+
+#ifdef OPTION_KM_DEBUG
+    WRMSG(HHC90111, "D");
+#endif
+
     regs->psw.cc = 1;
     return;
   }
@@ -2790,6 +2840,11 @@ static void ARCH_DEP(kmf_aes)(int r1, int r2, REGS *regs)
   /* Verify and unwrap */
   if(wrap && unwrap_aes(&parameter_block[16], keylen, &parameter_block[keylen + 16]))
   {
+
+#ifdef OPTION_KM_DEBUG
+    WRMSG(HHC90111, "D");
+#endif
+
     regs->psw.cc = 1;
     return;
   }
@@ -2936,6 +2991,11 @@ static void ARCH_DEP(kmo_dea)(int r1, int r2, REGS *regs)
   /* Verify and unwrap */
   if(wrap && unwrap_dea(&parameter_block[8], keylen, &parameter_block[keylen + 8]))
   {
+
+#ifdef OPTION_KM_DEBUG
+    WRMSG(HHC90111, "D");
+#endif
+
     regs->psw.cc = 1;
     return;
   }
@@ -3083,6 +3143,11 @@ static void ARCH_DEP(kmo_aes)(int r1, int r2, REGS *regs)
   /* Verify and unwrap */
   if(wrap && unwrap_aes(&parameter_block[16], keylen, &parameter_block[keylen + 16]))
   {
+
+#ifdef OPTION_KM_DEBUG
+    WRMSG(HHC90111, "D");
+#endif
+
     regs->psw.cc = 1;
     return;
   }
