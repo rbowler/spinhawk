@@ -26,11 +26,140 @@
 
 #if defined(FEATURE_GENERAL_INSTRUCTIONS_EXTENSION_FACILITY)
 
+#if defined(FEATURE_INTERLOCKED_ACCESS_FACILITY)                /*810*/
+/*-------------------------------------------------------------------*/
+/* Perform Interlocked Storage Immediate Operation                   */
+/* Subroutine called by ASI and ALSI instructions                    */
+/*-------------------------------------------------------------------*/
+DEF_INST(perform_interlocked_storage_immediate)                 /*810*/
+{
+BYTE    opcode;                         /* 2nd byte of opcode        */
+BYTE    i2;                             /* Immediate byte            */
+int     b1;                             /* Base of effective addr    */
+VADR    addr1;                          /* Effective address         */
+BYTE    *m1;                            /* Mainstor address          */
+U32     n;                              /* 32-bit operand value      */
+U32     result;                         /* Result value              */
+U32     old, new;                       /* Values for cmpxchg4       */
+int     cc;                             /* Condition code            */
+int     rc;                             /* Return code               */
+
+    SIY(inst, regs, i2, b1, addr1);
+
+    /* Extract second byte of instruction opcode */
+    opcode = inst[5];
+
+    /* Get mainstor address of storage operand */
+    m1 = MADDRL (addr1, 4, b1, regs, ACCTYPE_WRITE, regs->psw.pkey);
+
+    do {
+        /* Load 32-bit operand from operand address */
+        n = ARCH_DEP(vfetch4) (addr1, b1, regs);
+
+        switch (opcode) {
+        case 0x6A: /* Add Storage Immediate */
+            /* Add signed operands and set condition code */
+            cc = add_signed (&result, n, (S32)(S8)i2);
+            break;
+        case 0x6E: /* Add Logical Storage with Signed Immediate */
+            /* Add operands and set condition code */
+            cc = (S8)i2 < 0 ?
+                sub_logical (&result, n, (S32)(-(S8)i2)) :
+                add_logical (&result, n, (S32)(S8)i2);
+            break;
+        default: /* To prevent compiler warnings */
+            result = 0;
+            cc = 0;
+        } /* end switch(opcode) */
+
+        /* Regular store if operand is not on a fullword boundary */
+        if ((addr1 & 0x03) != 0) {
+            ARCH_DEP(vstore4) (result, addr1, b1, regs);
+            break;
+        }
+
+        /* Interlocked exchange if operand is on a fullword boundary */
+        old = CSWAP32(n);
+        new = CSWAP32(result);
+        rc = cmpxchg4(&old, new, m1);
+
+    } while (rc != 0);
+
+    /* Set condition code in PSW */
+    regs->psw.cc = cc;
+
+} /* end DEF_INST(perform_interlocked_storage_immediate) */
+
+/*-------------------------------------------------------------------*/
+/* Perform Interlocked Long Storage Immediate Operation              */
+/* Subroutine called by AGSI and ALGSI instructions                  */
+/*-------------------------------------------------------------------*/
+DEF_INST(perform_interlocked_long_storage_immediate)            /*810*/
+{
+BYTE    opcode;                         /* 2nd byte of opcode        */
+BYTE    i2;                             /* Immediate byte            */
+int     b1;                             /* Base of effective addr    */
+VADR    addr1;                          /* Effective address         */
+BYTE    *m1;                            /* Mainstor address          */
+U64     n;                              /* 64-bit operand value      */
+U64     result;                         /* Result value              */
+U64     old, new;                       /* Values for cmpxchg4       */
+int     cc;                             /* Condition code            */
+int     rc;                             /* Return code               */
+
+    SIY(inst, regs, i2, b1, addr1);
+
+    /* Extract second byte of instruction opcode */
+    opcode = inst[5];
+
+    /* Get mainstor address of storage operand */
+    m1 = MADDRL (addr1, 8, b1, regs, ACCTYPE_WRITE, regs->psw.pkey);
+
+    do {
+        /* Load 64-bit operand from operand address */
+        n = ARCH_DEP(vfetch8) (addr1, b1, regs);
+
+        switch (opcode) {
+        case 0x7A: /* Add Long Storage Immediate */
+            /* Add signed operands and set condition code */
+            cc = add_signed_long (&result, n, (S64)(S8)i2);
+            break;
+        case 0x7E: /* Add Logical Long Storage with Signed Immediate */
+            /* Add operands and set condition code */
+            cc = (S8)i2 < 0 ?
+                sub_logical_long (&result, n, (S64)(-(S8)i2)) :
+                add_logical_long (&result, n, (S64)(S8)i2);
+            break;
+        default: /* To prevent compiler warnings */
+            result = 0;
+            cc = 0;
+        } /* end switch(opcode) */
+
+        /* Regular store if operand is not on a doubleword boundary */
+        if ((addr1 & 0x07) != 0) {
+            ARCH_DEP(vstore8) (result, addr1, b1, regs);
+            break;
+        }
+
+        /* Interlocked exchange if operand is on doubleword boundary */
+        old = CSWAP64(n);
+        new = CSWAP64(result);
+        rc = cmpxchg8(&old, new, m1);
+
+    } while (rc != 0);
+
+    /* Set condition code in PSW */
+    regs->psw.cc = cc;
+
+} /* end DEF_INST(perform_interlocked_long_storage_immediate) */
+#endif /*defined(FEATURE_INTERLOCKED_ACCESS_FACILITY)*/         /*810*/
+
 /*-------------------------------------------------------------------*/
 /* EB6A ASI   - Add Immediate Storage                          [SIY] */
 /*-------------------------------------------------------------------*/
 DEF_INST(add_immediate_storage)
 {
+#if !defined(FEATURE_INTERLOCKED_ACCESS_FACILITY)               /*810*/
 BYTE    i2;                             /* Immediate byte            */
 int     b1;                             /* Base of effective addr    */
 VADR    effective_addr1;                /* Effective address         */
@@ -51,6 +180,10 @@ int     cc;                             /* Condition Code            */
     /* Update Condition Code */
     regs->psw.cc = cc;
 
+#else /*defined(FEATURE_INTERLOCKED_ACCESS_FACILITY)*/          /*810*/
+    ARCH_DEP(perform_interlocked_storage_immediate) (inst, regs);
+#endif /*defined(FEATURE_INTERLOCKED_ACCESS_FACILITY)*/         /*810*/
+
     /* Program check if fixed-point overflow */
     if ( regs->psw.cc == 3 && FOMASK(&regs->psw) )
         regs->program_interrupt (regs, PGM_FIXED_POINT_OVERFLOW_EXCEPTION);
@@ -63,6 +196,7 @@ int     cc;                             /* Condition Code            */
 /*-------------------------------------------------------------------*/
 DEF_INST(add_immediate_long_storage)
 {
+#if !defined(FEATURE_INTERLOCKED_ACCESS_FACILITY)               /*810*/
 BYTE    i2;                             /* Immediate byte            */
 int     b1;                             /* Base of effective addr    */
 VADR    effective_addr1;                /* Effective address         */
@@ -83,6 +217,10 @@ int     cc;                             /* Condition Code            */
     /* Update Condition Code */
     regs->psw.cc = cc;
 
+#else /*defined(FEATURE_INTERLOCKED_ACCESS_FACILITY)*/          /*810*/
+    ARCH_DEP(perform_interlocked_long_storage_immediate) (inst, regs);
+#endif /*defined(FEATURE_INTERLOCKED_ACCESS_FACILITY)*/         /*810*/
+
     /* Program check if fixed-point overflow */
     if ( regs->psw.cc == 3 && FOMASK(&regs->psw) )
         regs->program_interrupt (regs, PGM_FIXED_POINT_OVERFLOW_EXCEPTION);
@@ -95,6 +233,7 @@ int     cc;                             /* Condition Code            */
 /*-------------------------------------------------------------------*/
 DEF_INST(add_logical_with_signed_immediate)
 {
+#if !defined(FEATURE_INTERLOCKED_ACCESS_FACILITY)               /*810*/
 BYTE    i2;                             /* Immediate byte            */
 int     b1;                             /* Base of effective addr    */
 VADR    effective_addr1;                /* Effective address         */
@@ -117,6 +256,10 @@ int     cc;                             /* Condition Code            */
     /* Update Condition Code */
     regs->psw.cc = cc;
 
+#else /*defined(FEATURE_INTERLOCKED_ACCESS_FACILITY)*/          /*810*/
+    ARCH_DEP(perform_interlocked_storage_immediate) (inst, regs);
+#endif /*defined(FEATURE_INTERLOCKED_ACCESS_FACILITY)*/         /*810*/
+
 } /* end DEF_INST(add_logical_with_signed_immediate) */
 
 
@@ -125,6 +268,7 @@ int     cc;                             /* Condition Code            */
 /*-------------------------------------------------------------------*/
 DEF_INST(add_logical_with_signed_immediate_long)
 {
+#if !defined(FEATURE_INTERLOCKED_ACCESS_FACILITY)               /*810*/
 BYTE    i2;                             /* Immediate byte            */
 int     b1;                             /* Base of effective addr    */
 VADR    effective_addr1;                /* Effective address         */
@@ -146,6 +290,10 @@ int     cc;                             /* Condition Code            */
 
     /* Update Condition Code */
     regs->psw.cc = cc;
+
+#else /*defined(FEATURE_INTERLOCKED_ACCESS_FACILITY)*/          /*810*/
+    ARCH_DEP(perform_interlocked_long_storage_immediate) (inst, regs);
+#endif /*defined(FEATURE_INTERLOCKED_ACCESS_FACILITY)*/         /*810*/
 
 } /* end DEF_INST(add_logical_with_signed_immediate_long) */
 
@@ -2423,6 +2571,335 @@ int     r1, r2, r3;                     /* Values of R fields        */
 } /* end DEF_INST(subtract_logical_high_high_low_register) */
 
 #endif /*defined(FEATURE_HIGH_WORD_FACILITY)*/                  /*810*/
+
+
+#if defined(FEATURE_INTERLOCKED_ACCESS_FACILITY)                /*810*/
+
+/*-------------------------------------------------------------------*/
+/* Load and Perform Interlocked Access Operation                     */
+/* Subroutine called by LAA,LAAL,LAN,LAX,LAO instructions            */
+/*-------------------------------------------------------------------*/
+DEF_INST(load_and_perform_interlocked_access)                   /*810*/
+{
+int     r1, r3;                         /* Register numbers          */
+int     b2;                             /* Base of effective addr    */
+VADR    addr2;                          /* Effective address         */
+BYTE    *m2;                            /* Mainstor address          */
+U32     v2, v3;                         /* Operand values            */
+U32     result;                         /* Result value              */
+U32     old, new;                       /* Values for cmpxchg4       */
+int     cc;                             /* Condition code            */
+int     rc;                             /* Return code               */
+BYTE    opcode;                         /* 2nd byte of opcode        */
+
+    RSY(inst, regs, r1, r3, b2, addr2);
+
+    /* Extract second byte of instruction opcode */
+    opcode = inst[5];
+
+    /* Obtain third operand value from R3 register */
+    v3 = regs->GR_L(r3);
+
+    /* Get mainstor address of storage operand */
+    m2 = MADDRL (addr2, 4, b2, regs, ACCTYPE_WRITE, regs->psw.pkey);
+
+    do {
+        /* Load storage operand value from operand address */
+        v2 = ARCH_DEP(vfetch4) ( addr2, b2, regs );
+
+        switch (opcode) {
+        case 0xF4: /* Load and And */
+            /* AND operand values and set condition code */
+            result = v2 & v3;
+            cc = result ? 1 : 0;
+            break;
+        case 0xF6: /* Load and Or */
+            /* OR operand values and set condition code */
+            result = v2 | v3;
+            cc = result ? 1 : 0;
+            break;
+        case 0xF7: /* Load and Exclusive Or */
+            /* XOR operand values and set condition code */
+            result = v2 ^ v3;
+            cc = result ? 1 : 0;
+            break;
+        case 0xF8: /* Load and Add */
+            /* Add signed operands and set condition code */
+            cc = add_signed (&result, v2, v3);
+            break;
+        case 0xFA: /* Load and Add Logical */
+            /* Add unsigned operands and set condition code */
+            cc = add_logical (&result, v2, v3);
+            break;
+        default: /* To prevent compiler warnings */
+            result = 0;
+            cc = 0;
+        } /* end switch(opcode) */
+
+        /* Interlocked exchange to storage location */
+        old = CSWAP32(v2);
+        new = CSWAP32(result);
+        rc = cmpxchg4 (&old, new, m2);
+
+    } while (rc != 0);
+
+    /* Load original storage operand value into R1 register */
+    regs->GR_L(r1) = v2;
+
+    /* Set condition code in PSW */
+    regs->psw.cc = cc;
+
+} /* end DEF_INST(load_and_perform_interlocked_access) */
+
+/*-------------------------------------------------------------------*/
+/* Load and Perform Interlocked Access Operation Long                */
+/* Subroutine called by LAAG,LAALG,LANG,LAXG,LAOG instructions       */
+/*-------------------------------------------------------------------*/
+DEF_INST(load_and_perform_interlocked_access_long)              /*810*/
+{
+int     r1, r3;                         /* Register numbers          */
+int     b2;                             /* Base of effective addr    */
+VADR    addr2;                          /* Effective address         */
+BYTE    *m2;                            /* Mainstor address          */
+U64     v2, v3;                         /* Operand values            */
+U64     result;                         /* Result value              */
+U64     old, new;                       /* Values for cmpxchg4       */
+int     cc;                             /* Condition code            */
+int     rc;                             /* Return code               */
+BYTE    opcode;                         /* 2nd byte of opcode        */
+
+    RSY(inst, regs, r1, r3, b2, addr2);
+
+    /* Extract second byte of instruction opcode */
+    opcode = inst[5];
+
+    /* Obtain third operand value from R3 register */
+    v3 = regs->GR_G(r3);
+
+    /* Get mainstor address of storage operand */
+    m2 = MADDRL (addr2, 8, b2, regs, ACCTYPE_WRITE, regs->psw.pkey);
+
+    do {
+        /* Load storage operand value from operand address */
+        v2 = ARCH_DEP(vfetch8) ( addr2, b2, regs );
+
+        switch (opcode) {
+        case 0xE4: /* Load and And Long */
+            /* AND operand values and set condition code */
+            result = v2 & v3;
+            cc = result ? 1 : 0;
+            break;
+        case 0xE6: /* Load and Or Long */
+            /* OR operand values and set condition code */
+            result = v2 | v3;
+            cc = result ? 1 : 0;
+            break;
+        case 0xE7: /* Load and Exclusive Or Long */
+            /* XOR operand values and set condition code */
+            result = v2 ^ v3;
+            cc = result ? 1 : 0;
+            break;
+        case 0xE8: /* Load and Add Long */
+            /* Add signed operands and set condition code */
+            cc = add_signed_long (&result, v2, v3);
+            break;
+        case 0xEA: /* Load and Add Logical Long */
+            /* Add unsigned operands and set condition code */
+            cc = add_logical_long (&result, v2, v3);
+            break;
+        default: /* To prevent compiler warnings */
+            result = 0;
+            cc = 0;
+        } /* end switch(opcode) */
+
+        /* Interlocked exchange to storage location */
+        old = CSWAP64(v2);
+        new = CSWAP64(result);
+        rc = cmpxchg8 (&old, new, m2);
+
+    } while (rc != 0);
+
+    /* Load original storage operand value into R1 register */
+    regs->GR_G(r1) = v2;
+
+    /* Set condition code in PSW */
+    regs->psw.cc = cc;
+
+} /* end DEF_INST(load_and_perform_interlocked_access_long) */
+
+
+/*-------------------------------------------------------------------*/
+/* EBF8 LAA   - Load and Add                                   [RSY] */
+/*-------------------------------------------------------------------*/
+DEF_INST(load_and_add)                                          /*810*/
+{
+    ARCH_DEP(load_and_perform_interlocked_access) (inst, regs);
+
+    /* Program check if fixed-point overflow */
+    if ( regs->psw.cc == 3 && FOMASK(&regs->psw) )
+        regs->program_interrupt (regs, PGM_FIXED_POINT_OVERFLOW_EXCEPTION);
+
+} /* end DEF_INST(load_and_add) */
+
+
+/*-------------------------------------------------------------------*/
+/* EBE8 LAAG  - Load and Add Long                              [RSY] */
+/*-------------------------------------------------------------------*/
+DEF_INST(load_and_add_long)                                     /*810*/
+{
+    ARCH_DEP(load_and_perform_interlocked_access_long) (inst, regs);
+
+    /* Program check if fixed-point overflow */
+    if ( regs->psw.cc == 3 && FOMASK(&regs->psw) )
+        regs->program_interrupt (regs, PGM_FIXED_POINT_OVERFLOW_EXCEPTION);
+
+} /* end DEF_INST(load_and_add_long) */
+
+
+/*-------------------------------------------------------------------*/
+/* EBFA LAAL  - Load and Add Logical                           [RSY] */
+/*-------------------------------------------------------------------*/
+DEF_INST(load_and_add_logical)                                  /*810*/
+{
+    ARCH_DEP(load_and_perform_interlocked_access) (inst, regs);
+} /* end DEF_INST(load_and_add_logical) */
+
+
+/*-------------------------------------------------------------------*/
+/* EBEA LAALG - Load and Add Logical Long                      [RSY] */
+/*-------------------------------------------------------------------*/
+DEF_INST(load_and_add_logical_long)                             /*810*/
+{
+    ARCH_DEP(load_and_perform_interlocked_access_long) (inst, regs);
+} /* end DEF_INST(load_and_add_logical_long) */
+
+
+/*-------------------------------------------------------------------*/
+/* EBF4 LAN   - Load and And                                   [RSY] */
+/*-------------------------------------------------------------------*/
+DEF_INST(load_and_and)                                          /*810*/
+{
+    ARCH_DEP(load_and_perform_interlocked_access) (inst, regs);
+} /* end DEF_INST(load_and_and) */
+
+
+/*-------------------------------------------------------------------*/
+/* EBE4 LANG  - Load and And Long                              [RSY] */
+/*-------------------------------------------------------------------*/
+DEF_INST(load_and_and_long)                                     /*810*/
+{
+    ARCH_DEP(load_and_perform_interlocked_access_long) (inst, regs);
+} /* end DEF_INST(load_and_and_long) */
+
+
+/*-------------------------------------------------------------------*/
+/* EBF7 LAX   - Load and Exclusive Or                          [RSY] */
+/*-------------------------------------------------------------------*/
+DEF_INST(load_and_exclusive_or)                                 /*810*/
+{
+    ARCH_DEP(load_and_perform_interlocked_access) (inst, regs);
+} /* end DEF_INST(load_and_exclusive_or) */
+
+
+/*-------------------------------------------------------------------*/
+/* EBE7 LAXG  - Load and Exclusive Or Long                     [RSY] */
+/*-------------------------------------------------------------------*/
+DEF_INST(load_and_exclusive_or_long)                            /*810*/
+{
+    ARCH_DEP(load_and_perform_interlocked_access_long) (inst, regs);
+} /* end DEF_INST(load_and_exclusive_or_long) */
+
+
+/*-------------------------------------------------------------------*/
+/* EBF6 LAO   - Load and Or                                    [RSY] */
+/*-------------------------------------------------------------------*/
+DEF_INST(load_and_or)                                           /*810*/
+{
+    ARCH_DEP(load_and_perform_interlocked_access) (inst, regs);
+} /* end DEF_INST(load_and_or) */
+
+
+/*-------------------------------------------------------------------*/
+/* EBE6 LAOG  - Load and Or Long                               [RSY] */
+/*-------------------------------------------------------------------*/
+DEF_INST(load_and_or_long)                                      /*810*/
+{
+    ARCH_DEP(load_and_perform_interlocked_access_long) (inst, regs);
+} /* end DEF_INST(load_and_or_long) */
+
+
+/*-------------------------------------------------------------------*/
+/* C8x4 LPD   - Load Pair Disjoint                             [SSF] */
+/*-------------------------------------------------------------------*/
+DEF_INST(load_pair_disjoint)                                    /*810*/
+{
+int     r3;                             /* Register number           */
+int     b1, b2;                         /* Base register numbers     */
+VADR    effective_addr1,
+        effective_addr2;                /* Effective addresses       */
+U32     v1, v2;                         /* Operand values            */
+U32     w1, w2;                         /* Refetched values          */
+
+    SSF(inst, regs, b1, effective_addr1, b2, effective_addr2, r3);
+
+    ODD_CHECK(r3, regs);
+
+    /* Fetch the values of the storage operands */
+    v1 = ARCH_DEP(vfetch4) ( effective_addr1, b1, regs );
+    v2 = ARCH_DEP(vfetch4) ( effective_addr2, b2, regs );
+
+    /* Fetch operands again to check for alteration by another CPU */
+    w1 = ARCH_DEP(vfetch4) ( effective_addr1, b1, regs );
+    w2 = ARCH_DEP(vfetch4) ( effective_addr2, b2, regs );
+
+    /* Load R3 register from first storage operand */
+    regs->GR_L(r3) = v1;
+
+    /* Load R3+1 register from second storage operand */
+    regs->GR_L(r3+1) = v2;
+
+    /* Set condition code 0 if operands unaltered, or 3 if altered */
+    regs->psw.cc = (v1 == w1 && v2 == w2) ? 0 : 3;
+
+} /* end DEF_INST(load_pair_disjoint) */
+
+
+/*-------------------------------------------------------------------*/
+/* C8x5 LPDG  - Load Pair Disjoint Long                        [SSF] */
+/*-------------------------------------------------------------------*/
+DEF_INST(load_pair_disjoint_long)                               /*810*/
+{
+int     r3;                             /* Register number           */
+int     b1, b2;                         /* Base register numbers     */
+VADR    effective_addr1,
+        effective_addr2;                /* Effective addresses       */
+U64     v1, v2;                         /* Operand values            */
+U64     w1, w2;                         /* Refetched values          */
+
+    SSF(inst, regs, b1, effective_addr1, b2, effective_addr2, r3);
+
+    ODD_CHECK(r3, regs);
+
+    /* Fetch the values of the storage operands */
+    v1 = ARCH_DEP(vfetch8) ( effective_addr1, b1, regs );
+    v2 = ARCH_DEP(vfetch8) ( effective_addr2, b2, regs );
+
+    /* Fetch operands again to check for alteration by another CPU */
+    w1 = ARCH_DEP(vfetch8) ( effective_addr1, b1, regs );
+    w2 = ARCH_DEP(vfetch8) ( effective_addr2, b2, regs );
+
+    /* Load R3 register from first storage operand */
+    regs->GR_G(r3) = v1;
+
+    /* Load R3+1 register from second storage operand */
+    regs->GR_G(r3+1) = v2;
+
+    /* Set condition code 0 if operands unaltered, or 3 if altered */
+    regs->psw.cc = (v1 == w1 && v2 == w2) ? 0 : 3;
+
+} /* end DEF_INST(load_pair_disjoint_long) */
+
+#endif /*defined(FEATURE_INTERLOCKED_ACCESS_FACILITY)*/         /*810*/
 
 
 #if defined(FEATURE_LOAD_STORE_ON_CONDITION_FACILITY)           /*810*/
