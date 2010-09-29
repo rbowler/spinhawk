@@ -2609,7 +2609,7 @@ static void ARCH_DEP(kmf_dea)(int r1, int r2, REGS *regs)
   lcfb = GR0_lcfb(regs);
   
   /* Check special conditions */
-  if(unlikely(GR_A(r2 + 1, regs) % lcfb || !lcfb || lcfb > 8))
+  if(unlikely(!lcfb || lcfb > 8 || GR_A(r2 + 1, regs)))
     ARCH_DEP(program_interrupt)(regs, PGM_SPECIFICATION_EXCEPTION);
 
   /* Return with cc 0 on zero length */
@@ -3745,6 +3745,7 @@ DEF_INST(cipher_message_with_cipher_feedback_d)
   logmsg("    address : " F_VADR "\n", regs->GR(r2));
   logmsg("    length  : " F_GREG "\n", regs->GR(r2 + 1));
   logmsg("  GR00      : " F_GREG "\n", regs->GR(0));
+  logmsg("    lcfb    : %d\n", GR0_lcfb(regs));
   logmsg("    m       : %s\n", TRUEFALSE(GR0_m(regs)));
   logmsg("    fc      : %d\n", GR0_fc(regs));
   logmsg("  GR01      : " F_GREG "\n", regs->GR(1));
