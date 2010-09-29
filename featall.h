@@ -14,7 +14,7 @@
 #define OPTION_SMP                      /* Enable SMP support        */
 #define VECTOR_SECTION_SIZE         128 /* Vector section size       */
 #define VECTOR_PARTIAL_SUM_NUMBER     1 /* Vector partial sum number */
-#define CKD_MAXFILES                  4 /* Max files per CKD volume  */
+#define CKD_MAXFILES                 27 /* Max files per CKD volume  */
 #define OPTION_MIPS_COUNTING            /* Display MIPS on ctl panel */
 #define PANEL_REFRESH_RATE              /* Enable panrate feature    */
 #define PANEL_REFRESH_RATE_FAST      50 /* Fast refresh rate         */
@@ -62,6 +62,9 @@
   #error OPTION_MSGHLD requires OPTION_MSGCLR
 #endif // defined(OPTION_MSGHLD) && !defined(OPTION_MSGCLR)
 
+#if (CKD_MAXFILES > 35)
+  #error CKD_MAXFILES can not exceed design limit of 35
+#endif
 /*********************************************************************\
  *********************************************************************
  **                                                                 **
