@@ -230,31 +230,6 @@
 #define __STATIC_FUNCTIONS__
 #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_4
 /*----------------------------------------------------------------------------*/
-/* Exponantiate tweak                                                         */
-/*----------------------------------------------------------------------------*/
-/* Exponentiate_tweak is inspired on code from 
- * John Ioannidis Athens, Greece 
- *
- * Thanks John!
-*/
-void exponentiate_tweak(BYTE *tweak)
-{
-  int carry_in;
-  int carry_out;
-  int i;
-
-  carry_in = 0;
-  for(i = 0; i < 16; i++) 
-  {
-    carry_out = tweak[i] & 0x80;
-    tweak[i] = (tweak[i] << 1) | (carry_in ? 1 : 0);
-    carry_in = carry_out;
-  }
-  if(carry_in)
-    tweak[0] ^= 0x87;
-}
-
-/*----------------------------------------------------------------------------*/
 /* GCM multiplication over GF(2^128)                                          */
 /*----------------------------------------------------------------------------*/
 /* LibTomCrypt, modular cryptographic library -- Tom St Denis
@@ -3448,7 +3423,7 @@ static void ARCH_DEP(pcc_cmac_aes)(REGS *regs)
   /* Initialize values */
   tfc = GR0_tfc(regs);
   wrap = GR0_wrap(regs);
-  keylen = (17 - tfc) * 8 + 8;
+  keylen = (tfc - 17) * 8 + 8;
   parameter_blocklen = keylen + 24;
   if(wrap)
     parameter_blocklen += 32;
@@ -3465,7 +3440,7 @@ static void ARCH_DEP(pcc_cmac_aes)(REGS *regs)
   LOGBYTE("icv   :", &parameter_block[24], 16);
   LOGBYTE("k     :", &parameter_block[40], keylen);
   if(wrap) 
-    LOGBYTE("wkvp  :", &parameter_block[keylen + 40], 24);
+    LOGBYTE("wkvp  :", &parameter_block[keylen + 40], 32);
 #endif
 
   /* Verify and unwrap */
@@ -3555,6 +3530,95 @@ static void ARCH_DEP(pcc_cmac_aes)(REGS *regs)
 /*----------------------------------------------------------------------------*/
 static void ARCH_DEP(pcc_xts_aes)(REGS *regs)
 {
+  aes_context context;
+  int keylen;
+  BYTE parameter_block[104];
+  int parameter_blocklen;
+  int tfc;
+  int wrap;
+  BYTE zero[16] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+
+  /* Check special conditions */
+  if(unlikely(GR0_m(regs)))
+    ARCH_DEP(program_interrupt)(regs, PGM_SPECIFICATION_EXCEPTION);
+
+  /* Initialize values */
+  tfc = GR0_tfc(regs);
+  wrap = GR0_wrap(regs);
+  keylen = (tfc - 49) * 8 + 8;
+  parameter_blocklen = keylen + 64;
+  if(wrap)
+    parameter_blocklen += 32;
+
+  /* Test writeability XTS parameter */
+  ARCH_DEP(validate_operand)((GR_A(1, regs) + parameter_blocklen - 16) & ADDRESS_MAXWRAP(regs), 1, 31, ACCTYPE_WRITE, regs);
+
+  /* Fetch the parameter block */
+  ARCH_DEP(vfetchc)(parameter_block, parameter_blocklen - 1, GR_A(1, regs), 1, regs);
+
+#ifdef OPTION_PCC_DEBUG
+  LOGBYTE("k     :", parameter_block, keylen);
+  if(wrap) 
+    LOGBYTE("wkvp  :", &parameter_block[keylen], 32);
+  LOGBYTE("tweak :", &parameter_block[parameter_blocklen - 64], 16);
+  LOGBYTE("bsn   :", &parameter_block[parameter_blocklen - 48], 16);
+  LOGBYTE("ibi   :", &parameter_block[parameter_blocklen - 32], 16);
+  LOGBYTE("xtsp  :", &parameter_block[parameter_blocklen - 16], 16);
+#endif
+
+  /* Verify and unwrap */
+  if(wrap && unwrap_aes(parameter_block, keylen, &parameter_block[keylen]))
+  {
+
+#ifdef OPTION_PCC_DEBUG
+    WRMSG(HHC90111, "D");
+#endif
+
+    regs->psw.cc = 1;
+    return;
+  }
+  
+  /* Check block sequential number (j) == 0 */
+  if(!memcmp(&parameter_block[parameter_blocklen - 48], zero, 16))
+  {
+    /* Encrypt tweak */
+    aes_encrypt(&context, &parameter_block[parameter_blocklen - 16], &parameter_block[parameter_blocklen - 64]);
+    
+#ifdef OPTION_PCC_DEBUG
+    LOGBYTE("xts   :", &parameter_block[parameter_blocklen - 16], 16);
+#endif  
+    
+    /* Store XTS */
+    ARCH_DEP(vstorec)(&parameter_block[parameter_blocklen - 16], 15, (GR_A(1, regs) + parameter_blocklen - 16) & ADDRESS_MAXWRAP(regs), 1, regs);
+    
+    /* Return with cc0 */
+    regs->psw.cc = 0;
+    return;
+  }
+
+  /* Check intermediate block index (t) > 127 */
+  if(memcmp(&parameter_block[parameter_blocklen - 32], zero, 15) || parameter_block[parameter_blocklen - 17] > 127)
+  {
+    /* Invalid imtermediate block index, return with cc2 */
+    regs->psw.cc = 2;
+    return;
+  }
+
+  /* I would be realy glad if someone could deliver the table mentioned in the text below */
+  /* Thanks in advance, Bernard */                                  
+
+  /* The value of 2 raised to the power of j is computed as   */
+  /* follows: For each bit in j, the value of 2 raised to the */
+  /* power of an exponent, that is a 128-bit unsigned         */
+  /* binary integer with an one in that bit and zeros in all  */
+  /* other bits, is pre-computed. To obtain the value of 2    */
+  /* raised to the power of j, the pre-computed values that   */
+  /* correspond to a bit of one in j are multiplied together. */
+  /* The power and multiplication operations are per-         */
+  /* formed over GF(2128).                                    */
+  
+  /* Normal completion */
+  regs->psw.cc = 0;
 }
 #endif /* FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_4 */
 
@@ -4295,6 +4359,8 @@ DEF_INST(perform_cryptographic_computation_d)
     case 58: /* encrypted aes-128 */
     case 60: /* encrypted aes-256 */
     {
+      /* We do not have the functions 50, 52, 58 and 60 yet */      
+      ARCH_DEP(program_interrupt)(regs, PGM_SPECIFICATION_EXCEPTION);       
       ARCH_DEP(pcc_xts_aes)(regs);
       break;
     }
