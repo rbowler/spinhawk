@@ -1,3 +1,13 @@
+/* IEEE.C       (c) Copyright Willem Konynenberg, 2001-2003          */
+/*              (c) Copyright Roger Bowler and others, 2003-2010     */
+/*              Hercules Binary (IEEE) Floating Point Instructions   */
+
+/*-------------------------------------------------------------------*/
+/* This module implements ESA/390 Binary Floating-Point (IEEE 754)   */
+/* instructions as described in SA22-7201-05 ESA/390 Principles of   */
+/* Operation and SA22-7832-08 z/Architecture Principles of Operation.*/
+/*-------------------------------------------------------------------*/
+
 /*
  * Hercules System/370, ESA/390, z/Architecture emulator
  * ieee.c
@@ -11,19 +21,6 @@
  *  MSEBR,MSEB,DIEBR,DIDBR,TBEDR,TBDR.
  * Licensed under the Q Public License
  * For details, see html/herclic.html
- */
-
-// $Id$
-
-/*
- * This module implements the ESA/390 Binary (IEEE) Floating Point
- * Instructions as described in
- * ESA/390 Principles of Operation, 6th revision, SA22-7201-05
- * and
- * z/Architecture Principles of Operation, First Edition, SA22-7832-00
- */
-
-/*
  * Based very loosely on float.c by Peter Kuschnerus, (c) 2000-2006.
  */
 
@@ -59,41 +56,6 @@
  * actually only 80-bits, so the conversion from extended format to native
  * long double format will cause loss of precision and range.
  */
-
-// $Log$
-// Revision 1.84  2008/04/18 12:13:59  rbowler
-// Fix incorrect results from THDER,THDR instructions
-//
-// Revision 1.83  2008/04/16 19:57:55  rbowler
-// Fix condition code in LCEBR,LCDBR,LCXBR instructions
-//
-// Revision 1.82  2008/04/16 14:09:42  rbowler
-// Correct ieee to use BFP rounding mode not DFP rounding mode
-//
-// Revision 1.81  2008/04/15 21:30:03  rbowler
-// BFP rounding mode support
-//
-// Revision 1.80  2008/02/12 18:23:39  jj
-// TBEDR , TBDR using R1 as source, should be R2.
-//
-// Revision 1.79  2008/02/07 00:29:04  rbowler
-// Solaris build support by Jeff Savit
-//
-// Revision 1.78  2007/06/23 00:04:13  ivan
-// Update copyright notices to include current year (2007)
-//
-// Revision 1.77  2007/01/13 07:22:32  bernard
-// backout ccmask
-//
-// Revision 1.76  2007/01/12 15:24:07  bernard
-// ccmask phase 1
-//
-// Revision 1.75  2007/01/04 23:12:04  gsmith
-// remove thunk calls for program_interrupt
-//
-// Revision 1.74  2006/12/08 09:43:28  jj
-// Add CVS message log
-//
 
 #include "hstdinc.h"
 
@@ -1158,10 +1120,10 @@ static int cnvt_hfp_to_bfp (U32 *fpr, int rounding,
 #define _CBH_FUNC
 #endif /*!defined(_CBH_FUNC)*/
 
-/*
- * B359 THDR  - CONVERT BFP TO HFP (long)                      [RRE]
- * Roger Bowler, 19 July 2003
- */
+/*-------------------------------------------------------------------*/
+/* B359 THDR  - CONVERT BFP TO HFP (long)                      [RRE] */
+/* Roger Bowler, 19 July 2003                                        */
+/*-------------------------------------------------------------------*/
 DEF_INST(convert_bfp_long_to_float_long_reg)
 {
     int r1, r2;
@@ -1182,10 +1144,10 @@ DEF_INST(convert_bfp_long_to_float_long_reg)
 
 } /* end DEF_INST(convert_bfp_long_to_float_long_reg) */
 
-/*
- * B358 THDER - CONVERT BFP TO HFP (short to long)             [RRE]
- * Roger Bowler, 19 July 2003
- */
+/*-------------------------------------------------------------------*/
+/* B358 THDER - CONVERT BFP TO HFP (short to long)             [RRE] */
+/* Roger Bowler, 19 July 2003                                        */
+/*-------------------------------------------------------------------*/
 DEF_INST(convert_bfp_short_to_float_long_reg)
 {
     int r1, r2;
@@ -1212,9 +1174,9 @@ DEF_INST(convert_bfp_short_to_float_long_reg)
 
 } /* end DEF_INST(convert_bfp_short_to_float_long_reg) */
 
-/*
- * B351 TBDR  - CONVERT HFP TO BFP (long)                      [RRF]
- */
+/*-------------------------------------------------------------------*/
+/* B351 TBDR  - CONVERT HFP TO BFP (long)                      [RRF] */
+/*-------------------------------------------------------------------*/
 DEF_INST(convert_float_long_to_bfp_long_reg)
 {
     int r1, r2, m3;
@@ -1234,9 +1196,9 @@ DEF_INST(convert_float_long_to_bfp_long_reg)
 
 } /* end DEF_INST(convert_float_long_to_bfp_long_reg) */
 
-/*
- * B350 TBEDR - CONVERT HFP TO BFP (long to short)             [RRF]
- */
+/*-------------------------------------------------------------------*/
+/* B350 TBEDR - CONVERT HFP TO BFP (long to short)             [RRF] */
+/*-------------------------------------------------------------------*/
 DEF_INST(convert_float_long_to_bfp_short_reg)
 {
     int r1, r2, m3;
@@ -1265,9 +1227,9 @@ DEF_INST(convert_float_long_to_bfp_short_reg)
  * z/Architecture has added instructions for 64-bit integers.
  */
 
-/*
- * ADD (extended)
- */
+/*-------------------------------------------------------------------*/
+/* ADD (extended)                                                    */
+/*-------------------------------------------------------------------*/
 static int add_ebfp(struct ebfp *op1, struct ebfp *op2, REGS *regs)
 {
     int r, cl1, cl2, raised;
@@ -1347,9 +1309,9 @@ static int add_ebfp(struct ebfp *op1, struct ebfp *op2, REGS *regs)
     return 0;
 }
 
-/*
- * B34A AXBR  - ADD (extended BFP)                             [RRE]
- */
+/*-------------------------------------------------------------------*/
+/* B34A AXBR  - ADD (extended BFP)                             [RRE] */
+/*-------------------------------------------------------------------*/
 DEF_INST(add_bfp_ext_reg)
 {
     int r1, r2;
@@ -1373,9 +1335,9 @@ DEF_INST(add_bfp_ext_reg)
     }
 }
 
-/*
- * ADD (long)
- */
+/*-------------------------------------------------------------------*/
+/* ADD (long)                                                        */
+/*-------------------------------------------------------------------*/
 static int add_lbfp(struct lbfp *op1, struct lbfp *op2, REGS *regs)
 {
     int r, cl1, cl2, raised;
@@ -1446,9 +1408,9 @@ static int add_lbfp(struct lbfp *op1, struct lbfp *op2, REGS *regs)
     return 0;
 }
 
-/*
- * B31A ADBR  - ADD (long BFP)                                 [RRE]
- */
+/*-------------------------------------------------------------------*/
+/* B31A ADBR  - ADD (long BFP)                                 [RRE] */
+/*-------------------------------------------------------------------*/
 DEF_INST(add_bfp_long_reg)
 {
     int r1, r2;
@@ -1471,9 +1433,9 @@ DEF_INST(add_bfp_long_reg)
     }
 }
 
-/*
- * ED1A ADB   - ADD (long BFP)                                 [RXE]
- */
+/*-------------------------------------------------------------------*/
+/* ED1A ADB   - ADD (long BFP)                                 [RXE] */
+/*-------------------------------------------------------------------*/
 DEF_INST(add_bfp_long)
 {
     int r1, b2;
@@ -1497,9 +1459,9 @@ DEF_INST(add_bfp_long)
     }
 }
 
-/*
- * ADD (short)
- */
+/*-------------------------------------------------------------------*/
+/* ADD (short)                                                       */
+/*-------------------------------------------------------------------*/
 static int add_sbfp(struct sbfp *op1, struct sbfp *op2, REGS *regs)
 {
     int r, cl1, cl2, raised;
@@ -1570,9 +1532,9 @@ static int add_sbfp(struct sbfp *op1, struct sbfp *op2, REGS *regs)
     return 0;
 }
 
-/*
- * B30A AEBR  - ADD (short BFP)                                [RRE]
- */
+/*-------------------------------------------------------------------*/
+/* B30A AEBR  - ADD (short BFP)                                [RRE] */
+/*-------------------------------------------------------------------*/
 DEF_INST(add_bfp_short_reg)
 {
     int r1, r2;
@@ -1595,9 +1557,9 @@ DEF_INST(add_bfp_short_reg)
     }
 }
 
-/*
- * ED0A AEB   - ADD (short BFP)                                [RXE]
- */
+/*-------------------------------------------------------------------*/
+/* ED0A AEB   - ADD (short BFP)                                [RXE] */
+/*-------------------------------------------------------------------*/
 DEF_INST(add_bfp_short)
 {
     int r1, b2;
@@ -1621,9 +1583,9 @@ DEF_INST(add_bfp_short)
     }
 }
 
-/*
- * COMPARE (extended)
- */
+/*-------------------------------------------------------------------*/
+/* COMPARE (extended)                                                */
+/*-------------------------------------------------------------------*/
 static int compare_ebfp(struct ebfp *op1, struct ebfp *op2, int sig, REGS *regs)
 {
     int r, cl1, cl2;
@@ -1676,9 +1638,9 @@ static int compare_ebfp(struct ebfp *op1, struct ebfp *op2, int sig, REGS *regs)
     return 0;
 }
 
-/*
- * B349 CXBR  - COMPARE (extended BFP)                         [RRE]
- */
+/*-------------------------------------------------------------------*/
+/* B349 CXBR  - COMPARE (extended BFP)                         [RRE] */
+/*-------------------------------------------------------------------*/
 DEF_INST(compare_bfp_ext_reg)
 {
     int r1, r2;
@@ -1700,9 +1662,9 @@ DEF_INST(compare_bfp_ext_reg)
     }
 }
 
-/*
- * COMPARE (long)
- */
+/*-------------------------------------------------------------------*/
+/* COMPARE (long)                                                    */
+/*-------------------------------------------------------------------*/
 static int compare_lbfp(struct lbfp *op1, struct lbfp *op2, int sig, REGS *regs)
 {
     int r, cl1, cl2;
@@ -1755,9 +1717,9 @@ static int compare_lbfp(struct lbfp *op1, struct lbfp *op2, int sig, REGS *regs)
     return 0;
 }
 
-/*
- * B319 CDBR  - COMPARE (long BFP)                             [RRE]
- */
+/*-------------------------------------------------------------------*/
+/* B319 CDBR  - COMPARE (long BFP)                             [RRE] */
+/*-------------------------------------------------------------------*/
 DEF_INST(compare_bfp_long_reg)
 {
     int r1, r2;
@@ -1778,9 +1740,9 @@ DEF_INST(compare_bfp_long_reg)
     }
 }
 
-/*
- * ED19 CDB   - COMPARE (long BFP)                             [RXE]
- */
+/*-------------------------------------------------------------------*/
+/* ED19 CDB   - COMPARE (long BFP)                             [RXE] */
+/*-------------------------------------------------------------------*/
 DEF_INST(compare_bfp_long)
 {
     int r1, b2;
@@ -1802,9 +1764,9 @@ DEF_INST(compare_bfp_long)
     }
 }
 
-/*
- * COMPARE (short)
- */
+/*-------------------------------------------------------------------*/
+/* COMPARE (short)                                                   */
+/*-------------------------------------------------------------------*/
 static int compare_sbfp(struct sbfp *op1, struct sbfp *op2, int sig, REGS *regs)
 {
     int r, cl1, cl2;
@@ -1857,9 +1819,9 @@ static int compare_sbfp(struct sbfp *op1, struct sbfp *op2, int sig, REGS *regs)
     return 0;
 }
 
-/*
- * B309 CEBR  - COMPARE (short BFP)                            [RRE]
- */
+/*-------------------------------------------------------------------*/
+/* B309 CEBR  - COMPARE (short BFP)                            [RRE] */
+/*-------------------------------------------------------------------*/
 DEF_INST(compare_bfp_short_reg)
 {
     int r1, r2;
@@ -1880,9 +1842,9 @@ DEF_INST(compare_bfp_short_reg)
     }
 }
 
-/*
- * ED09 CEB   - COMPARE (short BFP)                            [RXE]
- */
+/*-------------------------------------------------------------------*/
+/* ED09 CEB   - COMPARE (short BFP)                            [RXE] */
+/*-------------------------------------------------------------------*/
 DEF_INST(compare_bfp_short)
 {
     int r1, b2;
@@ -1904,9 +1866,9 @@ DEF_INST(compare_bfp_short)
     }
 }
 
-/*
- * B348 KXBR  - COMPARE AND SIGNAL (extended BFP)              [RRE]
- */
+/*-------------------------------------------------------------------*/
+/* B348 KXBR  - COMPARE AND SIGNAL (extended BFP)              [RRE] */
+/*-------------------------------------------------------------------*/
 DEF_INST(compare_and_signal_bfp_ext_reg)
 {
     int r1, r2;
@@ -1928,9 +1890,9 @@ DEF_INST(compare_and_signal_bfp_ext_reg)
     }
 }
 
-/*
- * B318 KDBR  - COMPARE AND SIGNAL (long BFP)                  [RRE]
- */
+/*-------------------------------------------------------------------*/
+/* B318 KDBR  - COMPARE AND SIGNAL (long BFP)                  [RRE] */
+/*-------------------------------------------------------------------*/
 DEF_INST(compare_and_signal_bfp_long_reg)
 {
     int r1, r2;
@@ -1951,9 +1913,9 @@ DEF_INST(compare_and_signal_bfp_long_reg)
     }
 }
 
-/*
- * ED18 KDB   - COMPARE AND SIGNAL (long BFP)                  [RXE]
- */
+/*-------------------------------------------------------------------*/
+/* ED18 KDB   - COMPARE AND SIGNAL (long BFP)                  [RXE] */
+/*-------------------------------------------------------------------*/
 DEF_INST(compare_and_signal_bfp_long)
 {
     int r1, b2;
@@ -1975,9 +1937,9 @@ DEF_INST(compare_and_signal_bfp_long)
     }
 }
 
-/*
- * B308 KEBR  - COMPARE AND SIGNAL (short BFP)                 [RRE]
- */
+/*-------------------------------------------------------------------*/
+/* B308 KEBR  - COMPARE AND SIGNAL (short BFP)                 [RRE] */
+/*-------------------------------------------------------------------*/
 DEF_INST(compare_and_signal_bfp_short_reg)
 {
     int r1, r2;
@@ -1998,9 +1960,9 @@ DEF_INST(compare_and_signal_bfp_short_reg)
     }
 }
 
-/*
- * ED08 KEB   - COMPARE AND SIGNAL (short BFP)                 [RXE]
- */
+/*-------------------------------------------------------------------*/
+/* ED08 KEB   - COMPARE AND SIGNAL (short BFP)                 [RXE] */
+/*-------------------------------------------------------------------*/
 DEF_INST(compare_and_signal_bfp_short)
 {
     int r1, b2;
@@ -2022,9 +1984,9 @@ DEF_INST(compare_and_signal_bfp_short)
     }
 }
 
-/*
- * B396 CXFBR - CONVERT FROM FIXED (32 to extended BFP)        [RRE]
- */
+/*-------------------------------------------------------------------*/
+/* B396 CXFBR - CONVERT FROM FIXED (32 to extended BFP)        [RRE] */
+/*-------------------------------------------------------------------*/
 DEF_INST(convert_fix32_to_bfp_ext_reg)
 {
     int r1, r2;
@@ -2049,9 +2011,9 @@ DEF_INST(convert_fix32_to_bfp_ext_reg)
 
 } /* end DEF_INST(convert_fix32_to_bfp_ext_reg) */
 
-/*
- * B395 CDFBR - CONVERT FROM FIXED (32 to long BFP)            [RRE]
- */
+/*-------------------------------------------------------------------*/
+/* B395 CDFBR - CONVERT FROM FIXED (32 to long BFP)            [RRE] */
+/*-------------------------------------------------------------------*/
 DEF_INST(convert_fix32_to_bfp_long_reg)
 {
     int r1, r2;
@@ -2074,9 +2036,9 @@ DEF_INST(convert_fix32_to_bfp_long_reg)
     put_lbfp(&op1, regs->fpr + FPR2I(r1));
 }
 
-/*
- * B394 CEFBR - CONVERT FROM FIXED (32 to short BFP)           [RRE]
- */
+/*-------------------------------------------------------------------*/
+/* B394 CEFBR - CONVERT FROM FIXED (32 to short BFP)           [RRE] */
+/*-------------------------------------------------------------------*/
 DEF_INST(convert_fix32_to_bfp_short_reg)
 {
     int r1, r2;
@@ -2100,9 +2062,9 @@ DEF_INST(convert_fix32_to_bfp_short_reg)
 }
 
 #if defined(FEATURE_ESAME)
-/*
- * B3A6 CXGBR - CONVERT FROM FIXED (64 to extended BFP)        [RRE]
- */
+/*-------------------------------------------------------------------*/
+/* B3A6 CXGBR - CONVERT FROM FIXED (64 to extended BFP)        [RRE] */
+/*-------------------------------------------------------------------*/
 DEF_INST(convert_fix64_to_bfp_ext_reg)
 {
     int r1, r2;
@@ -2129,9 +2091,9 @@ DEF_INST(convert_fix64_to_bfp_ext_reg)
 #endif /*defined(FEATURE_ESAME)*/
 
 #if defined(FEATURE_ESAME)
-/*
- * B3A5 CDGBR - CONVERT FROM FIXED (64 to long BFP)            [RRE]
- */
+/*-------------------------------------------------------------------*/
+/* B3A5 CDGBR - CONVERT FROM FIXED (64 to long BFP)            [RRE] */
+/*-------------------------------------------------------------------*/
 DEF_INST(convert_fix64_to_bfp_long_reg)
 {
     int r1, r2;
@@ -2156,9 +2118,9 @@ DEF_INST(convert_fix64_to_bfp_long_reg)
 #endif /*defined(FEATURE_ESAME)*/
 
 #if defined(FEATURE_ESAME)
-/*
- * B3A4 CEGBR - CONVERT FROM FIXED (64 to short BFP)           [RRE]
- */
+/*-------------------------------------------------------------------*/
+/* B3A4 CEGBR - CONVERT FROM FIXED (64 to short BFP)           [RRE] */
+/*-------------------------------------------------------------------*/
 DEF_INST(convert_fix64_to_bfp_short_reg)
 {
     int r1, r2;
@@ -2182,9 +2144,9 @@ DEF_INST(convert_fix64_to_bfp_short_reg)
 }
 #endif /*defined(FEATURE_ESAME)*/
 
-/*
- * B39A CFXBR - CONVERT TO FIXED (extended BFP to 32)          [RRF]
- */
+/*-------------------------------------------------------------------*/
+/* B39A CFXBR - CONVERT TO FIXED (extended BFP to 32)          [RRF] */
+/*-------------------------------------------------------------------*/
 DEF_INST(convert_bfp_ext_to_fix32_reg)
 {
     int r1, r2, m3, raised;
@@ -2248,9 +2210,9 @@ DEF_INST(convert_bfp_ext_to_fix32_reg)
     }
 } /* end DEF_INST(convert_bfp_ext_to_fix32_reg) */
 
-/*
- * B399 CFDBR - CONVERT TO FIXED (long BFP to 32)              [RRF]
- */
+/*-------------------------------------------------------------------*/
+/* B399 CFDBR - CONVERT TO FIXED (long BFP to 32)              [RRF] */
+/*-------------------------------------------------------------------*/
 DEF_INST(convert_bfp_long_to_fix32_reg)
 {
     int r1, r2, m3, raised;
@@ -2313,9 +2275,9 @@ DEF_INST(convert_bfp_long_to_fix32_reg)
     }
 }
 
-/*
- * B398 CFEBR - CONVERT TO FIXED (short BFP to 32)             [RRF]
- */
+/*-------------------------------------------------------------------*/
+/* B398 CFEBR - CONVERT TO FIXED (short BFP to 32)             [RRF] */
+/*-------------------------------------------------------------------*/
 DEF_INST(convert_bfp_short_to_fix32_reg)
 {
     int r1, r2, m3, raised;
@@ -2378,9 +2340,9 @@ DEF_INST(convert_bfp_short_to_fix32_reg)
 }
 
 #if defined(FEATURE_ESAME)
-/*
- * B3AA CGXBR - CONVERT TO FIXED (extended BFP to 64)          [RRF]
- */
+/*-------------------------------------------------------------------*/
+/* B3AA CGXBR - CONVERT TO FIXED (extended BFP to 64)          [RRF] */
+/*-------------------------------------------------------------------*/
 DEF_INST(convert_bfp_ext_to_fix64_reg)
 {
     int r1, r2, m3, raised;
@@ -2446,9 +2408,9 @@ DEF_INST(convert_bfp_ext_to_fix64_reg)
 #endif /*defined(FEATURE_ESAME)*/
 
 #if defined(FEATURE_ESAME)
-/*
- * B3A9 CGDBR - CONVERT TO FIXED (long BFP to 64)              [RRF]
- */
+/*-------------------------------------------------------------------*/
+/* B3A9 CGDBR - CONVERT TO FIXED (long BFP to 64)              [RRF] */
+/*-------------------------------------------------------------------*/
 DEF_INST(convert_bfp_long_to_fix64_reg)
 {
     int r1, r2, m3, raised;
@@ -2513,9 +2475,9 @@ DEF_INST(convert_bfp_long_to_fix64_reg)
 #endif /*defined(FEATURE_ESAME)*/
 
 #if defined(FEATURE_ESAME)
-/*
- * B3A8 CGEBR - CONVERT TO FIXED (short BFP to 64)             [RRF]
- */
+/*-------------------------------------------------------------------*/
+/* B3A8 CGEBR - CONVERT TO FIXED (short BFP to 64)             [RRF] */
+/*-------------------------------------------------------------------*/
 DEF_INST(convert_bfp_short_to_fix64_reg)
 {
     int r1, r2, m3, raised;
@@ -2579,9 +2541,9 @@ DEF_INST(convert_bfp_short_to_fix64_reg)
 #endif /*defined(FEATURE_ESAME)*/
 
 
-/*
- * FP INTEGER (extended)
- */
+/*-------------------------------------------------------------------*/
+/* FP INTEGER (extended)                                             */
+/*-------------------------------------------------------------------*/
 static int integer_ebfp(struct ebfp *op, int mode, REGS *regs)
 {
     int r, raised;
@@ -2625,9 +2587,9 @@ static int integer_ebfp(struct ebfp *op, int mode, REGS *regs)
 
 } /* end function integer_ebfp */
 
-/*
- * FP INTEGER (long)
- */
+/*-------------------------------------------------------------------*/
+/* FP INTEGER (long)                                                 */
+/*-------------------------------------------------------------------*/
 static int integer_lbfp(struct lbfp *op, int mode, REGS *regs)
 {
     int r, raised;
@@ -2671,9 +2633,9 @@ static int integer_lbfp(struct lbfp *op, int mode, REGS *regs)
 
 } /* end function integer_lbfp */
 
-/*
- * FP INTEGER (short)
- */
+/*-------------------------------------------------------------------*/
+/* FP INTEGER (short)                                                */
+/*-------------------------------------------------------------------*/
 static int integer_sbfp(struct sbfp *op, int mode, REGS *regs)
 {
     int r, raised;
@@ -2717,9 +2679,9 @@ static int integer_sbfp(struct sbfp *op, int mode, REGS *regs)
 
 } /* end function integer_sbfp */
 
-/*
- * DIVIDE (extended)
- */
+/*-------------------------------------------------------------------*/
+/* DIVIDE (extended)                                                 */
+/*-------------------------------------------------------------------*/
 static int divide_ebfp(struct ebfp *op1, struct ebfp *op2, REGS *regs)
 {
     int r, cl1, cl2, raised;
@@ -2793,9 +2755,9 @@ static int divide_ebfp(struct ebfp *op1, struct ebfp *op2, REGS *regs)
     return 0;
 }
 
-/*
- * B34D DXBR  - DIVIDE (extended BFP)                          [RRE]
- */
+/*-------------------------------------------------------------------*/
+/* B34D DXBR  - DIVIDE (extended BFP)                          [RRE] */
+/*-------------------------------------------------------------------*/
 DEF_INST(divide_bfp_ext_reg)
 {
     int r1, r2;
@@ -2819,9 +2781,9 @@ DEF_INST(divide_bfp_ext_reg)
     }
 }
 
-/*
- * DIVIDE (long)
- */
+/*-------------------------------------------------------------------*/
+/* DIVIDE (long)                                                     */
+/*-------------------------------------------------------------------*/
 static int divide_lbfp(struct lbfp *op1, struct lbfp *op2, REGS *regs)
 {
     int r, cl1, cl2, raised;
@@ -2895,9 +2857,9 @@ static int divide_lbfp(struct lbfp *op1, struct lbfp *op2, REGS *regs)
     return 0;
 }
 
-/*
- * B31D DDBR  - DIVIDE (long BFP)                              [RRE]
- */
+/*-------------------------------------------------------------------*/
+/* B31D DDBR  - DIVIDE (long BFP)                              [RRE] */
+/*-------------------------------------------------------------------*/
 DEF_INST(divide_bfp_long_reg)
 {
     int r1, r2;
@@ -2920,9 +2882,9 @@ DEF_INST(divide_bfp_long_reg)
     }
 }
 
-/*
- * ED1D DDB   - DIVIDE (long BFP)                              [RXE]
- */
+/*-------------------------------------------------------------------*/
+/* ED1D DDB   - DIVIDE (long BFP)                              [RXE] */
+/*-------------------------------------------------------------------*/
 DEF_INST(divide_bfp_long)
 {
     int r1, b2;
@@ -2946,9 +2908,9 @@ DEF_INST(divide_bfp_long)
     }
 }
 
-/*
- * DIVIDE (short)
- */
+/*-------------------------------------------------------------------*/
+/* DIVIDE (short)                                                    */
+/*-------------------------------------------------------------------*/
 static int divide_sbfp(struct sbfp *op1, struct sbfp *op2, REGS *regs)
 {
     int r, cl1, cl2, raised;
@@ -3022,9 +2984,9 @@ static int divide_sbfp(struct sbfp *op1, struct sbfp *op2, REGS *regs)
     return 0;
 }
 
-/*
- * B30D DEBR  - DIVIDE (short BFP)                             [RRE]
- */
+/*-------------------------------------------------------------------*/
+/* B30D DEBR  - DIVIDE (short BFP)                             [RRE] */
+/*-------------------------------------------------------------------*/
 DEF_INST(divide_bfp_short_reg)
 {
     int r1, r2;
@@ -3047,9 +3009,9 @@ DEF_INST(divide_bfp_short_reg)
     }
 }
 
-/*
- * ED0D DEB   - DIVIDE (short BFP)                             [RXE]
- */
+/*-------------------------------------------------------------------*/
+/* ED0D DEB   - DIVIDE (short BFP)                             [RXE] */
+/*-------------------------------------------------------------------*/
 DEF_INST(divide_bfp_short)
 {
     int r1, b2;
@@ -3074,9 +3036,9 @@ DEF_INST(divide_bfp_short)
 }
 
 
-/*
- * B342 LTXBR - LOAD AND TEST (extended BFP)                   [RRE]
- */
+/*-------------------------------------------------------------------*/
+/* B342 LTXBR - LOAD AND TEST (extended BFP)                   [RRE] */
+/*-------------------------------------------------------------------*/
 DEF_INST(load_and_test_bfp_ext_reg)
 {
     int r1, r2;
@@ -3114,9 +3076,9 @@ DEF_INST(load_and_test_bfp_ext_reg)
     put_ebfp(&op, regs->fpr + FPR2I(r1));
 }
 
-/*
- * B312 LTDBR - LOAD AND TEST (long BFP)                       [RRE]
- */
+/*-------------------------------------------------------------------*/
+/* B312 LTDBR - LOAD AND TEST (long BFP)                       [RRE] */
+/*-------------------------------------------------------------------*/
 DEF_INST(load_and_test_bfp_long_reg)
 {
     int r1, r2;
@@ -3153,9 +3115,9 @@ DEF_INST(load_and_test_bfp_long_reg)
     put_lbfp(&op, regs->fpr + FPR2I(r1));
 }
 
-/*
- * B302 LTEBR - LOAD AND TEST (short BFP)                      [RRE]
- */
+/*-------------------------------------------------------------------*/
+/* B302 LTEBR - LOAD AND TEST (short BFP)                      [RRE] */
+/*-------------------------------------------------------------------*/
 DEF_INST(load_and_test_bfp_short_reg)
 {
     int r1, r2;
@@ -3192,9 +3154,9 @@ DEF_INST(load_and_test_bfp_short_reg)
     put_sbfp(&op, regs->fpr + FPR2I(r1));
 }
 
-/*
- * B357 FIEBR - LOAD FP INTEGER (short BFP)                    [RRF]
- */
+/*-------------------------------------------------------------------*/
+/* B357 FIEBR - LOAD FP INTEGER (short BFP)                    [RRF] */
+/*-------------------------------------------------------------------*/
 DEF_INST(load_fp_int_bfp_short_reg)
 {
     int r1, r2, m3, pgm_check;
@@ -3217,9 +3179,9 @@ DEF_INST(load_fp_int_bfp_short_reg)
 
 } /* end DEF_INST(load_fp_int_bfp_short_reg) */
 
-/*
- * B35F FIDBR - LOAD FP INTEGER (long BFP)                     [RRF]
- */
+/*-------------------------------------------------------------------*/
+/* B35F FIDBR - LOAD FP INTEGER (long BFP)                     [RRF] */
+/*-------------------------------------------------------------------*/
 DEF_INST(load_fp_int_bfp_long_reg)
 {
     int r1, r2, m3, pgm_check;
@@ -3242,9 +3204,9 @@ DEF_INST(load_fp_int_bfp_long_reg)
 
 } /* end DEF_INST(load_fp_int_bfp_long_reg) */
 
-/*
- * B347 FIXBR - LOAD FP INTEGER (extended BFP)                 [RRF]
- */
+/*-------------------------------------------------------------------*/
+/* B347 FIXBR - LOAD FP INTEGER (extended BFP)                 [RRF] */
+/*-------------------------------------------------------------------*/
 DEF_INST(load_fp_int_bfp_ext_reg)
 {
     int r1, r2, m3, pgm_check;
@@ -3268,14 +3230,14 @@ DEF_INST(load_fp_int_bfp_ext_reg)
 
 } /* end DEF_INST(load_fp_int_bfp_ext_reg) */
 
-/*
- * B29D LFPC  - LOAD FPC                                         [S]
- * This instruction is in module esame.c
- */
+/*-------------------------------------------------------------------*/
+/* B29D LFPC  - LOAD FPC                                         [S] */
+/* This instruction is in module esame.c                             */
+/*-------------------------------------------------------------------*/
 
-/*
- * B304 LDEBR - LOAD LENGTHENED (short to long BFP)            [RRE]
- */
+/*-------------------------------------------------------------------*/
+/* B304 LDEBR - LOAD LENGTHENED (short to long BFP)            [RRE] */
+/*-------------------------------------------------------------------*/
 DEF_INST(load_lengthened_bfp_short_to_long_reg)
 {
     int r1, r2;
@@ -3293,9 +3255,9 @@ DEF_INST(load_lengthened_bfp_short_to_long_reg)
     put_lbfp(&op1, regs->fpr + FPR2I(r1));
 }
 
-/*
- * ED04 LDEB  - LOAD LENGTHENED (short to long BFP)            [RXE]
- */
+/*-------------------------------------------------------------------*/
+/* ED04 LDEB  - LOAD LENGTHENED (short to long BFP)            [RXE] */
+/*-------------------------------------------------------------------*/
 DEF_INST(load_lengthened_bfp_short_to_long)
 {
     int r1, b2;
@@ -3314,9 +3276,9 @@ DEF_INST(load_lengthened_bfp_short_to_long)
     put_lbfp(&op1, regs->fpr + FPR2I(r1));
 }
 
-/*
- * B305 LXDBR - LOAD LENGTHENED (long to extended BFP)         [RRE]
- */
+/*-------------------------------------------------------------------*/
+/* B305 LXDBR - LOAD LENGTHENED (long to extended BFP)         [RRE] */
+/*-------------------------------------------------------------------*/
 DEF_INST(load_lengthened_bfp_long_to_ext_reg)
 {
     int r1, r2;
@@ -3335,9 +3297,9 @@ DEF_INST(load_lengthened_bfp_long_to_ext_reg)
     put_ebfp(&op1, regs->fpr + FPR2I(r1));
 }
 
-/*
- * ED05 LXDB  - LOAD LENGTHENED (long to extended BFP)         [RXE]
- */
+/*-------------------------------------------------------------------*/
+/* ED05 LXDB  - LOAD LENGTHENED (long to extended BFP)         [RXE] */
+/*-------------------------------------------------------------------*/
 DEF_INST(load_lengthened_bfp_long_to_ext)
 {
     int r1, b2;
@@ -3357,9 +3319,9 @@ DEF_INST(load_lengthened_bfp_long_to_ext)
     put_ebfp(&op1, regs->fpr + FPR2I(r1));
 }
 
-/*
- * B306 LXEBR - LOAD LENGTHENED (short to extended BFP)        [RRE]
- */
+/*-------------------------------------------------------------------*/
+/* B306 LXEBR - LOAD LENGTHENED (short to extended BFP)        [RRE] */
+/*-------------------------------------------------------------------*/
 DEF_INST(load_lengthened_bfp_short_to_ext_reg)
 {
     int r1, r2;
@@ -3378,9 +3340,9 @@ DEF_INST(load_lengthened_bfp_short_to_ext_reg)
     put_ebfp(&op1, regs->fpr + FPR2I(r1));
 }
 
-/*
- * ED06 LXEB  - LOAD LENGTHENED (short to extended BFP)        [RXE]
- */
+/*-------------------------------------------------------------------*/
+/* ED06 LXEB  - LOAD LENGTHENED (short to extended BFP)        [RXE] */
+/*-------------------------------------------------------------------*/
 DEF_INST(load_lengthened_bfp_short_to_ext)
 {
     int r1, b2;
@@ -3400,9 +3362,9 @@ DEF_INST(load_lengthened_bfp_short_to_ext)
     put_ebfp(&op1, regs->fpr + FPR2I(r1));
 }
 
-/*
- * B341 LNXBR - LOAD NEGATIVE (extended BFP)                   [RRE]
- */
+/*-------------------------------------------------------------------*/
+/* B341 LNXBR - LOAD NEGATIVE (extended BFP)                   [RRE] */
+/*-------------------------------------------------------------------*/
 DEF_INST(load_negative_bfp_ext_reg)
 {
     int r1, r2;
@@ -3432,9 +3394,9 @@ DEF_INST(load_negative_bfp_ext_reg)
     put_ebfp(&op, regs->fpr + FPR2I(r1));
 }
 
-/*
- * B311 LNDBR - LOAD NEGATIVE (long BFP)                       [RRE]
- */
+/*-------------------------------------------------------------------*/
+/* B311 LNDBR - LOAD NEGATIVE (long BFP)                       [RRE] */
+/*-------------------------------------------------------------------*/
 DEF_INST(load_negative_bfp_long_reg)
 {
     int r1, r2;
@@ -3463,9 +3425,9 @@ DEF_INST(load_negative_bfp_long_reg)
     put_lbfp(&op, regs->fpr + FPR2I(r1));
 }
 
-/*
- * B301 LNEBR - LOAD NEGATIVE (short BFP)                      [RRE]
- */
+/*-------------------------------------------------------------------*/
+/* B301 LNEBR - LOAD NEGATIVE (short BFP)                      [RRE] */
+/*-------------------------------------------------------------------*/
 DEF_INST(load_negative_bfp_short_reg)
 {
     int r1, r2;
@@ -3494,9 +3456,9 @@ DEF_INST(load_negative_bfp_short_reg)
     put_sbfp(&op, regs->fpr + FPR2I(r1));
 }
 
-/*
- * B343 LCXBR - LOAD COMPLEMENT (extended BFP)                 [RRE]
- */
+/*-------------------------------------------------------------------*/
+/* B343 LCXBR - LOAD COMPLEMENT (extended BFP)                 [RRE] */
+/*-------------------------------------------------------------------*/
 DEF_INST(load_complement_bfp_ext_reg)
 {
     int r1, r2;
@@ -3526,9 +3488,9 @@ DEF_INST(load_complement_bfp_ext_reg)
     put_ebfp(&op, regs->fpr + FPR2I(r1));
 }
 
-/*
- * B313 LCDBR - LOAD COMPLEMENT (long BFP)                     [RRE]
- */
+/*-------------------------------------------------------------------*/
+/* B313 LCDBR - LOAD COMPLEMENT (long BFP)                     [RRE] */
+/*-------------------------------------------------------------------*/
 DEF_INST(load_complement_bfp_long_reg)
 {
     int r1, r2;
@@ -3557,9 +3519,9 @@ DEF_INST(load_complement_bfp_long_reg)
     put_lbfp(&op, regs->fpr + FPR2I(r1));
 }
 
-/*
- * B303 LCEBR - LOAD COMPLEMENT (short BFP)                    [RRE]
- */
+/*-------------------------------------------------------------------*/
+/* B303 LCEBR - LOAD COMPLEMENT (short BFP)                    [RRE] */
+/*-------------------------------------------------------------------*/
 DEF_INST(load_complement_bfp_short_reg)
 {
     int r1, r2;
@@ -3588,9 +3550,9 @@ DEF_INST(load_complement_bfp_short_reg)
     put_sbfp(&op, regs->fpr + FPR2I(r1));
 }
 
-/*
- * B340 LPXBR - LOAD POSITIVE (extended BFP)                   [RRE]
- */
+/*-------------------------------------------------------------------*/
+/* B340 LPXBR - LOAD POSITIVE (extended BFP)                   [RRE] */
+/*-------------------------------------------------------------------*/
 DEF_INST(load_positive_bfp_ext_reg)
 {
     int r1, r2;
@@ -3620,9 +3582,9 @@ DEF_INST(load_positive_bfp_ext_reg)
     put_ebfp(&op, regs->fpr + FPR2I(r1));
 }
 
-/*
- * B310 LPDBR - LOAD POSITIVE (long BFP)                       [RRE]
- */
+/*-------------------------------------------------------------------*/
+/* B310 LPDBR - LOAD POSITIVE (long BFP)                       [RRE] */
+/*-------------------------------------------------------------------*/
 DEF_INST(load_positive_bfp_long_reg)
 {
     int r1, r2;
@@ -3651,9 +3613,9 @@ DEF_INST(load_positive_bfp_long_reg)
     put_lbfp(&op, regs->fpr + FPR2I(r1));
 }
 
-/*
- * B300 LPEBR - LOAD POSITIVE (short BFP)                      [RRE]
- */
+/*-------------------------------------------------------------------*/
+/* B300 LPEBR - LOAD POSITIVE (short BFP)                      [RRE] */
+/*-------------------------------------------------------------------*/
 DEF_INST(load_positive_bfp_short_reg)
 {
     int r1, r2;
@@ -3682,9 +3644,9 @@ DEF_INST(load_positive_bfp_short_reg)
     put_sbfp(&op, regs->fpr + FPR2I(r1));
 }
 
-/*
- * B344 LEDBR - LOAD ROUNDED (long to short BFP)                [RRE]
- */
+/*-------------------------------------------------------------------*/
+/* B344 LEDBR - LOAD ROUNDED (long to short BFP)               [RRE] */
+/*-------------------------------------------------------------------*/
 DEF_INST(load_rounded_bfp_long_to_short_reg)
 {
     int r1, r2, raised;
@@ -3730,9 +3692,9 @@ DEF_INST(load_rounded_bfp_long_to_short_reg)
 
 } /* end DEF_INST(load_rounded_bfp_long_to_short_reg) */
 
-/*
- * B345 LDXBR - LOAD ROUNDED (extended to long BFP)             [RRE]
- */
+/*-------------------------------------------------------------------*/
+/* B345 LDXBR - LOAD ROUNDED (extended to long BFP)            [RRE] */
+/*-------------------------------------------------------------------*/
 DEF_INST(load_rounded_bfp_ext_to_long_reg)
 {
     int r1, r2, raised;
@@ -3779,9 +3741,9 @@ DEF_INST(load_rounded_bfp_ext_to_long_reg)
 
 } /* end DEF_INST(load_rounded_bfp_ext_to_long_reg) */
 
-/*
- * B346 LEXBR - LOAD ROUNDED (extended to short BFP)            [RRE]
- */
+/*-------------------------------------------------------------------*/
+/* B346 LEXBR - LOAD ROUNDED (extended to short BFP)           [RRE] */
+/*-------------------------------------------------------------------*/
 DEF_INST(load_rounded_bfp_ext_to_short_reg)
 {
     int r1, r2, raised;
@@ -3828,9 +3790,9 @@ DEF_INST(load_rounded_bfp_ext_to_short_reg)
 
 } /* end DEF_INST(load_rounded_bfp_ext_to_short_reg) */
 
-/*
- * MULTIPLY (extended)
- */
+/*-------------------------------------------------------------------*/
+/* MULTIPLY (extended)                                               */
+/*-------------------------------------------------------------------*/
 static int multiply_ebfp(struct ebfp *op1, struct ebfp *op2, REGS *regs)
 {
     int r, cl1, cl2, raised;
@@ -3903,9 +3865,9 @@ static int multiply_ebfp(struct ebfp *op1, struct ebfp *op2, REGS *regs)
     return 0;
 }
 
-/*
- * B34C MXBR  - MULTIPLY (extended BFP)                        [RRE]
- */
+/*-------------------------------------------------------------------*/
+/* B34C MXBR  - MULTIPLY (extended BFP)                        [RRE] */
+/*-------------------------------------------------------------------*/
 DEF_INST(multiply_bfp_ext_reg)
 {
     int r1, r2;
@@ -3929,9 +3891,9 @@ DEF_INST(multiply_bfp_ext_reg)
     }
 }
 
-/*
- * B307 MXDBR - MULTIPLY (long to extended BFP)                [RRE]
- */
+/*-------------------------------------------------------------------*/
+/* B307 MXDBR - MULTIPLY (long to extended BFP)                [RRE] */
+/*-------------------------------------------------------------------*/
 DEF_INST(multiply_bfp_long_to_ext_reg)
 {
     int r1, r2;
@@ -3959,9 +3921,9 @@ DEF_INST(multiply_bfp_long_to_ext_reg)
     }
 } /* end DEF_INST(multiply_bfp_long_to_ext_reg) */
 
-/*
- * ED07 MXDB  - MULTIPLY (long to extended BFP)                [RXE]
- */
+/*-------------------------------------------------------------------*/
+/* ED07 MXDB  - MULTIPLY (long to extended BFP)                [RXE] */
+/*-------------------------------------------------------------------*/
 DEF_INST(multiply_bfp_long_to_ext)
 {
     int r1, b2;
@@ -3990,9 +3952,9 @@ DEF_INST(multiply_bfp_long_to_ext)
     }
 } /* end DEF_INST(multiply_bfp_long_to_ext) */
 
-/*
- * MULTIPLY (long)
- */
+/*-------------------------------------------------------------------*/
+/* MULTIPLY (long)                                                   */
+/*-------------------------------------------------------------------*/
 static int multiply_lbfp(struct lbfp *op1, struct lbfp *op2, REGS *regs)
 {
     int r, cl1, cl2, raised;
@@ -4065,9 +4027,9 @@ static int multiply_lbfp(struct lbfp *op1, struct lbfp *op2, REGS *regs)
     return 0;
 }
 
-/*
- * B31C MDBR  - MULTIPLY (long BFP)                            [RRE]
- */
+/*-------------------------------------------------------------------*/
+/* B31C MDBR  - MULTIPLY (long BFP)                            [RRE] */
+/*-------------------------------------------------------------------*/
 DEF_INST(multiply_bfp_long_reg)
 {
     int r1, r2;
@@ -4090,9 +4052,9 @@ DEF_INST(multiply_bfp_long_reg)
     }
 }
 
-/*
- * ED1C MDB   - MULTIPLY (long BFP)                            [RXE]
- */
+/*-------------------------------------------------------------------*/
+/* ED1C MDB   - MULTIPLY (long BFP)                            [RXE] */
+/*-------------------------------------------------------------------*/
 DEF_INST(multiply_bfp_long)
 {
     int r1, b2;
@@ -4116,9 +4078,9 @@ DEF_INST(multiply_bfp_long)
     }
 }
 
-/*
- * B30C MDEBR - MULTIPLY (short to long BFP)                   [RRE]
- */
+/*-------------------------------------------------------------------*/
+/* B30C MDEBR - MULTIPLY (short to long BFP)                   [RRE] */
+/*-------------------------------------------------------------------*/
 DEF_INST(multiply_bfp_short_to_long_reg)
 {
     int r1, r2;
@@ -4145,9 +4107,9 @@ DEF_INST(multiply_bfp_short_to_long_reg)
     }
 } /* end DEF_INST(multiply_bfp_short_to_long_reg) */
 
-/*
- * ED0C MDEB  - MULTIPLY (short to long BFP)                   [RXE]
- */
+/*-------------------------------------------------------------------*/
+/* ED0C MDEB  - MULTIPLY (short to long BFP)                   [RXE] */
+/*-------------------------------------------------------------------*/
 DEF_INST(multiply_bfp_short_to_long)
 {
     int r1, b2;
@@ -4175,9 +4137,9 @@ DEF_INST(multiply_bfp_short_to_long)
     }
 } /* end DEF_INST(multiply_bfp_short_to_long) */
 
-/*
- * MULTIPLY (short)
- */
+/*-------------------------------------------------------------------*/
+/* MULTIPLY (short)                                                  */
+/*-------------------------------------------------------------------*/
 static int multiply_sbfp(struct sbfp *op1, struct sbfp *op2, REGS *regs)
 {
     int r, cl1, cl2, raised;
@@ -4250,9 +4212,9 @@ static int multiply_sbfp(struct sbfp *op1, struct sbfp *op2, REGS *regs)
     return 0;
 }
 
-/*
- * B317 MEEBR - MULTIPLY (short BFP)                           [RRE]
- */
+/*-------------------------------------------------------------------*/
+/* B317 MEEBR - MULTIPLY (short BFP)                           [RRE] */
+/*-------------------------------------------------------------------*/
 DEF_INST(multiply_bfp_short_reg)
 {
     int r1, r2;
@@ -4275,9 +4237,9 @@ DEF_INST(multiply_bfp_short_reg)
     }
 }
 
-/*
- * ED17 MEEB  - MULTIPLY (short BFP)                           [RXE]
- */
+/*-------------------------------------------------------------------*/
+/* ED17 MEEB  - MULTIPLY (short BFP)                           [RXE] */
+/*-------------------------------------------------------------------*/
 DEF_INST(multiply_bfp_short)
 {
     int r1, b2;
@@ -4301,9 +4263,9 @@ DEF_INST(multiply_bfp_short)
     }
 }
 
-/*
- * B31E MADBR - MULTIPLY AND ADD (long BFP)                    [RRF]
- */
+/*-------------------------------------------------------------------*/
+/* B31E MADBR - MULTIPLY AND ADD (long BFP)                    [RRF] */
+/*-------------------------------------------------------------------*/
 DEF_INST(multiply_add_bfp_long_reg)
 {
     int r1, r2, r3;
@@ -4328,9 +4290,9 @@ DEF_INST(multiply_add_bfp_long_reg)
     }
 } /* end DEF_INST(multiply_add_bfp_long_reg) */
 
-/*
- * ED1E MADB  - MULTIPLY AND ADD (long BFP)                    [RXF]
- */
+/*-------------------------------------------------------------------*/
+/* ED1E MADB  - MULTIPLY AND ADD (long BFP)                    [RXF] */
+/*-------------------------------------------------------------------*/
 DEF_INST(multiply_add_bfp_long)
 {
     int r1, r3, b2;
@@ -4356,9 +4318,9 @@ DEF_INST(multiply_add_bfp_long)
     }
 } /* end DEF_INST(multiply_add_bfp_long) */
 
-/*
- * B30E MAEBR - MULTIPLY AND ADD (short BFP)                   [RRF]
- */
+/*-------------------------------------------------------------------*/
+/* B30E MAEBR - MULTIPLY AND ADD (short BFP)                   [RRF] */
+/*-------------------------------------------------------------------*/
 DEF_INST(multiply_add_bfp_short_reg)
 {
     int r1, r2, r3;
@@ -4383,9 +4345,9 @@ DEF_INST(multiply_add_bfp_short_reg)
     }
 } /* end DEF_INST(multiply_add_bfp_short_reg) */
 
-/*
- * ED0E MAEB  - MULTIPLY AND ADD (short BFP)                   [RXF]
- */
+/*-------------------------------------------------------------------*/
+/* ED0E MAEB  - MULTIPLY AND ADD (short BFP)                   [RXF] */
+/*-------------------------------------------------------------------*/
 DEF_INST(multiply_add_bfp_short)
 {
     int r1, r3, b2;
@@ -4411,9 +4373,9 @@ DEF_INST(multiply_add_bfp_short)
     }
 } /* end DEF_INST(multiply_add_bfp_short) */
 
-/*
- * B31F MSDBR - MULTIPLY AND SUBTRACT (long BFP)               [RRF]
- */
+/*-------------------------------------------------------------------*/
+/* B31F MSDBR - MULTIPLY AND SUBTRACT (long BFP)               [RRF] */
+/*-------------------------------------------------------------------*/
 DEF_INST(multiply_subtract_bfp_long_reg)
 {
     int r1, r2, r3;
@@ -4439,9 +4401,9 @@ DEF_INST(multiply_subtract_bfp_long_reg)
     }
 } /* end DEF_INST(multiply_subtract_bfp_long_reg) */
 
-/*
- * ED1F MSDB  - MULTIPLY AND SUBTRACT (long BFP)               [RXF]
- */
+/*-------------------------------------------------------------------*/
+/* ED1F MSDB  - MULTIPLY AND SUBTRACT (long BFP)               [RXF] */
+/*-------------------------------------------------------------------*/
 DEF_INST(multiply_subtract_bfp_long)
 {
     int r1, r3, b2;
@@ -4468,9 +4430,9 @@ DEF_INST(multiply_subtract_bfp_long)
     }
 } /* end DEF_INST(multiply_subtract_bfp_long) */
 
-/*
- * B30F MSEBR - MULTIPLY AND SUBTRACT (short BFP)              [RRF]
- */
+/*-------------------------------------------------------------------*/
+/* B30F MSEBR - MULTIPLY AND SUBTRACT (short BFP)              [RRF] */
+/*-------------------------------------------------------------------*/
 DEF_INST(multiply_subtract_bfp_short_reg)
 {
     int r1, r2, r3;
@@ -4496,9 +4458,9 @@ DEF_INST(multiply_subtract_bfp_short_reg)
     }
 } /* end DEF_INST(multiply_subtract_bfp_short_reg) */
 
-/*
- * ED0F MSEB  - MULTIPLY AND SUBTRACT (short BFP)              [RXF]
- */
+/*-------------------------------------------------------------------*/
+/* ED0F MSEB  - MULTIPLY AND SUBTRACT (short BFP)              [RXF] */
+/*-------------------------------------------------------------------*/
 DEF_INST(multiply_subtract_bfp_short)
 {
     int r1, r3, b2;
@@ -4525,19 +4487,19 @@ DEF_INST(multiply_subtract_bfp_short)
     }
 } /* end DEF_INST(multiply_subtract_bfp_short) */
 
-/*
- * B384 SFPC  - SET FPC                                        [RRE]
- * This instruction is in module esame.c
- */
+/*-------------------------------------------------------------------*/
+/* B384 SFPC  - SET FPC                                        [RRE] */
+/* This instruction is in module esame.c                             */
+/*-------------------------------------------------------------------*/
 
-/*
- * B299 SRNM  - SET ROUNDING MODE                                [S]
- * This instruction is in module esame.c
- */
+/*-------------------------------------------------------------------*/
+/* B299 SRNM  - SET ROUNDING MODE                                [S] */
+/* This instruction is in module esame.c                             */
+/*-------------------------------------------------------------------*/
 
-/*
- * SQUARE ROOT (extended)
- */
+/*-------------------------------------------------------------------*/
+/* SQUARE ROOT (extended)                                            */
+/*-------------------------------------------------------------------*/
 static int squareroot_ebfp(struct ebfp *op, REGS *regs)
 {
     int raised;
@@ -4564,9 +4526,9 @@ static int squareroot_ebfp(struct ebfp *op, REGS *regs)
     return 0;
 }
 
-/*
- * B316 SQXBR - SQUARE ROOT (extended BFP)                     [RRE]
- */
+/*-------------------------------------------------------------------*/
+/* B316 SQXBR - SQUARE ROOT (extended BFP)                     [RRE] */
+/*-------------------------------------------------------------------*/
 DEF_INST(squareroot_bfp_ext_reg)
 {
     int r1, r2;
@@ -4589,9 +4551,9 @@ DEF_INST(squareroot_bfp_ext_reg)
     }
 }
 
-/*
- * SQUARE ROOT (long)
- */
+/*-------------------------------------------------------------------*/
+/* SQUARE ROOT (long)                                                */
+/*-------------------------------------------------------------------*/
 static int squareroot_lbfp(struct lbfp *op, REGS *regs)
 {
     int raised;
@@ -4618,9 +4580,9 @@ static int squareroot_lbfp(struct lbfp *op, REGS *regs)
     return 0;
 }
 
-/*
- * B315 SQDBR - SQUARE ROOT (long BFP)                         [RRE]
- */
+/*-------------------------------------------------------------------*/
+/* B315 SQDBR - SQUARE ROOT (long BFP)                         [RRE] */
+/*-------------------------------------------------------------------*/
 DEF_INST(squareroot_bfp_long_reg)
 {
     int r1, r2;
@@ -4642,9 +4604,9 @@ DEF_INST(squareroot_bfp_long_reg)
     }
 }
 
-/*
- * ED15 SQDB  - SQUARE ROOT (long BFP)                         [RXE]
- */
+/*-------------------------------------------------------------------*/
+/* ED15 SQDB  - SQUARE ROOT (long BFP)                         [RXE] */
+/*-------------------------------------------------------------------*/
 DEF_INST(squareroot_bfp_long)
 {
     int r1, b2;
@@ -4667,9 +4629,9 @@ DEF_INST(squareroot_bfp_long)
     }
 }
 
-/*
- * SQUARE ROOT (short)
- */
+/*-------------------------------------------------------------------*/
+/* SQUARE ROOT (short)                                               */
+/*-------------------------------------------------------------------*/
 static int squareroot_sbfp(struct sbfp *op, REGS *regs)
 {
     int raised;
@@ -4696,9 +4658,9 @@ static int squareroot_sbfp(struct sbfp *op, REGS *regs)
     return 0;
 }
 
-/*
- * B314 SQEBR - SQUARE ROOT (short BFP)                        [RRE]
- */
+/*-------------------------------------------------------------------*/
+/* B314 SQEBR - SQUARE ROOT (short BFP)                        [RRE] */
+/*-------------------------------------------------------------------*/
 DEF_INST(squareroot_bfp_short_reg)
 {
     int r1, r2;
@@ -4720,9 +4682,9 @@ DEF_INST(squareroot_bfp_short_reg)
     }
 }
 
-/*
- * ED14 SQEB  - SQUARE ROOT (short BFP)                        [RXE]
- */
+/*-------------------------------------------------------------------*/
+/* ED14 SQEB  - SQUARE ROOT (short BFP)                        [RXE] */
+/*-------------------------------------------------------------------*/
 DEF_INST(squareroot_bfp_short)
 {
     int r1, b2;
@@ -4745,14 +4707,14 @@ DEF_INST(squareroot_bfp_short)
     }
 }
 
-/*
- * B29C STFPC - STORE FPC                                        [S]
- * This instruction is in module esame.c
- */
+/*-------------------------------------------------------------------*/
+/* B29C STFPC - STORE FPC                                        [S] */
+/* This instruction is in module esame.c                             */
+/*-------------------------------------------------------------------*/
 
-/*
- * B34B SXBR  - SUBTRACT (extended BFP)                        [RRE]
- */
+/*-------------------------------------------------------------------*/
+/* B34B SXBR  - SUBTRACT (extended BFP)                        [RRE] */
+/*-------------------------------------------------------------------*/
 DEF_INST(subtract_bfp_ext_reg)
 {
     int r1, r2;
@@ -4777,9 +4739,9 @@ DEF_INST(subtract_bfp_ext_reg)
     }
 }
 
-/*
- * B31B SDBR  - SUBTRACT (long BFP)                            [RRE]
- */
+/*-------------------------------------------------------------------*/
+/* B31B SDBR  - SUBTRACT (long BFP)                            [RRE] */
+/*-------------------------------------------------------------------*/
 DEF_INST(subtract_bfp_long_reg)
 {
     int r1, r2;
@@ -4803,9 +4765,9 @@ DEF_INST(subtract_bfp_long_reg)
     }
 }
 
-/*
- * ED1B SDB   - SUBTRACT (long BFP)                            [RXE]
- */
+/*-------------------------------------------------------------------*/
+/* ED1B SDB   - SUBTRACT (long BFP)                            [RXE] */
+/*-------------------------------------------------------------------*/
 DEF_INST(subtract_bfp_long)
 {
     int r1, b2;
@@ -4830,9 +4792,9 @@ DEF_INST(subtract_bfp_long)
     }
 }
 
-/*
- * B30B SEBR  - SUBTRACT (short BFP)                           [RRE]
- */
+/*-------------------------------------------------------------------*/
+/* B30B SEBR  - SUBTRACT (short BFP)                           [RRE] */
+/*-------------------------------------------------------------------*/
 DEF_INST(subtract_bfp_short_reg)
 {
     int r1, r2;
@@ -4856,9 +4818,9 @@ DEF_INST(subtract_bfp_short_reg)
     }
 }
 
-/*
- * ED0B SEB   - SUBTRACT (short BFP)                           [RXE]
- */
+/*-------------------------------------------------------------------*/
+/* ED0B SEB   - SUBTRACT (short BFP)                           [RXE] */
+/*-------------------------------------------------------------------*/
 DEF_INST(subtract_bfp_short)
 {
     int r1, b2;
@@ -4883,10 +4845,10 @@ DEF_INST(subtract_bfp_short)
     }
 }
 
-/*
- * ED10 TCEB   - TEST DATA CLASS (short BFP)                   [RXE]
- * Per Jessen, Willem Konynenberg, 20 September 2001
- */
+/*-------------------------------------------------------------------*/
+/* ED10 TCEB  - TEST DATA CLASS (short BFP)                    [RXE] */
+/* Per Jessen, Willem Konynenberg, 20 September 2001                 */
+/*-------------------------------------------------------------------*/
 DEF_INST(test_data_class_bfp_short)
 {
     int r1, b2;
@@ -4925,10 +4887,10 @@ DEF_INST(test_data_class_bfp_short)
     regs->psw.cc = (effective_addr2>>bit) & 1;
 }
 
-/*
- * ED11 TCDB   - TEST DATA CLASS (long BFP)                   [RXE]
- * Per Jessen, Willem Konynenberg, 20 September 2001
- */
+/*-------------------------------------------------------------------*/
+/* ED11 TCDB  - TEST DATA CLASS (long BFP)                     [RXE] */
+/* Per Jessen, Willem Konynenberg, 20 September 2001                 */
+/*-------------------------------------------------------------------*/
 DEF_INST(test_data_class_bfp_long)
 {
     int r1, b2;
@@ -4967,10 +4929,10 @@ DEF_INST(test_data_class_bfp_long)
     regs->psw.cc = (effective_addr2>>bit) & 1;
 }
 
-/*
- * ED12 TCXB   - TEST DATA CLASS (extended BFP)               [RXE]
- * Per Jessen, Willem Konynenberg, 20 September 2001
- */
+/*-------------------------------------------------------------------*/
+/* ED12 TCXB  - TEST DATA CLASS (extended BFP)                 [RXE] */
+/* Per Jessen, Willem Konynenberg, 20 September 2001                 */
+/*-------------------------------------------------------------------*/
 DEF_INST(test_data_class_bfp_ext)
 {
     int r1, b2;
@@ -5010,9 +4972,9 @@ DEF_INST(test_data_class_bfp_ext)
     regs->psw.cc = (effective_addr2>>bit) & 1;
 }
 
-/*
- * DIVIDE TO INTEGER (long)
- */
+/*-------------------------------------------------------------------*/
+/* DIVIDE TO INTEGER (long)                                          */
+/*-------------------------------------------------------------------*/
 static int divint_lbfp(struct lbfp *op1, struct lbfp *op2,
                         struct lbfp *op3, int mode, REGS *regs)
 {
@@ -5037,9 +4999,9 @@ static int divint_lbfp(struct lbfp *op1, struct lbfp *op2,
     return 0;
 } /* end function divint_lbfp */
 
-/*
- * B35B DIDBR - DIVIDE TO INTEGER (long BFP)                   [RRF]
- */
+/*-------------------------------------------------------------------*/
+/* B35B DIDBR - DIVIDE TO INTEGER (long BFP)                   [RRF] */
+/*-------------------------------------------------------------------*/
 DEF_INST(divide_integer_bfp_long_reg)
 {
     int r1, r2, r3, m4;
@@ -5067,9 +5029,9 @@ DEF_INST(divide_integer_bfp_long_reg)
     }
 } /* end DEF_INST(divide_integer_bfp_long_reg) */
 
-/*
- * DIVIDE TO INTEGER (short)
- */
+/*-------------------------------------------------------------------*/
+/* DIVIDE TO INTEGER (short)                                         */
+/*-------------------------------------------------------------------*/
 static int divint_sbfp(struct sbfp *op1, struct sbfp *op2,
                         struct sbfp *op3, int mode, REGS *regs)
 {
@@ -5094,9 +5056,9 @@ static int divint_sbfp(struct sbfp *op1, struct sbfp *op2,
     return 0;
 } /* end function divint_sbfp */
 
-/*
- * B353 DIEBR - DIVIDE TO INTEGER (short BFP)                  [RRF]
- */
+/*-------------------------------------------------------------------*/
+/* B353 DIEBR - DIVIDE TO INTEGER (short BFP)                  [RRF] */
+/*-------------------------------------------------------------------*/
 DEF_INST(divide_integer_bfp_short_reg)
 {
     int r1, r2, r3, m4;
