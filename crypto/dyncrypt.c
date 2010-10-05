@@ -4578,9 +4578,9 @@ DEF_INST(perform_cryptographic_computation_d)
 
 #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_3
 /*----------------------------------------------------------------------------*/
-/* B928 PCKMO - Perform cryptographic key management operations         [RRE] */
+/* B928 PCKMO - Perform cryptographic key management operation          [RRE] */
 /*----------------------------------------------------------------------------*/
-DEF_INST(perform_cryptographic_key_management_operations_d)
+DEF_INST(perform_cryptographic_key_management_operation_d)
 {
   int fc;
   int keylen = 0;
@@ -4729,7 +4729,7 @@ HDL_REGISTER_SECTION;
   HDL_REGISTER(s390_compute_last_message_digest, s390_compute_last_message_digest_d);
   HDL_REGISTER(s390_compute_message_authentication_code, s390_compute_message_authentication_code_d);
 //  HDL_REGISTER(s390_perform_cryptographic_computation, s390_perform_cryptographic_computation_d);
-  HDL_REGISTER(s390_perform_cryptographic_key_management_operations, s390_perform_cryptographic_key_management_operations_d);
+  HDL_REGISTER(s390_perform_cryptographic_key_management_operation, s390_perform_cryptographic_key_management_operation_d);
 #endif /*defined(_390_FEATURE_MESSAGE_SECURITY_ASSIST)*/
 
 #if defined(_900_FEATURE_MESSAGE_SECURITY_ASSIST)
@@ -4742,7 +4742,7 @@ HDL_REGISTER_SECTION;
   HDL_REGISTER(z900_compute_last_message_digest, z900_compute_last_message_digest_d);
   HDL_REGISTER(z900_compute_message_authentication_code, z900_compute_message_authentication_code_d);
 //  HDL_REGISTER(z900_perform_cryptographic_computation, z900_perform_cryptographic_computation_d);
-  HDL_REGISTER(z900_perform_cryptographic_key_management_operations, z900_perform_cryptographic_key_management_operations_d);
+  HDL_REGISTER(z900_perform_cryptographic_key_management_operation, z900_perform_cryptographic_key_management_operation_d);
 #endif /*defined(_900_FEATURE_MESSAGE_SECURITY_ASSIST)*/
 
   logmsg("Crypto module loaded (c) Copyright Bernard van der Helm, 2003-2010\n");
