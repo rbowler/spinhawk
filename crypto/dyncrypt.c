@@ -676,6 +676,7 @@ void power(unsigned char *a, unsigned char b)
 
 /*----------------------------------------------------------------------------*/
 /* Program to generate exp_table                                              */
+/* Many thanks to Evert Combe                                                 */
 /*----------------------------------------------------------------------------*/
 int main(void)
 {
