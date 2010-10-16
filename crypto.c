@@ -26,46 +26,46 @@
 #include "crypto.h"
 
 /*----------------------------------------------------------------------------*/
+/* B93E KIMD  - Compute Intermediate Message Digest                     [RRE] */
+/*----------------------------------------------------------------------------*/
+DEF_INST(compute_intermediate_message_digest_r)
+{
+    if( ARCH_DEP(compute_intermediate_message_digest) )
+        ARCH_DEP(compute_intermediate_message_digest) (inst, regs);
+    else
+    {
+    int  r1, r2;                                /* register values   */
+
+        RRE(inst, regs, r1, r2);
+
+        ARCH_DEP(program_interrupt) (regs, PGM_OPERATION_EXCEPTION);
+    }
+}
+
+/*----------------------------------------------------------------------------*/
+/* B93F KLMD  - Compute Last Message Digest                             [RRE] */
+/*----------------------------------------------------------------------------*/
+DEF_INST(compute_last_message_digest_r)
+{
+    if( ARCH_DEP(compute_last_message_digest) )
+        ARCH_DEP(compute_last_message_digest) (inst, regs);
+    else
+    {
+    int  r1, r2;                                /* register values   */
+
+        RRE(inst, regs, r1, r2);
+
+        ARCH_DEP(program_interrupt) (regs, PGM_OPERATION_EXCEPTION);
+    }
+}
+
+/*----------------------------------------------------------------------------*/
 /* B92E KM    - Cipher Message                                          [RRE] */
 /*----------------------------------------------------------------------------*/
 DEF_INST(cipher_message_r)
 {
     if( ARCH_DEP(cipher_message) )
         ARCH_DEP(cipher_message) (inst, regs);
-    else
-    {
-    int  r1, r2;                                /* register values   */
-
-        RRE(inst, regs, r1, r2);
-
-        ARCH_DEP(program_interrupt) (regs, PGM_OPERATION_EXCEPTION);
-    }
-}
-
-/*----------------------------------------------------------------------------*/
-/* B92F KMC   - Cipher Message with Chaining                            [RRE] */
-/*----------------------------------------------------------------------------*/
-DEF_INST(cipher_message_with_chaining_r)
-{
-    if( ARCH_DEP(cipher_message_with_chaining) )
-        ARCH_DEP(cipher_message_with_chaining) (inst, regs);
-    else
-    {
-    int  r1, r2;                                /* register values   */
-
-        RRE(inst, regs, r1, r2);
-
-        ARCH_DEP(program_interrupt) (regs, PGM_OPERATION_EXCEPTION);
-    }
-}
-
-/*----------------------------------------------------------------------------*/
-/* B93E/B93F KIMD/KLMD  - Compute Intermediate/Last Message Digest      [RRE] */
-/*----------------------------------------------------------------------------*/
-DEF_INST(compute_message_digest_r)
-{
-    if( ARCH_DEP(compute_message_digest) )
-        ARCH_DEP(compute_message_digest) (inst, regs);
     else
     {
     int  r1, r2;                                /* register values   */
@@ -93,8 +93,183 @@ DEF_INST(compute_message_authentication_code_r)
     }
 }
 
+/*----------------------------------------------------------------------------*/
+/* B92F KMC   - Cipher Message with Chaining                            [RRE] */
+/*----------------------------------------------------------------------------*/
+DEF_INST(cipher_message_with_chaining_r)
+{
+    if( ARCH_DEP(cipher_message_with_chaining) )
+        ARCH_DEP(cipher_message_with_chaining) (inst, regs);
+    else
+    {
+    int  r1, r2;                                /* register values   */
+
+        RRE(inst, regs, r1, r2);
+
+        ARCH_DEP(program_interrupt) (regs, PGM_OPERATION_EXCEPTION);
+    }
+}
+
 #endif /*defined(FEATURE_MESSAGE_SECURITY_ASSIST)*/
 
+#ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_4
+/*----------------------------------------------------------------------------*/
+/* B92D KMCTR - Cipher message with counter                             [RRF] */
+/*----------------------------------------------------------------------------*/
+DEF_INST(cipher_message_with_counter_r)
+{
+    if( ARCH_DEP(cipher_message_with_counter) )
+        ARCH_DEP(cipher_message_with_counter) (inst, regs);
+    else
+    {
+    int  r1, r2, r3;                            /* register values   */
+
+        RRF_M(inst, regs, r1, r2, r3);
+
+        ARCH_DEP(program_interrupt) (regs, PGM_OPERATION_EXCEPTION);
+    }
+}
+
+/*----------------------------------------------------------------------------*/
+/* B92A KMF   - Cipher message with cipher feedback                     [RRE] */
+/*----------------------------------------------------------------------------*/
+DEF_INST(cipher_message_with_cipher_feedback_r)
+{
+    if( ARCH_DEP(cipher_message_with_cipher_feedback) )
+        ARCH_DEP(cipher_message_with_cipher_feedback) (inst, regs);
+    else
+    {
+    int  r1, r2;                                /* register values   */
+
+        RRE(inst, regs, r1, r2);
+
+        ARCH_DEP(program_interrupt) (regs, PGM_OPERATION_EXCEPTION);
+    }
+}
+
+/*----------------------------------------------------------------------------*/
+/* B92B KMO   - Cipher message with output feedback                     [RRE] */
+/*----------------------------------------------------------------------------*/
+DEF_INST(cipher_message_with_output_feedback_r)
+{
+    if( ARCH_DEP(cipher_message_with_output_feedback) )
+        ARCH_DEP(cipher_message_with_output_feedback) (inst, regs);
+    else
+    {
+    int  r1, r2;                                /* register values   */
+
+        RRE(inst, regs, r1, r2);
+
+        ARCH_DEP(program_interrupt) (regs, PGM_OPERATION_EXCEPTION);
+    }
+}
+
+/*----------------------------------------------------------------------------*/
+/* B92C PCC  - Perform cryptographic computation                        [RRE] */
+/*----------------------------------------------------------------------------*/
+DEF_INST(perform_cryptographic_computation_r)
+{
+    if( ARCH_DEP(perform_cryptographic_computation) )
+        ARCH_DEP(perform_cryptographic_computation) (inst, regs);
+    else
+    {
+    int  r1, r2;                                /* register values   */
+
+        RRE(inst, regs, r1, r2);
+
+        ARCH_DEP(program_interrupt) (regs, PGM_OPERATION_EXCEPTION);
+    }
+}
+#endif /* FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_4 */
+
+#ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_3
+/*----------------------------------------------------------------------------*/
+/* B928 PCKMO - Perform cryptographic key management operation          [RRE] */
+/*----------------------------------------------------------------------------*/
+DEF_INST(perform_cryptographic_key_management_operation_r)
+{
+    if( ARCH_DEP(perform_cryptographic_key_management_operation) )
+        ARCH_DEP(perform_cryptographic_key_management_operation) (inst, regs);
+    else
+    {
+    int  r1, r2;                                /* register values   */
+
+        RRE(inst, regs, r1, r2);
+
+        ARCH_DEP(program_interrupt) (regs, PGM_OPERATION_EXCEPTION);
+    }
+}
+
+#ifndef __WK__
+#define __WK__
+/*----------------------------------------------------------------------------*/
+/* Function: renew_wrapping_keys                                              */
+/*                                                                            */
+/* Each time a clear reset is performed, a new set of wrapping keys and their */
+/* associated verification patterns are generated. The contents of the two    */
+/* wrapping-key registers are kept internal to the model so that no program,  */
+/* including the operating system, can directly observe their clear value.    */
+/*----------------------------------------------------------------------------*/
+void renew_wrapping_keys(void)
+{
+  int i;
+  U64 time;
+  BYTE lparname[8];
+  U64 cpuid;
+
+  obtain_lock(&sysblk.wklock);
+  time = host_tod();
+  srandom(time);
+  for(i = 0; i < 32; i++)
+    sysblk.wkaes_reg[i] = random();
+  for(i = 0; i < 24; i++)
+    sysblk.wkdea_reg[i] = random();
+
+  /* We set the verification pattern to */
+  /* cpuid (8 bytes) */
+  /* lpar name (8 bytes) */
+  /* lparnum (1 byte) */
+  /* time (8 bytes at the end) */
+  memset(sysblk.wkvpaes_reg, 0, 32);
+  memset(sysblk.wkvpdea_reg, 0, 24);
+  cpuid = sysblk.cpuid;
+  for(i = 0; i < 8; i++)
+  {
+    sysblk.wkvpaes_reg[7 - i] = cpuid;
+    sysblk.wkvpdea_reg[7 - i] = cpuid;
+    cpuid >>= 8;
+  }
+  get_lparname(lparname);
+  memcpy(&sysblk.wkvpaes_reg[8], lparname, 8);
+  memcpy(&sysblk.wkvpdea_reg[8], lparname, 8);
+  sysblk.wkvpaes_reg[16] = sysblk.lparnum;
+  sysblk.wkvpdea_reg[16] = sysblk.lparnum;
+  for(i = 0; i < 8; i++)
+  {
+    sysblk.wkvpaes_reg[31 - i] = time;
+    sysblk.wkvpdea_reg[23 - i] = time;
+    time >>= 8;
+  }
+  release_lock(&sysblk.wklock);
+
+#if 0
+  logmsg("AES wrapping key: ");
+  for(i = 0; i < 32; i++)
+    logmsg("%02X", sysblk.wkaes_reg[i]);
+  logmsg("\nAES wrapping key verification pattern: ");
+  for(i = 0; i < 32; i++)
+    logmsg("%02X", sysblk.wkvpaes_reg[i]);
+  logmsg("\nDEA wrapping key: ");
+  for(i = 0; i < 24; i++)
+    logmsg("%02X", sysblk.wkdea_reg[i]);
+  logmsg("\nDEA wrapping key verification pattern: ");
+  for(i = 0; i < 24; i++)
+    logmsg("%02X", sysblk.wkvpdea_reg[i]);
+  logmsg("\n");
+#endif
+}
+#endif
+#endif /* FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_3 */
 
 #if !defined(_GEN_ARCH)
 

@@ -27,6 +27,9 @@
 #if defined(OPTION_FISHIO)
 #include "w32chan.h"
 #endif // defined(OPTION_FISHIO)
+#if defined(_FEATURE_MESSAGE_SECURITY_ASSIST)
+#include "hexterns.h"
+#endif
 
 /*-------------------------------------------------------------------*/
 /* Function to perform System Reset   (either 'normal' or 'clear')   */
@@ -469,6 +472,10 @@ int ARCH_DEP(initial_cpu_reset) (REGS *regs)
 
     if(regs->host && regs->guestregs)
       ARCH_DEP(initial_cpu_reset)(regs->guestregs);
+
+#if defined(_FEATURE_MESSAGE_SECURITY_ASSIST)
+    renew_wrapping_keys();
+#endif /*defined(_FEATURE_MESSAGE_SECURITY_ASSIST)*/
 
     return 0;
 } /* end function initial_cpu_reset */

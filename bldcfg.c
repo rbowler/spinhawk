@@ -824,6 +824,11 @@ char    pathname[MAX_PATH];             /* file path in host format  */
     ptt_trace_init (0, 1);
 #endif
 
+#if defined(_FEATURE_MESSAGE_SECURITY_ASSIST)
+    /* Initialize the wrapping key registers lock */
+    initialize_lock(&sysblk.wklock);
+#endif /*defined(_FEATURE_MESSAGE_SECURITY_ASSIST)*/
+
 #if defined(OPTION_FISHIO)
     InitIOScheduler                     // initialize i/o scheduler...
     (
