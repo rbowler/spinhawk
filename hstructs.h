@@ -28,6 +28,9 @@
     typedef U64                 CPU_BITMAP;
     #define F_CPU_BITMAP        "%16.16"I64_FMT"X"
 #elif MAX_CPU_ENGINES <= 128
+ #if defined(_MSVC_)
+   #error MAX_CPU_ENGINES > 64 not supported in Windows
+ #endif
  #if SIZEOF_SIZE_T == 4
    #error MAX_CPU_ENGINES > 64 only supported on 64 bit platforms
  #endif
