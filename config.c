@@ -597,7 +597,7 @@ int     i;                              /* Loop index                */
 #endif /*_FEATURE_CHANNEL_SUBSYSTEM*/
 
     return 0;
-} /* end function detach_device */
+} /* end function detach_devblk */
 
 
 /*-------------------------------------------------------------------*/
