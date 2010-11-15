@@ -102,7 +102,7 @@ int ARCH_DEP(system_reset) (int cpu, int clear)
 
 #if defined(FEATURE_LOAD_PROGRAM_PARAMETER_FACILITY)
         /* Clear the program-parameter register */
-        memset(sysblk.program_parameter,0,sizeof(sysblk.program_parameter));
+        sysblk.program_parameter = 0;
 #endif /*defined(FEATURE_LOAD_PROGRAM_PARAMETER_FACILITY)*/
 
         /* Clear storage */

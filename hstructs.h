@@ -449,7 +449,7 @@ struct SYSBLK {
      /* CPU Measurement Counter facility 
         CPU Measurement Sampling facility
         Load Program Parameter facility */
-        BYTE    program_parameter[8];   /* Program Parameter Register*/
+        U64     program_parameter;      /* Program Parameter Register*/
 
 #if defined(_FEATURE_VECTOR_FACILITY)
         VFREGS  vf[MAX_CPU_ENGINES];    /* Vector Facility           */

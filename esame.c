@@ -8825,15 +8825,13 @@ DEF_INST(load_program_parameter)
 {
 int     b2;                             /* Base of effective addr    */
 U64     effective_addr2;                /* Effective address         */
-BYTE    dword[8];
 
     S(inst, regs, b2, effective_addr2);
 
     PRIV_CHECK(regs);
 
     /* Fetch data from operand address */
-    ARCH_DEP(vfetchc) ( dword, 8-1, effective_addr2, b2, regs );
-    memcpy(sysblk.program_parameter,dword,sizeof(sysblk.program_parameter));
+    sysblk.program_parameter = ARCH_DEP(vfetch8) (effective_addr2, b2, regs);
 
 } /* end DEF_INST(load_program_parameter) */
 #endif /*defined(FEATURE_LOAD_PROGRAM_PARAMETER_FACILITY)*/     /*810*/ 
