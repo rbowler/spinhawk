@@ -1812,11 +1812,7 @@ static void try_scsi_refresh( DEVBLK* dev )
     // once mounted has now been manually unmounted for example).
 
     // The reasons for why this is not possible is clearly explained
-    // in the 'update_status_scsitape' function in 'scsitape.c'. All
-    // we can ever hope to do here is either cause an already-running
-    // auto-mount thread to exit (if the user has just now disabled
-    // auto-mounts) or else cause one to automatically start (if they
-    // just enabled auto-mounts and there's no tape already mounted).
+    // in the 'update_status_scsitape' function in 'scsitape.c'.
 
     // If the user manually unloaded a mounted tape (such that there
     // is now no longer a tape mounted even though the drive status
@@ -1831,7 +1827,6 @@ static void try_scsi_refresh( DEVBLK* dev )
     gen_parms.action  = GENTMH_SCSI_ACTION_UPDATE_STATUS;
     gen_parms.dev     = dev;
 
-    broadcast_condition( &dev->stape_exit_cond );   // (force exit if needed)
     VERIFY( dev->tmh->generic( &gen_parms ) == 0 ); // (maybe update status)
     usleep(10*1000);                                // (let thread start/end)
 }
@@ -1901,9 +1896,8 @@ int scsimount_cmd(int argc, char *argv[], char *cmdline)
 
         logmsg
         (
-            _("SCSI auto-mount thread %s active for drive %u:%4.4X = %s.\n")
-
-            ,dev->stape_mountmon_tid ? "IS" : "is NOT"
+            _("thread %s active for drive %u:%4.4X = %s.\n")
+            ,dev->stape_mntdrq.link.Flink ? "IS" : "is NOT"
             ,SSID_TO_LCSS(dev->ssid)
             ,dev->devnum
             ,dev->filename

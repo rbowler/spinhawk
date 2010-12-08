@@ -317,9 +317,12 @@ DEVBLK**dvpp;
         initialize_condition (&dev->resumecond);
         initialize_condition (&dev->iocond);
 #if defined(OPTION_SCSI_TAPE)
-        initialize_lock      (&dev->stape_getstat_lock);
-        initialize_condition (&dev->stape_getstat_cond);
-        initialize_condition (&dev->stape_exit_cond   );
+        initialize_condition (&dev->stape_sstat_cond);
+        InitializeListLink (&dev->stape_statrq.link);
+        InitializeListLink (&dev->stape_mntdrq.link);
+        dev->stape_statrq.dev = dev;
+        dev->stape_mntdrq.dev = dev;
+        dev->sstat = GMT_DR_OPEN(-1);
 #endif
 
         /* Search for the last device block on the chain */

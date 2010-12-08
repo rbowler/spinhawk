@@ -628,8 +628,7 @@ DEVINITTAB*     pDevInitTab;
 
     /* Initialize SCSI tape control fields */
 #if defined(OPTION_SCSI_TAPE)
-    dev->sstat               = GMT_DR_OPEN(-1);
-    dev->stape_getstat_sstat = GMT_DR_OPEN(-1);
+    dev->sstat = GMT_DR_OPEN(-1);
 #endif
 
     /* Clear the DPA */
@@ -1154,8 +1153,7 @@ int  mountnewtape ( DEVBLK *dev, int argc, char **argv )
     /* Initialize device dependent fields */
     dev->fd                = -1;
 #if defined(OPTION_SCSI_TAPE)
-    dev->sstat               = GMT_DR_OPEN(-1);
-    dev->stape_getstat_sstat = GMT_DR_OPEN(-1);
+    dev->sstat             = GMT_DR_OPEN(-1);
 #endif
     dev->omadesc           = NULL;
     dev->omafiles          = 0;
