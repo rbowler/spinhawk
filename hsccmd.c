@@ -7220,6 +7220,7 @@ int sizeof_cmd(int argc, char *argv[], char *cmdline)
     logmsg(_("HHCPN161I FILENAME_MAX ......%7d\n"),FILENAME_MAX);
     logmsg(_("HHCPN161I PATH_MAX ..........%7d\n"),PATH_MAX);
     logmsg(_("HHCPN161I CPU_BITMAP ........%7d\n"),sizeof(CPU_BITMAP));
+    logmsg(_("HHCPN161I FD_SETSIZE ........%7d\n"),FD_SETSIZE);
     return 0;
 }
 
