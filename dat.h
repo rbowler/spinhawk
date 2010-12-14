@@ -1233,7 +1233,7 @@ U16     sx, px;                         /* Segment and page index,
                     goto tran_spec_excp;
 
 #if defined(FEATURE_ENHANCED_DAT_FACILITY)
-                if ((regs->CR_L(0) & CR0_ZPAG_SZ_1M)
+                if ((regs->CR_L(0) & CR0_ED)
                  && (rte & REGTAB_P))
                     regs->dat.protect |= 1;
 #endif /*defined(FEATURE_ENHANCED_DAT_FACILITY)*/
@@ -1286,7 +1286,7 @@ U16     sx, px;                         /* Segment and page index,
                     goto tran_spec_excp;
 
 #if defined(FEATURE_ENHANCED_DAT_FACILITY)
-                if ((regs->CR_L(0) & CR0_ZPAG_SZ_1M)
+                if ((regs->CR_L(0) & CR0_ED)
                  && (rte & REGTAB_P))
                     regs->dat.protect |= 1;
 #endif /*defined(FEATURE_ENHANCED_DAT_FACILITY)*/
@@ -1339,7 +1339,7 @@ U16     sx, px;                         /* Segment and page index,
                     goto tran_spec_excp;
 
 #if defined(FEATURE_ENHANCED_DAT_FACILITY)
-                if ((regs->CR_L(0) & CR0_ZPAG_SZ_1M)
+                if ((regs->CR_L(0) & CR0_ED)
                  && (rte & REGTAB_P))
                     regs->dat.protect |= 1;
 #endif /*defined(FEATURE_ENHANCED_DAT_FACILITY)*/
@@ -1395,7 +1395,7 @@ U16     sx, px;                         /* Segment and page index,
                 goto tran_spec_excp;
 
 #if defined(FEATURE_ENHANCED_DAT_FACILITY)
-            if ((regs->CR_L(0) & CR0_ZPAG_SZ_1M)
+            if ((regs->CR_L(0) & CR0_ED)
               && (ste & ZSEGTAB_FC))
             {
             
@@ -1416,23 +1416,23 @@ U16     sx, px;                         /* Segment and page index,
                 /* Combine the page frame real address with the byte index
                    of the virtual address to form the real address */
                 regs->dat.raddr = (ste & ZSEGTAB_SFAA) | (vaddr & ~ZSEGTAB_SFAA);
-                regs->dat.rpfra = (ste & ZSEGTAB_SFAA);
+                /* Fake 4K PFRA for TLB purposes */
+                regs->dat.rpfra = ((ste & ZSEGTAB_SFAA) | (vaddr & ~ZSEGTAB_SFAA)) & PAGEFRAME_PAGEMASK;
 
 //              logmsg("raddr:%16.16" I64_FMT "X cc=0\n",regs->dat.raddr);
 
-#if 0
                 /* [3.11.4.2] Place the translated address in the TLB */
                 if (!(acctype & ACC_NOTLB))
                 {
                     regs->tlb.TLB_ASD(tlbix)   = regs->dat.asd;
                     regs->tlb.TLB_VADDR(tlbix) = (vaddr & TLBID_PAGEMASK) | regs->tlbID;
-                    regs->tlb.TLB_PTE(tlbix)   = (ste & ZSEGTAB_SFAA) | (vaddr & ~ZSEGTAB_SFAA);
+                    /* Fake 4K PTE for TLB purposes */
+                    regs->tlb.TLB_PTE(tlbix)   = ((ste & ZSEGTAB_SFAA) | (vaddr & ~ZSEGTAB_SFAA)) & PAGEFRAME_PAGEMASK;
                     regs->tlb.common[tlbix]    = (ste & SEGTAB_COMMON) ? 1 : 0;
                     regs->tlb.protect[tlbix]   = regs->dat.protect;
                     regs->tlb.acc[tlbix]       = 0;
                     regs->tlb.main[tlbix]      = NULL;
                 }
-#endif
 
                 /* Clear exception code and return with zero return code */
                 regs->dat.xcode = 0;
@@ -1455,12 +1455,12 @@ U16     sx, px;                         /* Segment and page index,
             {
                 regs->dat.raddr = pto;
                 regs->dat.xcode = 0;
-#if defined(FEATURE_ENHANCED_DAT_FACILITY)
-                if ((regs->CR_L(0) & CR0_ZPAG_SZ_1M))
-                cc = regs->dat.protect ? 1 : 0;
-                else
-#endif /*defined(FEATURE_ENHANCED_DAT_FACILITY)*/
                 cc = (ste & ZSEGTAB_P) ? 1 : 0;
+#if defined(FEATURE_ENHANCED_DAT_FACILITY)
+                if ((regs->CR_L(0) & CR0_ED)
+                  && regs->dat.protect)
+                    cc = 1;
+#endif /*defined(FEATURE_ENHANCED_DAT_FACILITY)*/
                 return cc;
             } /* end if(ACCTYPE_LPTEA) */
 
