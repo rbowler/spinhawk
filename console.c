@@ -1,5 +1,5 @@
-/* CONSOLE.C    (c)Copyright Roger Bowler, 1999-2009                 */
-/*              ESA/390 Console Device Handler                       */
+/* CONSOLE.C    (c)Copyright Roger Bowler, 1999-2011                 */
+/*              Hercules Console Device Handler                      */
 
 // $Id$
 
@@ -1693,18 +1693,15 @@ char                    *logoout;
         if (devnum != 0xFFFF && dev->devnum != devnum)
             continue;
 
-        /* Loop if no specific devnum was requested
-         *    AND
-         *    a group was requested OR the device is in a group
-         *       AND
-         *          The groups match
-         * this device is not in that device group */
-        if(devnum==0xFFFF && (group[0] || dev->filename[0]))
+        /* Loop if no specific device number was requested, and
+           either a group was requested OR the device is in a group,
+           and the device group does not match the requested group */
+        if (devnum==0xFFFF && (group[0] || dev->filename[0]))
         {
-           if(strncmp(group,dev->filename,16)!=0)
-           {
-               continue;
-           }
+            if (strncasecmp(group,dev->filename,16)!=0)
+            {
+                continue;
+            }
         }
 
         /* Obtain the device lock */
