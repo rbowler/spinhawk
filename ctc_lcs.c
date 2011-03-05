@@ -2354,6 +2354,7 @@ static int  BuildOAT( char* pszOATName, PLCSBLK pLCSBLK )
         // Read next record from the OAT file
         if( !ReadOAT( pszOATName, fp, szBuff ) )
         {
+            fclose( fp );
             return 0;
         }
 
