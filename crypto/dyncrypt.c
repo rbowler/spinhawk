@@ -1,11 +1,12 @@
+/* DYNCRYPT.C   (c) Bernard van der Helm, 2003-2011                  */
+/*              z/Architecture crypto instructions                   */
+
 /*----------------------------------------------------------------------------*/
-/* file: dyncrypt.c                                                           */
-/*                                                                            */
 /* Implementation of the z/Architecture crypto instructions described in      */
 /* SA22-7832-04: z/Architecture Principles of Operation within the Hercules   */
 /* z/Architecture emulator.                                                   */
 /*                                                                            */
-/*                              (c) Copyright Bernard van der Helm, 2003-2010 */
+/*                              (c) Copyright Bernard van der Helm, 2003-2011 */
 /*                              Noordwijkerhout, The Netherlands.             */
 /*----------------------------------------------------------------------------*/
 
@@ -15,11 +16,11 @@
 
 #ifndef _DYNCRYPT_C_
 #define _DYNCRYPT_C_
-#endif 
+#endif /* #ifndef _DYNCRYPT_C_ */
 
 #ifndef _DYNCRYPT_DLL_
 #define _DYNCRYPT_DLL_
-#endif
+#endif /* #ifndef _DYNCRYPT_DLL_ */
 
 #include "hercules.h"
 #include "opcode.h"
@@ -34,16 +35,16 @@
 /*----------------------------------------------------------------------------*/
 #if defined(FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_1) && !defined(FEATURE_MESSAGE_SECURITY_ASSIST)
   #error You cannot have "Message Security Assist extension 1" without having "Message Security Assist"
-#endif
+#endif /* #if ... */
 #if defined(FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_2) && !defined(FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_1)
   #error You cannot have "Message Security Assist extension 2" without having "Message Security Assist extension 1"
-#endif
+#endif /* #if ... */
 #if defined(FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_3) && !defined(FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_2)
   #error You cannot have "Message Security Assist extension 3" without having "Message Security Assist extension 2"
-#endif
+#endif /* #if ... */
 #if defined(FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_4) && !defined(FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_3)
   #error You cannot have "Message Security Assist extension 4" without having "Message Security Assist extension 3"
-#endif
+#endif /* #if ... */
 
 #ifdef FEATURE_MESSAGE_SECURITY_ASSIST
 /*----------------------------------------------------------------------------*/
@@ -60,7 +61,7 @@
 #define OPTION_KMO_DEBUG
 #define OPTION_PCC_DEBUG
 #define OPTION_PCKMO_DEBUG
-#endif
+#endif /* #if 0|1 */
 
 /*----------------------------------------------------------------------------*/
 /* General Purpose Register 0 macro's (GR0)                                   */
@@ -289,7 +290,7 @@ void gcm_gf_mult(const unsigned char *a, const unsigned char *b, unsigned char *
   }
   XMEMCPY(c, Z, 16);
 }
-#endif /* FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_4 */
+#endif /* #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_4 */
 
 /*----------------------------------------------------------------------------*/
 /* Get the chaining vector for output processing                              */
@@ -355,7 +356,7 @@ static void sha256_seticv(sha256_context *ctx, BYTE icv[32])
     ctx->state[i] |= icv[j++];
   }
 }
-#endif /* FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_1 */
+#endif /* #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_1 */
 
 #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_2
 /*----------------------------------------------------------------------------*/
@@ -397,7 +398,7 @@ static void sha512_seticv(sha512_context *ctx, BYTE icv[64])
     ctx->state[i] |= (U64) icv[j++];
   }
 }
-#endif /* FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_2 */
+#endif /* #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_2 */
 
 #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_4
 /*----------------------------------------------------------------------------*/
@@ -424,7 +425,7 @@ void shift_left(BYTE *dst, BYTE* src, int len)
     }
   }
 }
-#endif /* FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_4 */
+#endif /* #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_4 */
 
 #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_3
 /*----------------------------------------------------------------------------*/
@@ -586,7 +587,7 @@ static void wrap_dea(BYTE *key, int keylen)
     des3_encrypt(&context, &key[i], &key[i]);
   }
 }
-#endif /* FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_3 */
+#endif /* #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_3 */
 
 #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_4
 /*----------------------------------------------------------------------------*/
@@ -702,7 +703,7 @@ int main(void)
   }
   return(0);
 }
-#endif
+#endif /* #if 0 */
 
 static BYTE exp_table[128][16] =
 {
@@ -835,8 +836,8 @@ static BYTE exp_table[128][16] =
   { 0x1c, 0x20, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0e },
   { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02 }
 };
-#endif /* FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_4 */
-#endif /* __STATIC_FUNCTIONS__ */
+#endif /* #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_4 */
+#endif /* #ifdef __STATIC_FUNCTIONS__ */
 
 /*----------------------------------------------------------------------------*/
 /* Needed functions from sha1.c and sha256.c.                                 */
@@ -855,11 +856,11 @@ static void ARCH_DEP(kimd_sha)(int r1, int r2, REGS *regs, int klmd)
 
 #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_1
   sha256_context sha256_ctx;
-#endif
+#endif /* #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_1 */
 
 #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_2
   sha512_context sha512_ctx;
-#endif
+#endif /* #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_2 */
 
   int crypted;
   int fc;
@@ -888,7 +889,7 @@ static void ARCH_DEP(kimd_sha)(int r1, int r2, REGS *regs, int klmd)
       parameter_blocklen = 32;
       break;
     }
-#endif
+#endif /* #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_1 */
 
 #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_2
     case 3: /* sha-512 */
@@ -896,7 +897,7 @@ static void ARCH_DEP(kimd_sha)(int r1, int r2, REGS *regs, int klmd)
       message_blocklen = 128;
       parameter_blocklen = 64;
     }
-#endif
+#endif /* #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_2 */
 
   }
 
@@ -926,7 +927,7 @@ static void ARCH_DEP(kimd_sha)(int r1, int r2, REGS *regs, int klmd)
   {
     LOGBYTE("icv   :", parameter_block, parameter_blocklen);
   }
-#endif
+#endif /* #ifdef OPTION_KIMD_DEBUG */
 
   /* Set initial chaining value */
   switch(fc)
@@ -943,7 +944,7 @@ static void ARCH_DEP(kimd_sha)(int r1, int r2, REGS *regs, int klmd)
       sha256_seticv(&sha256_ctx, parameter_block);
       break;
     }
-#endif
+#endif /* #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_1 */
 
 #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_2
     case 3: /* sha-512 */
@@ -951,7 +952,7 @@ static void ARCH_DEP(kimd_sha)(int r1, int r2, REGS *regs, int klmd)
       sha512_seticv(&sha512_ctx, parameter_block);
       break;
     }
-#endif
+#endif /* #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_2 */
 
   }
 
@@ -963,7 +964,7 @@ static void ARCH_DEP(kimd_sha)(int r1, int r2, REGS *regs, int klmd)
 
 #ifdef OPTION_KIMD_DEBUG
     LOGBYTE2("input :", message_block, 16, message_blocklen / 16);
-#endif
+#endif /* #ifdef OPTION_KIMD_DEBUG */
 
     switch(fc)
     {
@@ -981,7 +982,7 @@ static void ARCH_DEP(kimd_sha)(int r1, int r2, REGS *regs, int klmd)
         sha256_getcv(&sha256_ctx, parameter_block);
         break;
       }
-#endif
+#endif /* #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_1 */
 
 #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_2
       case 3: /* sha-512 */
@@ -990,7 +991,7 @@ static void ARCH_DEP(kimd_sha)(int r1, int r2, REGS *regs, int klmd)
         sha512_getcv(&sha512_ctx, parameter_block);
         break;
       }
-#endif
+#endif /* #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_2 */
 
     }
 
@@ -1006,7 +1007,7 @@ static void ARCH_DEP(kimd_sha)(int r1, int r2, REGS *regs, int klmd)
     {
       LOGBYTE("ocv   :", parameter_block, parameter_blocklen);
     }
-#endif
+#endif /* #ifdef OPTION_KIMD_DEBUG */
 
     /* Update the registers */
     SET_GR_A(r2, regs, GR_A(r2, regs) + message_blocklen);
@@ -1015,7 +1016,7 @@ static void ARCH_DEP(kimd_sha)(int r1, int r2, REGS *regs, int klmd)
 #ifdef OPTION_KIMD_DEBUG
     logmsg("  GR%02d  : " F_GREG "\n", r2, (regs)->GR(r2));
     logmsg("  GR%02d  : " F_GREG "\n", r2 + 1, (regs)->GR(r2 + 1));
-#endif
+#endif /* #ifdef OPTION_KIMD_DEBUG */
 
     /* check for end of data */
     if(unlikely(GR_A(r2 + 1, regs) < 64))
@@ -1064,7 +1065,7 @@ static void ARCH_DEP(kimd_ghash)(int r1, int r2, REGS *regs)
 #ifdef OPTION_KIMD_DEBUG
   LOGBYTE("icv   :", parameter_block, 16);
   LOGBYTE("h     :", &parameter_block[16], 16);
-#endif
+#endif /* #ifdef OPTION_KIMD_DEBUG */
 
   /* Try to process the CPU-determined amount of data */
   for(crypted = 0; crypted < PROCESS_MAX; crypted += 16)
@@ -1074,7 +1075,7 @@ static void ARCH_DEP(kimd_ghash)(int r1, int r2, REGS *regs)
 
 #ifdef OPTION_KIMD_DEBUG
     LOGBYTE("input :", message_block, 16);
-#endif
+#endif /* #ifdef OPTION_KIMD_DEBUG */
 
     /* XOR and multiply */
     for(i = 0; i < 16; i++)
@@ -1086,7 +1087,7 @@ static void ARCH_DEP(kimd_ghash)(int r1, int r2, REGS *regs)
 
 #ifdef OPTION_KIMD_DEBUG
     LOGBYTE("ocv   :", parameter_block, 16);
-#endif
+#endif /* #ifdef OPTION_KIMD_DEBUG */
 
     /* Update the registers */
     SET_GR_A(r2, regs, GR_A(r2, regs) + 16);
@@ -1095,7 +1096,7 @@ static void ARCH_DEP(kimd_ghash)(int r1, int r2, REGS *regs)
 #ifdef OPTION_KIMD_DEBUG
     WRMSG(HHC90108, "D", r2, (regs)->GR(r2));
     WRMSG(HHC90108, "D", r2 + 1, (regs)->GR(r2 + 1));
-#endif
+#endif /* #ifdef OPTION_KIMD_DEBUG */
 
     /* check for end of data */
     if(unlikely(!GR_A(r2 + 1, regs)))
@@ -1108,7 +1109,7 @@ static void ARCH_DEP(kimd_ghash)(int r1, int r2, REGS *regs)
   /* CPU-determined amount of data processed */
   regs->psw.cc = 3;
 }
-#endif /* FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_4 */
+#endif /* #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_4 */
 
 /*----------------------------------------------------------------------------*/
 /* Compute last message digest (KLMD) FC 1-3                                  */
@@ -1119,11 +1120,11 @@ static void ARCH_DEP(klmd_sha)(int r1, int r2, REGS *regs)
 
 #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_1
   sha256_context sha256_ctx;
-#endif
+#endif /* #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_1 */
 
 #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_2
   sha512_context sha512_ctx;
-#endif
+#endif /* #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_2 */
 
   int fc;
   int i;
@@ -1155,7 +1156,7 @@ static void ARCH_DEP(klmd_sha)(int r1, int r2, REGS *regs)
       parameter_blocklen = 32;
       break;
     }
-#endif
+#endif /* #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_1 */
 
 #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_2
     case 3: /* sha-512 */
@@ -1164,7 +1165,7 @@ static void ARCH_DEP(klmd_sha)(int r1, int r2, REGS *regs)
       message_blocklen = 128;
       parameter_blocklen = 64;
     }
-#endif
+#endif /* #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_2 */
 
   }
 
@@ -1192,7 +1193,7 @@ static void ARCH_DEP(klmd_sha)(int r1, int r2, REGS *regs)
     LOGBYTE("icv   :", parameter_block, parameter_blocklen);
   }
   LOGBYTE("mbl   :", &parameter_block[parameter_blocklen], mbllen);
-#endif
+#endif /* #ifdef OPTION_KLMD_DEBUG */
 
   /* Set initial chaining value */
   switch(fc)
@@ -1209,7 +1210,7 @@ static void ARCH_DEP(klmd_sha)(int r1, int r2, REGS *regs)
       sha256_seticv(&sha256_ctx, parameter_block);
       break;
     }
-#endif
+#endif /* #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_1 */
 
 #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_2
     case 3: /* sha-512 */
@@ -1217,7 +1218,7 @@ static void ARCH_DEP(klmd_sha)(int r1, int r2, REGS *regs)
       sha512_seticv(&sha512_ctx, parameter_block);
       break;
     }
-#endif
+#endif  /* #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_2 */
 
   }
 
@@ -1234,7 +1235,7 @@ static void ARCH_DEP(klmd_sha)(int r1, int r2, REGS *regs)
     }
     else
       LOGBYTE("input :", message_block, (int) GR_A(r2 + 1, regs));
-#endif
+#endif /* #ifdef OPTION_KLMD_DEBUG */
 
   }
 
@@ -1259,7 +1260,7 @@ static void ARCH_DEP(klmd_sha)(int r1, int r2, REGS *regs)
         sha256_process(&sha256_ctx, message_block);
         break;
       }
-#endif
+#endif /* #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_1 */
 
 #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_2
       case 3: /* sha-512 */
@@ -1267,7 +1268,7 @@ static void ARCH_DEP(klmd_sha)(int r1, int r2, REGS *regs)
         sha512_process(&sha512_ctx, message_block);
         break;
       }
-#endif
+#endif /* #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_2 */
 
     }
     for(i = 0; i < message_blocklen - mbllen; i++)
@@ -1300,7 +1301,7 @@ static void ARCH_DEP(klmd_sha)(int r1, int r2, REGS *regs)
       sha256_getcv(&sha256_ctx, parameter_block);
       break;      
     }
-#endif
+#endif /* #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_1 */
 
 #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_2
     case 3: /* sha-512 */
@@ -1309,7 +1310,7 @@ static void ARCH_DEP(klmd_sha)(int r1, int r2, REGS *regs)
       sha512_getcv(&sha512_ctx, parameter_block);
       break;
     }
-#endif
+#endif /* #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_2 */
 
   }
   ARCH_DEP(vstorec)(parameter_block, parameter_blocklen - 1, GR_A(1, regs), 1, regs);
@@ -1323,7 +1324,7 @@ static void ARCH_DEP(klmd_sha)(int r1, int r2, REGS *regs)
   {
     LOGBYTE("md    :", parameter_block, parameter_blocklen);
   }
-#endif
+#endif /* #ifdef OPTION_KLMD_DEBUG */
 
   /* Update registers */
   SET_GR_A(r2, regs, GR_A(r2, regs) + GR_A(r2 + 1, regs));
@@ -1332,7 +1333,7 @@ static void ARCH_DEP(klmd_sha)(int r1, int r2, REGS *regs)
 #ifdef OPTION_KLMD_DEBUG
   logmsg("  GR%02d  : " F_GREG "\n", r2, (regs)->GR(r2));
   logmsg("  GR%02d  : " F_GREG "\n", r2 + 1, (regs)->GR(r2 + 1));
-#endif
+#endif /* #ifdef OPTION_KLMD_DEBUG */
 
   /* Set condition code */
   regs->psw.cc = 0;
@@ -1401,7 +1402,7 @@ static void ARCH_DEP(km_dea)(int r1, int r2, REGS *regs)
   }
   if(wrap) 
     LOGBYTE("wkvp  :", &parameter_block[keylen], 24);
-#endif
+#endif /* #ifdef OPTION_KM_DEBUG */
 
 #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_3
   /* Verify and unwrap */
@@ -1410,12 +1411,12 @@ static void ARCH_DEP(km_dea)(int r1, int r2, REGS *regs)
 
 #ifdef OPTION_KM_DEBUG
     WRMSG(HHC90111, "D");
-#endif
+#endif /* #ifdef OPTION_KM_DEBUG */
 
     regs->psw.cc = 1;
     return;
   }
-#endif  
+#endif /* #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_3 */
 
   /* Set the cryptographic key */
   switch(tfc)
@@ -1447,7 +1448,7 @@ static void ARCH_DEP(km_dea)(int r1, int r2, REGS *regs)
 
 #ifdef OPTION_KM_DEBUG
     LOGBYTE("input :", message_block, 8);
-#endif
+#endif /* #ifdef OPTION_KM_DEBUG */
 
     /* Do the job */
     switch(tfc)
@@ -1476,7 +1477,7 @@ static void ARCH_DEP(km_dea)(int r1, int r2, REGS *regs)
 
 #ifdef OPTION_KM_DEBUG
     LOGBYTE("output:", message_block, 8);
-#endif
+#endif /* #ifdef OPTION_KM_DEBUG */
 
     /* Update the registers */
     SET_GR_A(r1, regs, GR_A(r1, regs) + 8);
@@ -1488,7 +1489,7 @@ static void ARCH_DEP(km_dea)(int r1, int r2, REGS *regs)
     logmsg("  GR%02d  : " F_GREG "\n", r1, (regs)->GR(r1));
     logmsg("  GR%02d  : " F_GREG "\n", r2, (regs)->GR(r2));
     logmsg("  GR%02d  : " F_GREG "\n", r2 + 1, (regs)->GR(r2 + 1));
-#endif
+#endif /* #ifdef OPTION_KM_DEBUG */
 
     /* check for end of data */
     if(unlikely(!GR_A(r2 + 1, regs)))
@@ -1545,7 +1546,7 @@ static void ARCH_DEP(km_aes)(int r1, int r2, REGS *regs)
   LOGBYTE("k     :", parameter_block, keylen);
   if(wrap)
     LOGBYTE("wkvp  :", &parameter_block[keylen], 32);
-#endif
+#endif /* #ifdef OPTION_KM_DEBUG */
 
 #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_3
   /* Verify and unwrap */
@@ -1554,12 +1555,12 @@ static void ARCH_DEP(km_aes)(int r1, int r2, REGS *regs)
 
 #ifdef OPTION_KM_DEBUG
     WRMSG(HHC90111, "D");
-#endif
+#endif /* #ifdef OPTION_KM_DEBUG */
 
     regs->psw.cc = 1;
     return;
   }
-#endif  
+#endif /* #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_3 */
 
   /* Set the cryptographic keys */
   aes_set_key(&context, parameter_block, keylen * 8);
@@ -1574,7 +1575,7 @@ static void ARCH_DEP(km_aes)(int r1, int r2, REGS *regs)
 
 #ifdef OPTION_KM_DEBUG
     LOGBYTE("input :", message_block, 16);
-#endif
+#endif /* #ifdef OPTION_KM_DEBUG */
 
     /* Do the job */
     if(modifier_bit)
@@ -1587,7 +1588,7 @@ static void ARCH_DEP(km_aes)(int r1, int r2, REGS *regs)
 
 #ifdef OPTION_KM_DEBUG
     LOGBYTE("output:", message_block, 16);
-#endif
+#endif /* #ifdef OPTION_KM_DEBUG */
 
     /* Update the registers */
     SET_GR_A(r1, regs, GR_A(r1, regs) + 16);
@@ -1599,7 +1600,7 @@ static void ARCH_DEP(km_aes)(int r1, int r2, REGS *regs)
     logmsg("  GR%02d  : " F_GREG "\n", r1, (regs)->GR(r1));
     logmsg("  GR%02d  : " F_GREG "\n", r2, (regs)->GR(r2));
     logmsg("  GR%02d  : " F_GREG "\n", r2 + 1, (regs)->GR(r2 + 1));
-#endif
+#endif /* #ifdef OPTION_KM_DEBUG */
 
     /* check for end of data */
     if(unlikely(!GR_A(r2 + 1, regs)))
@@ -1612,7 +1613,7 @@ static void ARCH_DEP(km_aes)(int r1, int r2, REGS *regs)
   /* CPU-determined amount of data processed */
   regs->psw.cc = 3;
 }
-#endif /* FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_1 */
+#endif /* #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_1 */
 
 #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_4
 /*----------------------------------------------------------------------------*/
@@ -1665,7 +1666,7 @@ static void ARCH_DEP(km_xts_aes)(int r1, int r2, REGS *regs)
   if(wrap)
     LOGBYTE("wkvp  :", &parameter_block[keylen], 32);
   LOGBYTE("xts   :", xts, 16);
-#endif
+#endif /* #ifdef OPTION_KM_DEBUG */
 
   /* Verify and unwrap */
   if(wrap && unwrap_aes(parameter_block, keylen))
@@ -1673,7 +1674,7 @@ static void ARCH_DEP(km_xts_aes)(int r1, int r2, REGS *regs)
 
 #ifdef OPTION_KM_DEBUG
     WRMSG(HHC90111, "D");
-#endif
+#endif /* #ifdef OPTION_KM_DEBUG */
 
     regs->psw.cc = 1;
     return;
@@ -1692,7 +1693,7 @@ static void ARCH_DEP(km_xts_aes)(int r1, int r2, REGS *regs)
 
 #ifdef OPTION_KM_DEBUG
     LOGBYTE("input :", message_block, 16);
-#endif
+#endif /* #ifdef OPTION_KM_DEBUG */
 
     /* XOR, decrypt/encrypt and XOR again*/
     for(i = 0; i < 16; i++)
@@ -1714,7 +1715,7 @@ static void ARCH_DEP(km_xts_aes)(int r1, int r2, REGS *regs)
 #ifdef OPTION_KM_DEBUG
     LOGBYTE("output:", message_block, 16);
     LOGBYTE("xts   :", xts, 16);
-#endif
+#endif /* #ifdef OPTION_KM_DEBUG */
 
     /* Update the registers */
     SET_GR_A(r1, regs, GR_A(r1, regs) + 16);
@@ -1726,7 +1727,7 @@ static void ARCH_DEP(km_xts_aes)(int r1, int r2, REGS *regs)
     WRMSG(HHC90108, "D", r1, (regs)->GR(r1));
     WRMSG(HHC90108, "D", r2, (regs)->GR(r2));
     WRMSG(HHC90108, "D", r2 + 1, (regs)->GR(r2 + 1));
-#endif
+#endif /* #ifdef OPTION_KM_DEBUG */
 
     /* check for end of data */
     if(unlikely(!GR_A(r2 + 1, regs)))
@@ -1739,7 +1740,7 @@ static void ARCH_DEP(km_xts_aes)(int r1, int r2, REGS *regs)
   /* CPU-determined amount of data processed */
   regs->psw.cc = 3;
 }
-#endif /* FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_4 */
+#endif /* #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_4 */
 
 /*----------------------------------------------------------------------------*/
 /* Compute message authentication code (KMAC) FC 1-3 and 9-11                 */
@@ -1810,7 +1811,7 @@ static void ARCH_DEP(kmac_dea)(int r1, int r2, REGS *regs)
   }
   if(wrap) 
     LOGBYTE("wkvp  :", &parameter_block[keylen + 8], 24);
-#endif
+#endif /* #ifdef OPTION_KMAC_DEBUG */
 
 #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_3
   /* Verify and unwrap */
@@ -1819,12 +1820,12 @@ static void ARCH_DEP(kmac_dea)(int r1, int r2, REGS *regs)
 
 #ifdef OPTION_KM_DEBUG
     WRMSG(HHC90111, "D");
-#endif
+#endif /* #ifdef OPTION_KM_DEBUG */
 
     regs->psw.cc = 1;
     return;
   }
-#endif
+#endif /* #ifdef #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_3 */
 
   /* Set the cryptographic key */
   switch(tfc)
@@ -1857,7 +1858,7 @@ static void ARCH_DEP(kmac_dea)(int r1, int r2, REGS *regs)
 
 #ifdef OPTION_KMAC_DEBUG
     LOGBYTE("input :", message_block, 8);
-#endif
+#endif /* #ifdef OPTION_KMAC_DEBUG */
 
     /* XOR the message with chaining value */
     for(i = 0; i < 8; i++)
@@ -1892,7 +1893,7 @@ static void ARCH_DEP(kmac_dea)(int r1, int r2, REGS *regs)
 
 #ifdef OPTION_KMAC_DEBUG
     LOGBYTE("ocv   :", parameter_block, 8);
-#endif
+#endif /* #ifdef OPTION_KMAC_DEBUG */
 
     /* Update the registers */
     SET_GR_A(r2, regs, GR_A(r2, regs) + 8);
@@ -1901,7 +1902,7 @@ static void ARCH_DEP(kmac_dea)(int r1, int r2, REGS *regs)
 #ifdef OPTION_KMAC_DEBUG
     logmsg("  GR%02d  : " F_GREG "\n", r2, (regs)->GR(r2));
     logmsg("  GR%02d  : " F_GREG "\n", r2 + 1, (regs)->GR(r2 + 1));
-#endif
+#endif /* #ifdef OPTION_KMAC_DEBUG */
 
     /* check for end of data */
     if(unlikely(!GR_A(r2 + 1, regs)))
@@ -1963,15 +1964,15 @@ static void ARCH_DEP(kmac_aes)(int r1, int r2, REGS *regs)
   LOGBYTE("k     :", &parameter_block[16], keylen);
   if(wrap)
     LOGBYTE("wkvp  :", &parameter_block[keylen + 16], 32);
-#endif
+#endif /* #ifdef OPTION_KMAC_DEBUG */
 
   /* Verify and unwrap */
   if(wrap && unwrap_aes(&parameter_block[16], keylen))
   {
 
-#ifdef OPTION_KM_DEBUG
+#ifdef OPTION_KMAC_DEBUG
     WRMSG(HHC90111, "D");
-#endif
+#endif /* #ifdef OPTION_KMAC_DEBUG */
 
     regs->psw.cc = 1;
     return;
@@ -1988,7 +1989,7 @@ static void ARCH_DEP(kmac_aes)(int r1, int r2, REGS *regs)
 
 #ifdef OPTION_KMAC_DEBUG
     LOGBYTE("input :", message_block, 16);
-#endif
+#endif /* #ifdef OPTION_KMAC_DEBUG */
 
     /* XOR the message with chaining value */
     for(i = 0; i < 16; i++)
@@ -2002,7 +2003,7 @@ static void ARCH_DEP(kmac_aes)(int r1, int r2, REGS *regs)
 
 #ifdef OPTION_KMAC_DEBUG
     LOGBYTE("ocv   :", parameter_block, 16);
-#endif
+#endif /* #ifdef OPTION_KMAC_DEBUG */
 
     /* Update the registers */
     SET_GR_A(r2, regs, GR_A(r2, regs) + 16);
@@ -2011,7 +2012,7 @@ static void ARCH_DEP(kmac_aes)(int r1, int r2, REGS *regs)
 #ifdef OPTION_KMAC_DEBUG
     logmsg("  GR%02d  : " F_GREG "\n", r2, (regs)->GR(r2));
     logmsg("  GR%02d  : " F_GREG "\n", r2 + 1, (regs)->GR(r2 + 1));
-#endif
+#endif /* #ifdef OPTION_KMAC_DEBUG */
 
     /* check for end of data */
     if(unlikely(!GR_A(r2 + 1, regs)))
@@ -2024,7 +2025,7 @@ static void ARCH_DEP(kmac_aes)(int r1, int r2, REGS *regs)
   /* CPU-determined amount of data processed */
   regs->psw.cc = 3;
 }
-#endif /* FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_4 */
+#endif /* #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_4 */
 
 /*----------------------------------------------------------------------------*/
 /* Cipher message with chaining (KMC) FC 1-3 and 9-11                         */
@@ -2096,21 +2097,21 @@ static void ARCH_DEP(kmc_dea)(int r1, int r2, REGS *regs)
   }
   if(wrap) 
     LOGBYTE("wkvp  :", &parameter_block[keylen + 8], 24);
-#endif
+#endif /* #ifdef OPTION_KMC_DEBUG */
 
 #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_3
   /* Verify and unwrap */
   if(wrap && unwrap_dea(&parameter_block[8], keylen))
   {
 
-#ifdef OPTION_KM_DEBUG
+#ifdef OPTION_KMC_DEBUG
     WRMSG(HHC90111, "D");
-#endif
+#endif /* #ifdef OPTION_KMC_DEBUG */
 
     regs->psw.cc = 1;
     return;
   }
-#endif
+#endif /* #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_3 */
 
   /* Set the cryptographic key */
   switch(tfc)
@@ -2145,7 +2146,7 @@ static void ARCH_DEP(kmc_dea)(int r1, int r2, REGS *regs)
 
 #ifdef OPTION_KMC_DEBUG
     LOGBYTE("input :", message_block, 8);
-#endif
+#endif /* #ifdef OPTION_KMC_DEBUG */
 
     /* Do the job */
     switch(tfc)
@@ -2225,14 +2226,14 @@ static void ARCH_DEP(kmc_dea)(int r1, int r2, REGS *regs)
 
 #ifdef OPTION_KMC_DEBUG
     LOGBYTE("output:", message_block, 8);
-#endif
+#endif /* #ifdef OPTION_KMC_DEBUG */
 
     /* Store the output chaining value */
     ARCH_DEP(vstorec)(ocv, 7, GR_A(1, regs), 1, regs);
 
 #ifdef OPTION_KMC_DEBUG
     LOGBYTE("ocv   :", ocv, 8);
-#endif
+#endif /* #ifdef OPTION_KMC_DEBUG */
 
     /* Update the registers */
     SET_GR_A(r1, regs, GR_A(r1, regs) + 8);
@@ -2244,7 +2245,7 @@ static void ARCH_DEP(kmc_dea)(int r1, int r2, REGS *regs)
     logmsg("  GR%02d  : " F_GREG "\n", r1, (regs)->GR(r1));
     logmsg("  GR%02d  : " F_GREG "\n", r2, (regs)->GR(r2));
     logmsg("  GR%02d  : " F_GREG "\n", r2 + 1, (regs)->GR(r2 + 1));
-#endif
+#endif /* #ifdef OPTION_KMC_DEBUG */
 
     /* check for end of data */
     if(unlikely(!GR_A(r2 + 1, regs)))
@@ -2310,7 +2311,7 @@ static void ARCH_DEP(kmc_aes)(int r1, int r2, REGS *regs)
   LOGBYTE("k     :", &parameter_block[16], keylen);
   if(wrap)
     LOGBYTE("wkvp  :", &parameter_block[keylen + 16], 32);
-#endif
+#endif /* #ifdef OPTION_KMC_DEBUG */
 
 #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_3
   /* Verify and unwrap */
@@ -2319,12 +2320,12 @@ static void ARCH_DEP(kmc_aes)(int r1, int r2, REGS *regs)
 
 #ifdef OPTION_KM_DEBUG
     WRMSG(HHC90111, "D");
-#endif
+#endif /* #ifdef OPTION_KMC_DEBUG */
 
     regs->psw.cc = 1;
     return;
   }
-#endif
+#endif /* #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_3 */
 
   /* Set the cryptographic key */
   aes_set_key(&context, &parameter_block[16], keylen * 8);
@@ -2339,7 +2340,7 @@ static void ARCH_DEP(kmc_aes)(int r1, int r2, REGS *regs)
 
 #ifdef OPTION_KMC_DEBUG
     LOGBYTE("input :", message_block, 16);
-#endif
+#endif /* #ifdef OPTION_KMC_DEBUG */
 
     /* Do the job */
     if(modifier_bit)
@@ -2365,14 +2366,14 @@ static void ARCH_DEP(kmc_aes)(int r1, int r2, REGS *regs)
 
 #ifdef OPTION_KMC_DEBUG
     LOGBYTE("output:", message_block, 16);
-#endif
+#endif /* #ifdef OPTION_KMC_DEBUG */
 
     /* Store the output chaining value */
     ARCH_DEP(vstorec)(ocv, 15, GR_A(1, regs), 1, regs);
 
 #ifdef OPTION_KMC_DEBUG
     LOGBYTE("ocv   :", ocv, 16);
-#endif
+#endif /* #ifdef OPTION_KMC_DEBUG */
 
     /* Update the registers */
     SET_GR_A(r1, regs, GR_A(r1, regs) + 16);
@@ -2384,7 +2385,7 @@ static void ARCH_DEP(kmc_aes)(int r1, int r2, REGS *regs)
     logmsg("  GR%02d  : " F_GREG "\n", r1, (regs)->GR(r1));
     logmsg("  GR%02d  : " F_GREG "\n", r2, (regs)->GR(r2));
     logmsg("  GR%02d  : " F_GREG "\n", r2 + 1, (regs)->GR(r2 + 1));
-#endif
+#endif /* #ifdef OPTION_KMC_DEBUG */
 
     /* check for end of data */
     if(unlikely(!GR_A(r2 + 1, regs)))
@@ -2400,7 +2401,7 @@ static void ARCH_DEP(kmc_aes)(int r1, int r2, REGS *regs)
   /* CPU-determined amount of data processed */
   regs->psw.cc = 3;
 }
-#endif /* FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_1 */
+#endif /* #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_1 */
 
 #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_1
 /*----------------------------------------------------------------------------*/
@@ -2441,7 +2442,7 @@ static void ARCH_DEP(kmc_prng)(int r1, int r2, REGS *regs)
   LOGBYTE("k1    :", &parameter_block[8], 8);
   LOGBYTE("k2    :", &parameter_block[16], 8);
   LOGBYTE("k3    :", &parameter_block[24], 8);
-#endif
+#endif /* #ifdef OPTION_KMC_DEBUG */
 
   /* Set the cryptographic keys */
   des_set_key(&context1, &parameter_block[8]);
@@ -2457,7 +2458,7 @@ static void ARCH_DEP(kmc_prng)(int r1, int r2, REGS *regs)
 
 #ifdef OPTION_KMC_DEBUG
     LOGBYTE("input :", message_block, 8);
-#endif
+#endif /* #ifdef OPTION_KMC_DEBUG */
 
     /* Do the job */
     des_encrypt(&context1, message_block, message_block);
@@ -2480,7 +2481,7 @@ static void ARCH_DEP(kmc_prng)(int r1, int r2, REGS *regs)
 
 #ifdef OPTION_KMC_DEBUG
     LOGBYTE("output:", message_block, 8);
-#endif
+#endif /* #ifdef OPTION_KMC_DEBUG */
 
     /* XOR */
     for(i = 0; i < 8; i++)
@@ -2498,7 +2499,7 @@ static void ARCH_DEP(kmc_prng)(int r1, int r2, REGS *regs)
 
 #ifdef OPTION_KMC_DEBUG
     LOGBYTE("ocv   :", ocv, 8);
-#endif
+#endif /* #ifdef OPTION_KMC_DEBUG */
 
     /* Update the registers */
     SET_GR_A(r1, regs, GR_A(r1, regs) + 8);
@@ -2510,7 +2511,7 @@ static void ARCH_DEP(kmc_prng)(int r1, int r2, REGS *regs)
     logmsg("  GR%02d  : " F_GREG "\n", r1, (regs)->GR(r1));
     logmsg("  GR%02d  : " F_GREG "\n", r2, (regs)->GR(r2));
     logmsg("  GR%02d  : " F_GREG "\n", r2 + 1, (regs)->GR(r2 + 1));
-#endif
+#endif /* #ifdef OPTION_KMC_DEBUG */
 
     /* check for end of data */
     if(unlikely(!GR_A(r2 + 1, regs)))
@@ -2526,7 +2527,7 @@ static void ARCH_DEP(kmc_prng)(int r1, int r2, REGS *regs)
   /* CPU-determined amount of data processed */
   regs->psw.cc = 3;
 }
-#endif /* FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_1 */
+#endif /* #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_1 */
 
 #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_4
 /*----------------------------------------------------------------------------*/
@@ -2597,15 +2598,15 @@ static void ARCH_DEP(kmctr_dea)(int r1, int r2, int r3, REGS *regs)
   }
   if(wrap)
     LOGBYTE("wkvp  :", &parameter_block[24], 24);
-#endif
+#endif /* #ifdef OPTION_KMCTR_DEBUG */
 
   /* Verify and unwrap */
   if(wrap && unwrap_dea(parameter_block, keylen))
   {
 
-#ifdef OPTION_KM_DEBUG
+#ifdef OPTION_KMCTR_DEBUG
     WRMSG(HHC90111, "D");
-#endif
+#endif /* #ifdef OPTION_KMCTR_DEBUG */
 
     regs->psw.cc = 1;
     return;
@@ -2647,7 +2648,7 @@ static void ARCH_DEP(kmctr_dea)(int r1, int r2, int r3, REGS *regs)
 #ifdef OPTION_KMCTR_DEBUG
     LOGBYTE("input :", message_block, 8);
     LOGBYTE("cv    :", countervalue_block, 8);
-#endif
+#endif /* #ifdef OPTION_KMCTR_DEBUG */
 
     /* Do the job */
     switch(tfc)
@@ -2683,7 +2684,7 @@ static void ARCH_DEP(kmctr_dea)(int r1, int r2, int r3, REGS *regs)
 
 #ifdef OPTION_KMCTR_DEBUG
     LOGBYTE("output:", countervalue_block, 8);
-#endif
+#endif /* #ifdef OPTION_KMCTR_DEBUG */
 
     /* Update the registers */
     SET_GR_A(r1, regs, GR_A(r1, regs) + 8);
@@ -2698,7 +2699,7 @@ static void ARCH_DEP(kmctr_dea)(int r1, int r2, int r3, REGS *regs)
     logmsg("  GR%02d  : " F_GREG "\n", r2, (regs)->GR(r2));
     logmsg("  GR%02d  : " F_GREG "\n", r2 + 1, (regs)->GR(r2 + 1));
     logmsg("  GR%02d  : " F_GREG "\n", r3, (regs)->GR(r3));
-#endif
+#endif /* #ifdef OPTION_KMCTR_DEBUG */
 
     /* check for end of data */
     if(unlikely(!GR_A(r2 + 1, regs)))
@@ -2758,14 +2759,14 @@ static void ARCH_DEP(kmctr_aes)(int r1, int r2, int r3, REGS *regs)
   LOGBYTE("k     :", &parameter_block[16], parameter_blocklen - 16);
   if(wrap)
     LOGBYTE("wkvp  :", &parameter_block[keylen + 16], 32);
-#endif
+#endif /* #ifdef OPTION_KMCTR_DEBUG */
 
   if(wrap && unwrap_aes(parameter_block, keylen))
   {
 
-#ifdef OPTION_KM_DEBUG
+#ifdef OPTION_KMCTR_DEBUG
     WRMSG(HHC90111, "D");
-#endif
+#endif /* #ifdef OPTION_KMCTR_DEBUG */
 
     regs->psw.cc = 1;
     return;
@@ -2787,7 +2788,7 @@ static void ARCH_DEP(kmctr_aes)(int r1, int r2, int r3, REGS *regs)
 #ifdef OPTION_KMCTR_DEBUG
     LOGBYTE("input :", message_block, 16);
     LOGBYTE("cv    :", countervalue_block, 16);
-#endif
+#endif /* #ifdef OPTION_KMCTR_DEBUG */
 
     /* Do the job */
     /* Encrypt and XOR */
@@ -2800,7 +2801,7 @@ static void ARCH_DEP(kmctr_aes)(int r1, int r2, int r3, REGS *regs)
 
 #ifdef OPTION_KMCTR_DEBUG
     LOGBYTE("output:", countervalue_block, 16);
-#endif
+#endif /* #ifdef OPTION_KMCTR_DEBUG */
 
     /* Update the registers */
     SET_GR_A(r1, regs, GR_A(r1, regs) + 16);
@@ -2815,7 +2816,7 @@ static void ARCH_DEP(kmctr_aes)(int r1, int r2, int r3, REGS *regs)
     logmsg("  GR%02d  : " F_GREG "\n", r2, (regs)->GR(r2));
     logmsg("  GR%02d  : " F_GREG "\n", r2 + 1, (regs)->GR(r2 + 1));
     logmsg("  GR%02d  : " F_GREG "\n", r3, (regs)->GR(r3));
-#endif
+#endif /* #ifdef OPTION_KMCTR_DEBUG */
 
     /* check for end of data */
     if(unlikely(!GR_A(r2 + 1, regs)))
@@ -2903,15 +2904,15 @@ static void ARCH_DEP(kmf_dea)(int r1, int r2, REGS *regs)
   }
   if(wrap) 
     LOGBYTE("wkvp  :", &parameter_block[keylen + 8], 24);
-#endif
+#endif /* #ifdef OPTION_KMF_DEBUG */
 
   /* Verify and unwrap */
   if(wrap && unwrap_dea(&parameter_block[8], keylen))
   {
 
-#ifdef OPTION_KM_DEBUG
+#ifdef OPTION_KMF_DEBUG
     WRMSG(HHC90111, "D");
-#endif
+#endif /* #ifdef OPTION_KMF_DEBUG */
 
     regs->psw.cc = 1;
     return;
@@ -2995,14 +2996,14 @@ static void ARCH_DEP(kmf_dea)(int r1, int r2, REGS *regs)
 
 #ifdef OPTION_KMF_DEBUG
     LOGBYTE("output:", message_block, lcfb);
-#endif
+#endif /* #ifdef OPTION_KMF_DEBUG */
 
     /* Store the chaining value */
     ARCH_DEP(vstorec)(parameter_block, 7, GR_A(1, regs), 1, regs);
 
 #ifdef OPTION_KMF_DEBUG
     LOGBYTE("cv    :", parameter_block, 8);
-#endif
+#endif /* #ifdef OPTION_KMF_DEBUG */
 
     /* Update the registers */
     SET_GR_A(r1, regs, GR_A(r1, regs) + lcfb);
@@ -3014,7 +3015,7 @@ static void ARCH_DEP(kmf_dea)(int r1, int r2, REGS *regs)
     logmsg("  GR%02d  : " F_GREG "\n", r1, (regs)->GR(r1));
     logmsg("  GR%02d  : " F_GREG "\n", r2, (regs)->GR(r2));
     logmsg("  GR%02d  : " F_GREG "\n", r2 + 1, (regs)->GR(r2 + 1));
-#endif
+#endif /* #ifdef OPTION_KMF_DEBUG */
 
     /* check for end of data */
     if(unlikely(!GR_A(r2 + 1, regs)))
@@ -3080,15 +3081,15 @@ static void ARCH_DEP(kmf_aes)(int r1, int r2, REGS *regs)
   LOGBYTE("k     :", &parameter_block[16], keylen);
   if(wrap) 
     LOGBYTE("wkvp  :", &parameter_block[keylen + 16], 32);
-#endif
+#endif /* #ifdef OPTION_KMF_DEBUG */
 
   /* Verify and unwrap */
   if(wrap && unwrap_aes(&parameter_block[16], keylen))
   {
 
-#ifdef OPTION_KM_DEBUG
+#ifdef OPTION_KMF_DEBUG
     WRMSG(HHC90111, "D");
-#endif
+#endif /* #ifdef OPTION_KMF_DEBUG */
 
     regs->psw.cc = 1;
     return;
@@ -3130,14 +3131,14 @@ static void ARCH_DEP(kmf_aes)(int r1, int r2, REGS *regs)
 
 #ifdef OPTION_KMF_DEBUG
     LOGBYTE("output:", message_block, lcfb);
-#endif
+#endif /* #ifdef OPTION_KMF_DEBUG */
 
     /* Store the chaining value */
     ARCH_DEP(vstorec)(parameter_block, 15, GR_A(1, regs), 1, regs);
 
 #ifdef OPTION_KMF_DEBUG
     LOGBYTE("cv    :", parameter_block, 16);
-#endif
+#endif /* #ifdef OPTION_KMF_DEBUG */
 
     /* Update the registers */
     SET_GR_A(r1, regs, GR_A(r1, regs) + lcfb);
@@ -3149,7 +3150,7 @@ static void ARCH_DEP(kmf_aes)(int r1, int r2, REGS *regs)
     logmsg("  GR%02d  : " F_GREG "\n", r1, (regs)->GR(r1));
     logmsg("  GR%02d  : " F_GREG "\n", r2, (regs)->GR(r2));
     logmsg("  GR%02d  : " F_GREG "\n", r2 + 1, (regs)->GR(r2 + 1));
-#endif
+#endif /* #ifdef OPTION_KMF_DEBUG */
 
     /* check for end of data */
     if(unlikely(!GR_A(r2 + 1, regs)))
@@ -3231,15 +3232,15 @@ static void ARCH_DEP(kmo_dea)(int r1, int r2, REGS *regs)
   }
   if(wrap) 
     LOGBYTE("wkvp  :", &parameter_block[keylen + 8], 24);
-#endif
+#endif /* #ifdef OPTION_KMO_DEBUG */
 
   /* Verify and unwrap */
   if(wrap && unwrap_dea(&parameter_block[8], keylen))
   {
 
-#ifdef OPTION_KM_DEBUG
+#ifdef OPTION_KMO_DEBUG
     WRMSG(HHC90111, "D");
-#endif
+#endif /* #ifdef OPTION_KMO_DEBUG */
 
     regs->psw.cc = 1;
     return;
@@ -3304,14 +3305,14 @@ static void ARCH_DEP(kmo_dea)(int r1, int r2, REGS *regs)
 
 #ifdef OPTION_KMO_DEBUG
     LOGBYTE("output:", message_block, 7);
-#endif
+#endif /* #ifdef OPTION_KMO_DEBUG */
 
     /* Store the chaining value */
     ARCH_DEP(vstorec)(parameter_block, 7, GR_A(1, regs), 1, regs);
 
 #ifdef OPTION_KMO_DEBUG
     LOGBYTE("cv    :", parameter_block, 8);
-#endif
+#endif /* #ifdef OPTION_KMO_DEBUG */
 
     /* Update the registers */
     SET_GR_A(r1, regs, GR_A(r1, regs) + 8);
@@ -3323,7 +3324,7 @@ static void ARCH_DEP(kmo_dea)(int r1, int r2, REGS *regs)
     logmsg("  GR%02d  : " F_GREG "\n", r1, (regs)->GR(r1));
     logmsg("  GR%02d  : " F_GREG "\n", r2, (regs)->GR(r2));
     logmsg("  GR%02d  : " F_GREG "\n", r2 + 1, (regs)->GR(r2 + 1));
-#endif
+#endif /* #ifdef OPTION_KMO_DEBUG */
 
     /* check for end of data */
     if(unlikely(!GR_A(r2 + 1, regs)))
@@ -3378,20 +3379,20 @@ static void ARCH_DEP(kmo_aes)(int r1, int r2, REGS *regs)
   /* Fetch the parameter block */
   ARCH_DEP(vfetchc)(parameter_block, parameter_blocklen - 1, GR_A(1, regs), 1, regs);
 
-#ifdef OPTION_KMF_DEBUG
+#ifdef OPTION_KMO_DEBUG
   LOGBYTE("cv    :", parameter_block, 16);
   LOGBYTE("k     :", &parameter_block[16], keylen);
   if(wrap) 
     LOGBYTE("wkvp  :", &parameter_block[keylen + 16], 32);
-#endif
+#endif /* #ifdef OPTION_KMO_DEBUG */
 
   /* Verify and unwrap */
   if(wrap && unwrap_aes(&parameter_block[16], keylen))
   {
 
-#ifdef OPTION_KM_DEBUG
+#ifdef OPTION_KMO_DEBUG
     WRMSG(HHC90111, "D");
-#endif
+#endif /* #ifdef OPTION_KMO_DEBUG */
 
     regs->psw.cc = 1;
     return;
@@ -3414,14 +3415,14 @@ static void ARCH_DEP(kmo_aes)(int r1, int r2, REGS *regs)
 
 #ifdef OPTION_KMO_DEBUG
     LOGBYTE("output:", message_block, 16);
-#endif
+#endif /* #ifdef OPTION_KMO_DEBUG */
 
     /* Store the chaining value */
     ARCH_DEP(vstorec)(parameter_block, 15, GR_A(1, regs), 1, regs);
 
-#ifdef OPTION_KMF_DEBUG
+#ifdef OPTION_KMO_DEBUG
     LOGBYTE("cv    :", parameter_block, 16);
-#endif
+#endif /* #ifdef OPTION_KMO_DEBUG */
 
     /* Update the registers */
     SET_GR_A(r1, regs, GR_A(r1, regs) + 16);
@@ -3429,11 +3430,11 @@ static void ARCH_DEP(kmo_aes)(int r1, int r2, REGS *regs)
       SET_GR_A(r2, regs, GR_A(r2, regs) + 16);
     SET_GR_A(r2 + 1, regs, GR_A(r2 + 1, regs) - 16);
 
-#ifdef OPTION_KMF_DEBUG
+#ifdef OPTION_KMO_DEBUG
     logmsg("  GR%02d  : " F_GREG "\n", r1, (regs)->GR(r1));
     logmsg("  GR%02d  : " F_GREG "\n", r2, (regs)->GR(r2));
     logmsg("  GR%02d  : " F_GREG "\n", r2 + 1, (regs)->GR(r2 + 1));
-#endif
+#endif /* #ifdef OPTION_KMO_DEBUG */
 
     /* check for end of data */
     if(unlikely(!GR_A(r2 + 1, regs)))
@@ -3510,7 +3511,7 @@ static void ARCH_DEP(pcc_cmac_dea)(REGS *regs)
   }
   if(wrap) 
     LOGBYTE("wkvp  :", &parameter_block[keylen + 24], 24);
-#endif
+#endif /* #ifdef OPTION_PCC_DEBUG */
 
   /* Verify and unwrap */
   if(wrap && unwrap_dea(&parameter_block[24], keylen))
@@ -3518,7 +3519,7 @@ static void ARCH_DEP(pcc_cmac_dea)(REGS *regs)
 
 #ifdef OPTION_PCC_DEBUG
     WRMSG(HHC90111, "D");
-#endif
+#endif /* #ifdef OPTION_PCC_DEBUG */
 
     regs->psw.cc = 1;
     return;
@@ -3568,7 +3569,7 @@ static void ARCH_DEP(pcc_cmac_dea)(REGS *regs)
     
 #ifdef OPTION_PCC_DEBUG
   LOGBYTE("msg   :", &parameter_block[8], 8);
-#endif  
+#endif /* #ifdef OPTION_PCC_DEBUG */
   
   /* Calculate subkey */
   memset(k, 0, 8);
@@ -3647,7 +3648,7 @@ static void ARCH_DEP(pcc_cmac_dea)(REGS *regs)
 
 #ifdef OPTION_PCC_DEBUG
   LOGBYTE("cmac  :", &parameter_block[8], 8);
-#endif  
+#endif /* #ifdef OPTION_PCC_DEBUG */
 
   /* Store the CMAC */
   ARCH_DEP(vstorec)(&parameter_block[8], 7, (GR_A(1, regs) + 16) & ADDRESS_MAXWRAP(regs), 1, regs);
@@ -3697,7 +3698,7 @@ static void ARCH_DEP(pcc_cmac_aes)(REGS *regs)
   LOGBYTE("k     :", &parameter_block[40], keylen);
   if(wrap) 
     LOGBYTE("wkvp  :", &parameter_block[keylen + 40], 32);
-#endif
+#endif /* #ifdef OPTION_PCC_DEBUG */
 
   /* Verify and unwrap */
   if(wrap && unwrap_aes(&parameter_block[40], keylen))
@@ -3705,7 +3706,7 @@ static void ARCH_DEP(pcc_cmac_aes)(REGS *regs)
 
 #ifdef OPTION_PCC_DEBUG
     WRMSG(HHC90111, "D");
-#endif
+#endif /* #ifdef OPTION_PCC_DEBUG */
 
     regs->psw.cc = 1;
     return;
@@ -3735,7 +3736,7 @@ static void ARCH_DEP(pcc_cmac_aes)(REGS *regs)
     
 #ifdef OPTION_PCC_DEBUG
   LOGBYTE("msg   :", &parameter_block[8], 16);
-#endif  
+#endif /* #ifdef OPTION_PCC_DEBUG */
   
   /* Calculate subkeys */
   memset(k, 0, 16);
@@ -3772,7 +3773,7 @@ static void ARCH_DEP(pcc_cmac_aes)(REGS *regs)
 
 #ifdef OPTION_PCC_DEBUG
   LOGBYTE("cmac  :", &parameter_block[8], 16);
-#endif  
+#endif /* #ifdef OPTION_PCC_DEBUG */
 
   /* Store the CMAC */
   ARCH_DEP(vstorec)(&parameter_block[8], 15, (GR_A(1, regs) + 24) & ADDRESS_MAXWRAP(regs), 1, regs);
@@ -3829,7 +3830,7 @@ static void ARCH_DEP(pcc_xts_aes)(REGS *regs)
   LOGBYTE("bsn   :", bsn, 16);
   LOGBYTE("ibi   :", ibi, 16);
   LOGBYTE("xts   :", xts, 16);
-#endif
+#endif /* #ifdef OPTION_PCC_DEBUG */
 
   /* Verify and unwrap */
   if(wrap && unwrap_aes(parameter_block, keylen))
@@ -3837,7 +3838,7 @@ static void ARCH_DEP(pcc_xts_aes)(REGS *regs)
 
 #ifdef OPTION_PCC_DEBUG
     WRMSG(HHC90111, "D");
-#endif
+#endif /* #ifdef OPTION_PCC_DEBUG */
 
     regs->psw.cc = 1;
     return;
@@ -3886,7 +3887,7 @@ static void ARCH_DEP(pcc_xts_aes)(REGS *regs)
 #ifdef OPTION_PCC_DEBUG
   LOGBYTE("ibi   :", ibi, 16);
   LOGBYTE("xts   :", xts, 16);
-#endif  
+#endif /* #ifdef OPTION_PCC_DEBUG */
 
   /* Store Intermediate Bit Index and XTS */
   ARCH_DEP(vstorec)(ibi, 31, (GR_A(1, regs) + parameter_blocklen - 32) & ADDRESS_MAXWRAP(regs), 1, regs);
@@ -3894,7 +3895,7 @@ static void ARCH_DEP(pcc_xts_aes)(REGS *regs)
   /* Normal completion */
   regs->psw.cc = 0;
 }
-#endif /* FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_4 */
+#endif /* #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_4 */
 
 #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_3
 /*----------------------------------------------------------------------------*/
@@ -3921,7 +3922,7 @@ static void ARCH_DEP(pckmo_dea)(REGS *regs)
 #ifdef OPTION_PCKMO_DEBUG
   LOGBYTE("key in : ", parameter_block, keylen);
   LOGBYTE("wkvp   : ", &parameter_block[keylen], parameter_blocklen - keylen);
-#endif
+#endif /* #ifdef OPTION_PCKMO_DEBUG */
       
   /* Encrypt the key and fill the wrapping key verification pattern */
   wrap_dea(parameter_block, keylen);
@@ -3932,7 +3933,7 @@ static void ARCH_DEP(pckmo_dea)(REGS *regs)
 #ifdef OPTION_PCKMO_DEBUG
   LOGBYTE("key out: ", parameter_block, keylen);
   LOGBYTE("wkvp   : ", &parameter_block[keylen], parameter_blocklen - keylen);
-#endif
+#endif /* #ifdef OPTION_PCKMO_DEBUG */
 }
 
 /*----------------------------------------------------------------------------*/
@@ -3959,7 +3960,7 @@ static void ARCH_DEP(pckmo_aes)(REGS *regs)
 #ifdef OPTION_PCKMO_DEBUG
   LOGBYTE("key in : ", parameter_block, keylen);
   LOGBYTE("wkvp   : ", &parameter_block[keylen], parameter_blocklen - keylen);
-#endif
+#endif /* #ifdef OPTION_PCKMO_DEBUG */
       
   /* Encrypt the key and fill the wrapping key verification pattern */
   wrap_aes(parameter_block, keylen);
@@ -3970,9 +3971,9 @@ static void ARCH_DEP(pckmo_aes)(REGS *regs)
 #ifdef OPTION_PCKMO_DEBUG
   LOGBYTE("key out: ", parameter_block, keylen);
   LOGBYTE("wkvp   : ", &parameter_block[keylen], parameter_blocklen - keylen);
-#endif
+#endif /* #ifdef OPTION_PCKMO_DEBUG */
 }
-#endif /* FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_3 */
+#endif /* #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_3 */
 
 /*----------------------------------------------------------------------------*/
 /* B93E KIMD  - Compute intermediate message digest                     [RRE] */
@@ -3995,7 +3996,7 @@ DEF_INST(compute_intermediate_message_digest_d)
   logmsg("    bit 56  : %s\n", TRUEFALSE(GR0_m(regs)));
   logmsg("    fc      : %d\n", GR0_fc(regs));
   logmsg("  GR01      : " F_GREG "\n", regs->GR(1));
-#endif
+#endif /* #ifdef OPTION_KIMD_DEBUG */
 
   /* Check special conditions */
   if(unlikely(!r2 || r2 & 0x01 || GR0_m(regs)))
@@ -4012,7 +4013,7 @@ DEF_INST(compute_intermediate_message_digest_d)
 
 #ifdef OPTION_KIMD_DEBUG
       LOGBYTE("output:", parameter_block, 16);
-#endif
+#endif /* #ifdef OPTION_KIMD_DEBUG */
 
       /* Set condition code 0 */
       regs->psw.cc = 0;
@@ -4030,7 +4031,7 @@ DEF_INST(compute_intermediate_message_digest_d)
       ARCH_DEP(kimd_sha)(r1, r2, regs, 0);
       break;
     }
-#endif
+#endif /* #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_1 */
 
 #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_2
     case 3: /* sha-512 */
@@ -4038,7 +4039,7 @@ DEF_INST(compute_intermediate_message_digest_d)
       ARCH_DEP(kimd_sha)(r1, r2, regs, 0);
       break;
     }
-#endif
+#endif /* #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_2 */
 
 #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_4
     case 65: /* ghash */
@@ -4046,7 +4047,7 @@ DEF_INST(compute_intermediate_message_digest_d)
       ARCH_DEP(kimd_ghash)(r1, r2, regs);
       break;
     }
-#endif
+#endif /* #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_4 */
 
     default:
     {
@@ -4077,7 +4078,7 @@ DEF_INST(compute_last_message_digest_d)
   logmsg("    bit 56  : %s\n", TRUEFALSE(GR0_m(regs)));
   logmsg("    fc      : %d\n", GR0_fc(regs));
   logmsg("  GR01      : " F_GREG "\n", regs->GR(1));
-#endif
+#endif /* #ifdef OPTION_KLMD_DEBUG */
 
   /* Check special conditions */
   if(unlikely(!r2 || r2 & 0x01 || GR0_m(regs)))
@@ -4094,7 +4095,7 @@ DEF_INST(compute_last_message_digest_d)
 
 #ifdef OPTION_KLMD_DEBUG
       LOGBYTE("output:", parameter_block, 16);
-#endif
+#endif /* #ifdef OPTION_KLMD_DEBUG */
 
       /* Set condition code 0 */
       regs->psw.cc = 0;
@@ -4111,7 +4112,7 @@ DEF_INST(compute_last_message_digest_d)
       ARCH_DEP(klmd_sha)(r1, r2, regs);
       break;
     }
-#endif
+#endif /* #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_1 */
 
 #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_2
     case 3: /* sha-512 */
@@ -4119,7 +4120,7 @@ DEF_INST(compute_last_message_digest_d)
       ARCH_DEP(klmd_sha)(r1, r2, regs);
       break;
     }
-#endif
+#endif /* #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_2 */
 
     default:
     {
@@ -4150,7 +4151,7 @@ DEF_INST(cipher_message_d)
   logmsg("    m       : %s\n", TRUEFALSE(GR0_m(regs)));
   logmsg("    fc      : %d\n", GR0_fc(regs));
   logmsg("  GR01      : " F_GREG "\n", regs->GR(1));
-#endif
+#endif /* #ifdef OPTION_KM_DEBUG */
 
   /* Check special conditions */
   if(unlikely(!r1 || r1 & 0x01 || !r2 || r2 & 0x01))
@@ -4167,7 +4168,7 @@ DEF_INST(cipher_message_d)
 
 #ifdef OPTION_KM_DEBUG
       LOGBYTE("output:", parameter_block, 16);
-#endif
+#endif /* #ifdef OPTION_KM_DEBUG */
 
       /* Set condition code 0 */
       regs->psw.cc = 0;
@@ -4189,7 +4190,7 @@ DEF_INST(cipher_message_d)
       ARCH_DEP(km_dea)(r1, r2, regs);
       break;
     }
-#endif
+#endif /* #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_3 */
       
 #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_1
     case 18: /* aes-128 */
@@ -4197,7 +4198,7 @@ DEF_INST(cipher_message_d)
       ARCH_DEP(km_aes)(r1, r2, regs);
       break;
     }
-#endif
+#endif /* #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_1 */
 
 #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_2
     case 19: /* aes-192 */
@@ -4206,7 +4207,7 @@ DEF_INST(cipher_message_d)
       ARCH_DEP(km_aes)(r1, r2, regs);
       break;
     }
-#endif
+#endif /* #ifdef #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_2 */
 
 #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_3
     case 26: /* encrypted aes-128 */
@@ -4216,7 +4217,7 @@ DEF_INST(cipher_message_d)
       ARCH_DEP(km_aes)(r1, r2, regs);
       break;
     }
-#endif
+#endif /* #ifdef #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_3 */
 
 #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_4
     case 50: /* xts aes-128 */
@@ -4227,7 +4228,7 @@ DEF_INST(cipher_message_d)
       ARCH_DEP(km_xts_aes)(r1, r2, regs);
       break;
     }
-#endif
+#endif /* #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_4 */
 
     default:
     {
@@ -4256,7 +4257,7 @@ DEF_INST(compute_message_authentication_code_d)
   logmsg("    bit 56  : %s\n", TRUEFALSE(GR0_m(regs)));
   logmsg("    fc      : %d\n", GR0_fc(regs));
   logmsg("  GR01      : " F_GREG "\n", regs->GR(1));
-#endif
+#endif /* #ifdef OPTION_KMAC_DEBUG */
 
   /* Check special conditions */
   if(unlikely(!r2 || r2 & 0x01 || GR0_m(regs)))
@@ -4273,7 +4274,7 @@ DEF_INST(compute_message_authentication_code_d)
 
 #ifdef OPTION_KMAC_DEBUG
       LOGBYTE("output:", parameter_block, 16);
-#endif
+#endif /* #ifdef OPTION_KMAC_DEBUG */
 
       /* Set condition code 0 */
       regs->psw.cc = 0;
@@ -4295,7 +4296,7 @@ DEF_INST(compute_message_authentication_code_d)
       ARCH_DEP(kmac_dea)(r1, r2, regs);
       break;
     }
-#endif
+#endif /* #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_3 */
 
 #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_4
     case 18: /* aes */
@@ -4308,7 +4309,7 @@ DEF_INST(compute_message_authentication_code_d)
       ARCH_DEP(kmac_aes)(r1, r2, regs);
       break;
     }
-#endif
+#endif /* #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_4 */
 
     default:
     {
@@ -4339,7 +4340,7 @@ DEF_INST(cipher_message_with_chaining_d)
   logmsg("    m       : %s\n", TRUEFALSE(GR0_m(regs)));
   logmsg("    fc      : %d\n", GR0_fc(regs));
   logmsg("  GR01      : " F_GREG "\n", regs->GR(1));
-#endif
+#endif /* #ifdef OPTION_KMC_DEBUG */
 
   /* Check special conditions */
   if(unlikely(!r1 || r1 & 0x01 || !r2 || r2 & 0x01))
@@ -4356,7 +4357,7 @@ DEF_INST(cipher_message_with_chaining_d)
 
 #ifdef OPTION_KMC_DEBUG
       LOGBYTE("output:", parameter_block, 16);
-#endif
+#endif /* #ifdef OPTION_KMC_DEBUG */
 
       /* Set condition code 0 */
       regs->psw.cc = 0;
@@ -4378,7 +4379,7 @@ DEF_INST(cipher_message_with_chaining_d)
       ARCH_DEP(kmc_dea)(r1, r2, regs);
       break;
     }
-#endif
+#endif /* #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_3 */
       
 #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_1
     case 18: /* aes-128 */
@@ -4386,7 +4387,7 @@ DEF_INST(cipher_message_with_chaining_d)
       ARCH_DEP(kmc_aes)(r1, r2, regs);
       break;
     }
-#endif
+#endif /* #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_1 */
 
 #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_2
     case 19: /* aes-192 */
@@ -4395,7 +4396,7 @@ DEF_INST(cipher_message_with_chaining_d)
       ARCH_DEP(kmc_aes)(r1, r2, regs);
       break;
     }
-#endif
+#endif /* #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_2 */
 
 #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_3
     case 26: /* encrypted aes-128 */
@@ -4405,7 +4406,7 @@ DEF_INST(cipher_message_with_chaining_d)
       ARCH_DEP(kmc_aes)(r1, r2, regs);
       break;
     }
-#endif
+#endif /* FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_3 */
 
 #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_1
     case 67: /* prng */
@@ -4413,7 +4414,7 @@ DEF_INST(cipher_message_with_chaining_d)
       ARCH_DEP(kmc_prng)(r1, r2, regs);
       break;
     }
-#endif
+#endif /* #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_1 */
 
     default:
     {
@@ -4446,7 +4447,7 @@ DEF_INST(cipher_message_with_counter_d)
   logmsg("  GR00      : " F_GREG "\n", regs->GR(0));
   logmsg("    fc      : %d\n", GR0_fc(regs));
   logmsg("  GR01      : " F_GREG "\n", regs->GR(1));
-#endif
+#endif /* #ifdef OPTION_KMCTR_DEBUG */
 
   /* Check special conditions */
   if(unlikely(!r1 || r1 & 0x01 || !r2 || r2 & 0x01 || !r3 || r3 & 0x01))
@@ -4463,7 +4464,7 @@ DEF_INST(cipher_message_with_counter_d)
 
 #ifdef OPTION_KMCTR_DEBUG
       LOGBYTE("output:", parameter_block, 16);
-#endif
+#endif /* #ifdef OPTION_KMCTR_DEBUG */
 
       /* Set condition code 0 */
       regs->psw.cc = 0;
@@ -4520,7 +4521,7 @@ DEF_INST(cipher_message_with_cipher_feedback_d)
   logmsg("    m       : %s\n", TRUEFALSE(GR0_m(regs)));
   logmsg("    fc      : %d\n", GR0_fc(regs));
   logmsg("  GR01      : " F_GREG "\n", regs->GR(1));
-#endif
+#endif /* #ifdef OPTION_KMF_DEBUG */
 
   /* Check special conditions */
   if(unlikely(!r1 || r1 & 0x01 || !r2 || r2 & 0x01))
@@ -4537,7 +4538,7 @@ DEF_INST(cipher_message_with_cipher_feedback_d)
 
 #ifdef OPTION_KMF_DEBUG
       LOGBYTE("output:", parameter_block, 16);
-#endif
+#endif /* #ifdef OPTION_KMF_DEBUG */
 
       /* Set condition code 0 */
       regs->psw.cc = 0;
@@ -4592,7 +4593,7 @@ DEF_INST(cipher_message_with_output_feedback_d)
   logmsg("  GR00      : " F_GREG "\n", regs->GR(0));
   logmsg("    fc      : %d\n", GR0_fc(regs));
   logmsg("  GR01      : " F_GREG "\n", regs->GR(1));
-#endif
+#endif /* #ifdef OPTION_KMO_DEBUG */
 
   /* Check special conditions */
   if(unlikely(!r1 || r1 & 0x01 || !r2 || r2 & 0x01))
@@ -4609,7 +4610,7 @@ DEF_INST(cipher_message_with_output_feedback_d)
 
 #ifdef OPTION_KMO_DEBUG
       LOGBYTE("output:", parameter_block, 16);
-#endif
+#endif /* #ifdef OPTION_KMO_DEBUG */
 
       /* Set condition code 0 */
       regs->psw.cc = 0;
@@ -4663,7 +4664,7 @@ DEF_INST(perform_cryptographic_computation_d)
   logmsg("  GR00      : " F_GREG "\n", regs->GR(0));
   logmsg("    fc      : %d\n", GR0_fc(regs));
   logmsg("  GR01      : " F_GREG "\n", regs->GR(1));
-#endif
+#endif /* #ifdef OPTION_PCC_DEBUG */
 
   /* Check special conditions */
   if(unlikely(!r1 || r1 & 0x01 || !r2 || r2 & 0x01))
@@ -4680,7 +4681,7 @@ DEF_INST(perform_cryptographic_computation_d)
 
 #ifdef OPTION_PCC_DEBUG
       LOGBYTE("output:", parameter_block, 16);
-#endif
+#endif /* #ifdef OPTION_PCC_DEBUG */
 
       /* Set condition code 0 */
       regs->psw.cc = 0;
@@ -4722,7 +4723,7 @@ DEF_INST(perform_cryptographic_computation_d)
   }
 
 }
-#endif /* FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_4 */
+#endif /* #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_4 */
 
 #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_3
 /*----------------------------------------------------------------------------*/
@@ -4742,7 +4743,7 @@ DEF_INST(perform_cryptographic_key_management_operation_d)
   logmsg("    bit 56  : %s\n", TRUEFALSE(GR0_m(regs)));
   logmsg("    fc      : %d\n", GR0_fc(regs));
   logmsg("  GR01      : " F_GREG "\n", regs->GR(1));
-#endif
+#endif /* #ifdef OPTION_PCKMO_DEBUG */
 
   /* Privileged operation */
   PRIV_CHECK(regs);
@@ -4764,7 +4765,7 @@ DEF_INST(perform_cryptographic_key_management_operation_d)
 
 #ifdef OPTION_PCKMO_DEBUG
       LOGBYTE("output:", parameter_block, 16);
-#endif
+#endif /* #ifdef OPTION_PCKMO_DEBUG */
 
       return;
     }
@@ -4789,30 +4790,29 @@ DEF_INST(perform_cryptographic_key_management_operation_d)
     }
   }      
 }
-#endif /* FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_3 */
+#endif /* #ifdef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_3 */
 
-#endif /*defined(FEATURE_MESSAGE_SECURITY_ASSIST)*/
+#endif /* #ifdef FEATURE_MESSAGE_SECURITY_ASSIST */
 
-#if !defined(_GEN_ARCH)
+#ifndef _GEN_ARCH
 
-#if defined(_ARCHMODE2)
- #define  _GEN_ARCH _ARCHMODE2
- #include "dyncrypt.c"
-#endif
-
-#if defined(_ARCHMODE3)
- #undef   _GEN_ARCH
- #define  _GEN_ARCH _ARCHMODE3
- #include "dyncrypt.c"
-#endif
+#ifdef _ARCHMODE2
+  #define  _GEN_ARCH _ARCHMODE2
+  #include "dyncrypt.c"
+#endif /* #ifdef _ARCHMODE2 */
+#ifdef _ARCHMODE3
+  #undef _GEN_ARCH
+  #define _GEN_ARCH _ARCHMODE3
+  #include "dyncrypt.c"
+#endif /* #ifdef _ARCHMODE3 */
 
 HDL_DEPENDENCY_SECTION;
 {
-   HDL_DEPENDENCY (HERCULES);
-   HDL_DEPENDENCY (REGS);
-// HDL_DEPENDENCY (DEVBLK);
-   HDL_DEPENDENCY (SYSBLK);
-// HDL_DEPENDENCY (WEBBLK);
+   HDL_DEPENDENCY(HERCULES);
+   HDL_DEPENDENCY(REGS);
+// HDL_DEPENDENCY(DEVBLK);
+   HDL_DEPENDENCY(SYSBLK);
+// HDL_DEPENDENCY(WEBBLK);
 }
 END_DEPENDENCY_SECTION;
 
@@ -4861,4 +4861,4 @@ HDL_REGISTER_SECTION;
 }
 END_REGISTER_SECTION;
 
-#endif /*!defined(_GEN_ARCH)*/
+#endif /* #ifndef _GEN_ARCH */
