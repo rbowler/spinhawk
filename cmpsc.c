@@ -546,7 +546,7 @@ static BYTE *ARCH_DEP(fetch_cce)(struct cc *cc, unsigned index)
   if(unlikely(!cc->dict[index / 0x800]))
     cc->dict[index / 0x800] = MADDR((cc->dictor + (index / 0x800) * 0x800) & ADDRESS_MAXWRAP(cc->regs), cc->r2, cc->regs, ACCTYPE_READ, cc->regs->psw.pkey);
   cce = &cc->dict[index / 0x800][index % 0x800];
-  ITIMER_SYNC(cc->dictor + index, 8 - 1, cc->regs);
+  ITIMER_SYNC((cc->dictor + index) & ADDRESS_MAXWRAP(cc->regs), 8 - 1, cc->regs);
 
 #ifdef OPTION_CMPSC_DEBUG
   logmsg("fetch_cce: index %04X\n", index / 8);
@@ -595,7 +595,7 @@ static int ARCH_DEP(fetch_ch)(struct cc *cc, BYTE *ch)
   }
 
   ofst = GR_A(cc->r2, cc->iregs) & 0x7ff;
-  ITIMER_SYNC(GR_A(cc->r2, cc->iregs), 1 - 1, cc->regs);
+  ITIMER_SYNC(GR_A(cc->r2, cc->iregs) & ADDRESS_MAXWRAP(cc->regs), 1 - 1, cc->regs);
 
   /* Fingers crossed that we stay within current page */
   if(unlikely(!cc->src || ofst < cc->ofst))
@@ -860,7 +860,7 @@ static int ARCH_DEP(search_sd)(struct cc *cc, BYTE *ch, U16 *is)
     if(unlikely(!cc->dict[index / 0x800]))
       cc->dict[index / 0x800] = MADDR((cc->dictor + (index / 0x800) * 0x800) & ADDRESS_MAXWRAP(cc->regs), cc->r2, cc->regs, ACCTYPE_READ, cc->regs->psw.pkey);
     sd1 = &cc->dict[index / 0x800][index % 0x800];
-    ITIMER_SYNC(cc->dictor + index, 8 - 1, cc->regs);
+    ITIMER_SYNC((cc->dictor + index) & ADDRESS_MAXWRAP(cc->regs), 8 - 1, cc->regs);
 
     /* If format-1, get second half from the expansion dictionary */ 
     if(cc->f1)
@@ -868,7 +868,7 @@ static int ARCH_DEP(search_sd)(struct cc *cc, BYTE *ch, U16 *is)
       if(unlikely(!cc->edict[index / 0x800]))
         cc->edict[index / 0x800] = MADDR((cc->dictor + cc->dctsz + (index / 0x800) * 0x800) & ADDRESS_MAXWRAP(cc->regs), cc->r2, cc->regs, ACCTYPE_READ, cc->regs->psw.pkey); 
       sd2 = &cc->edict[index / 0x800][index % 0x800];
-      ITIMER_SYNC(cc->dictor + cc->dctsz + index, 8 - 1, cc->regs);
+      ITIMER_SYNC((cc->dictor + cc->dctsz + index) & ADDRESS_MAXWRAP(cc->regs), 8 - 1, cc->regs);
 
 #ifdef OPTION_CMPSC_DEBUG
       /* Print before possible exception */
@@ -1172,7 +1172,7 @@ static void ARCH_DEP(store_iss)(struct cc *cc)
     if(unlikely(!cc->dest))
       cc->dest = MADDR((GR_A(cc->r1, cc->iregs) & ~0x7ff) & ADDRESS_MAXWRAP(cc->regs), cc->r1, cc->regs, ACCTYPE_WRITE, cc->regs->psw.pkey);
     memcpy(&cc->dest[ofst], mem, cc->smbsz);
-    ITIMER_UPDATE(GR_A(cc->r1, cc->iregs), cc->smbsz - 1, cc->regs);
+    ITIMER_UPDATE(GR_A(cc->r1, cc->iregs) & ADDRESS_MAXWRAP(cc->regs), cc->smbsz - 1, cc->regs);
 
     /* Perfect fit? */
     if(unlikely(ofst + cc->smbsz == 0x800))
@@ -1223,7 +1223,7 @@ static int ARCH_DEP(test_ec)(struct cc *cc, BYTE *cce)
     else
     {
       ch = cc->src[ofst];
-      ITIMER_SYNC(GR_A(cc->r2, cc->iregs) + i + 1, 1 - 1, cc->regs);
+      ITIMER_SYNC((GR_A(cc->r2, cc->iregs) + i + 1) & ADDRESS_MAXWRAP(cc->regs), 1 - 1, cc->regs);
     }
     if(unlikely(ch != CCE_ec(cce, i)))
       return(0);
@@ -1398,7 +1398,7 @@ static void ARCH_DEP(expand_is)(struct ec *ec, U16 is)
   if(unlikely(!ec->dict[index / 0x800]))
     ec->dict[index / 0x800] = MADDR((ec->dictor + (index / 0x800) * 0x800) & ADDRESS_MAXWRAP(ec->regs), ec->r2, ec->regs, ACCTYPE_READ, ec->regs->psw.pkey);
   ece = &ec->dict[index / 0x800][index % 0x800];
-  ITIMER_SYNC(ec->dictor + index, 8 - 1, ec->regs);
+  ITIMER_SYNC((ec->dictor + index) & ADDRESS_MAXWRAP(ec->regs), 8 - 1, ec->regs);
 
 #ifdef OPTION_CMPSC_DEBUG
   logmsg("fetch_ece: index %04X\n", is);
@@ -1427,7 +1427,7 @@ static void ARCH_DEP(expand_is)(struct ec *ec, U16 is)
     if(unlikely(!ec->dict[index / 0x800]))
       ec->dict[index / 0x800] = MADDR((ec->dictor + (index / 0x800) * 0x800) & ADDRESS_MAXWRAP(ec->regs), ec->r2, ec->regs, ACCTYPE_READ, ec->regs->psw.pkey);	  
     ece = &ec->dict[index / 0x800][index % 0x800];
-    ITIMER_SYNC(ec->dictor + index, 8 - 1, ec->regs);
+    ITIMER_SYNC((ec->dictor + index) & ADDRESS_MAXWRAP(ec->regs), 8 - 1, ec->regs);
 
 #ifdef OPTION_CMPSC_DEBUG
     logmsg("fetch_ece: index %04X\n", ECE_pptr(ece));
@@ -1532,7 +1532,7 @@ static void ARCH_DEP(fetch_iss)(struct ec *ec, U16 is[8])
     ec->src = MADDR((GR_A(ec->r2, ec->iregs) & ~0x7ff) & ADDRESS_MAXWRAP(ec->regs), ec->r2, ec->regs, ACCTYPE_READ, ec->regs->psw.pkey);
   if(likely(ofst + ec->smbsz <= 0x800))
   { 
-    ITIMER_SYNC(GR_A(ec->r2, ec->iregs), ec->smbsz - 1, ec->regs);
+    ITIMER_SYNC(GR_A(ec->r2, ec->iregs) & ADDRESS_MAXWRAP(ec->regs), ec->smbsz - 1, ec->regs);
     mem = &ec->src[ofst]; 
 
     /* Perfect fit? */
@@ -1782,7 +1782,7 @@ static int ARCH_DEP(vstore)(struct ec *ec, BYTE *buf, unsigned len)
     if(unlikely(!ec->dest))
       ec->dest = MADDR((GR_A(ec->r1, ec->iregs) & ~0x7ff) & ADDRESS_MAXWRAP(ec->regs), ec->r1, ec->regs, ACCTYPE_WRITE, ec->regs->psw.pkey);
     memcpy(&ec->dest[ofst], buf, len);
-    ITIMER_UPDATE(GR_A(ec->r1, ec->iregs), len - 1, ec->regs);
+    ITIMER_UPDATE(GR_A(ec->r1, ec->iregs) & ADDRESS_MAXWRAP(ec->regs), len - 1, ec->regs);
 
     /* Perfect fit? */
     if(unlikely(ofst + len == 0x800))
