@@ -206,6 +206,11 @@ HUT_DLL_IMPORT int hwrite(int s,const char *,size_t);
 HUT_DLL_IMPORT int hgetc(int s);
 HUT_DLL_IMPORT char *hgets(char *b,size_t c,int s);
 
+#if !defined(_MSVC_)
+/* Hercules file open */
+HUT_DLL_IMPORT int hopen(const char* path, int oflag, ...);
+#endif // !defined(_MSVC_)
+
 /* Posix 1003.e capabilities */
 #if defined(OPTION_CAPABILITIES)
 HUT_DLL_IMPORT int drop_privileges(int c);

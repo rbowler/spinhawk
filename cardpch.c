@@ -181,7 +181,7 @@ char            pathname[MAX_PATH];     /* file path in host format  */
         {
             open_flags |= O_TRUNC;
         }
-        rc = open (pathname, open_flags,
+        rc = hopen(pathname, open_flags,
                     S_IRUSR | S_IWUSR | S_IRGRP);
         if (rc < 0)
         {

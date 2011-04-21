@@ -193,7 +193,7 @@ char            pgmpath[MAX_PATH];      /* prog path in host format  */
     {
         BYTE buf[8];
         hostpath(pathname, ifile, sizeof(pathname));
-        fd = open (pathname, O_RDONLY|O_BINARY);
+        fd = hopen(pathname, O_RDONLY|O_BINARY);
         if (fd < 0)
         {
             fprintf (stderr, _("HHCDC001E %s: %s open error: %s\n"),

@@ -5144,7 +5144,7 @@ REGS *regs;
 
     hostpath(pathname, fname, sizeof(pathname));
 
-    if ((fd = open(pathname, O_CREAT|O_WRONLY|O_EXCL|O_BINARY, S_IREAD|S_IWRITE|S_IRGRP)) < 0)
+    if ((fd = hopen(pathname, O_CREAT|O_WRONLY|O_EXCL|O_BINARY, S_IREAD|S_IWRITE|S_IRGRP)) < 0)
     {
         int saved_errno = errno;
         release_lock(&sysblk.cpulock[sysblk.pcpu]);

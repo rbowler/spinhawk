@@ -122,6 +122,7 @@ typedef int             pid_t;
 typedef int             mode_t;
 
 #include <io.h>
+#include <share.h>
 #include <process.h>
 #include <signal.h>
 #include <direct.h>
@@ -134,6 +135,7 @@ typedef int             mode_t;
 #define S_IRUSR         _S_IREAD
 #define S_IWUSR         _S_IWRITE
 #define S_IRGRP         _S_IREAD
+#define S_IROTH         _S_IREAD
 #define S_ISREG(m)      (((m) & _S_IFMT) == _S_IFREG)
 #define S_ISDIR(m)      (((m) & _S_IFMT) == _S_IFDIR)
 #define S_ISCHR(m)      (((m) & _S_IFMT) == _S_IFCHR)
@@ -143,6 +145,8 @@ typedef int             mode_t;
 #define F_OK            0
 #define W_OK            2
 #define R_OK            4
+
+#define hopen           w32_hopen
 
 #define strcasecmp      stricmp
 #define strncasecmp     strnicmp

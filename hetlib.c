@@ -200,7 +200,7 @@ het_open( HETB **hetb, char *filename, int flags )
     omode = "r+b";
     if(!(flags & HETOPEN_READONLY))
     {
-        fd = open( pathname, O_RDWR | O_BINARY | oflags, S_IRUSR | S_IWUSR | S_IRGRP );
+        fd = hopen( pathname, O_RDWR | O_BINARY | oflags, S_IRUSR | S_IWUSR | S_IRGRP );
     }
     if( (flags & HETOPEN_READONLY) || (fd == -1 && (errno == EROFS || errno == EACCES) ) )
     {
@@ -209,7 +209,7 @@ het_open( HETB **hetb, char *filename, int flags )
         */
         omode = "rb";
         thetb->writeprotect = TRUE;
-        fd = open( pathname, O_RDONLY | O_BINARY, S_IRUSR | S_IWUSR | S_IRGRP );
+        fd = hopen( pathname, O_RDONLY | O_BINARY, S_IRUSR | S_IWUSR | S_IRGRP );
     }
 
     /*

@@ -973,7 +973,7 @@ int gettapetype_bydata (DEVBLK *dev)
 
     /* Try to determine the type based on actual file contents */
     hostpath( pathname, dev->filename, sizeof(pathname) );
-    rc = open ( pathname, O_RDONLY | O_BINARY );
+    rc = hopen( pathname, O_RDONLY | O_BINARY );
     if (rc >= 0)
     {
         BYTE hdr[6];                    /* block header i/o buffer   */

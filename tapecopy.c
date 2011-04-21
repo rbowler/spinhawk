@@ -648,12 +648,12 @@ int             is3590 = 0;             /* 1 == 3590, 0 == 3480/3490 */
     if (filenamein)
     {
         hostpath( pathname, filenamein, sizeof(pathname) );
-        diskfd = open (pathname, O_RDONLY | O_BINARY);
+        diskfd = hopen(pathname, O_RDONLY | O_BINARY);
     }
     else
     {
         hostpath( pathname, filenameout, sizeof(pathname) );
-        diskfd = open (pathname, O_WRONLY | O_CREAT | O_BINARY,
+        diskfd = hopen(pathname, O_WRONLY | O_CREAT | O_BINARY,
                         S_IRUSR | S_IWUSR | S_IRGRP);
     }
     if (diskfd < 0)

@@ -543,7 +543,7 @@ char            pathname[MAX_PATH];     /* file path in host format  */
     /* Read the device header so we can determine the device type */
     strcpy (sfxname, fname);
     hostpath(pathname, sfxname, sizeof(pathname));
-    fd = open (pathname, omode);
+    fd = hopen(pathname, omode);
     if (fd < 0)
     {
         /* If no shadow file name was specified, then try opening the
@@ -582,7 +582,7 @@ char            pathname[MAX_PATH];     /* file path in host format  */
             }
             *suffix = '1';
             hostpath(pathname, sfxname, sizeof(pathname));
-            fd = open (pathname, omode);
+            fd = hopen(pathname, omode);
         }
         if (fd < 0 && rmtdev == NULL)
         {
@@ -1204,7 +1204,7 @@ char            pathname[MAX_PATH];     /* file path in host format  */
 
     /* Create the DASD image file */
     hostpath(pathname, fname, sizeof(pathname));
-    fd = open (pathname, O_WRONLY | O_CREAT | x | O_BINARY,
+    fd = hopen(pathname, O_WRONLY | O_CREAT | x | O_BINARY,
                 S_IRUSR | S_IWUSR | S_IRGRP);
     if (fd < 0)
     {
@@ -1896,7 +1896,7 @@ char            pathname[MAX_PATH];     /* file path in host format  */
 
     /* Create the DASD image file */
     hostpath(pathname, fname, sizeof(pathname));
-    fd = open (pathname, O_WRONLY | O_CREAT | x | O_BINARY,
+    fd = hopen(pathname, O_WRONLY | O_CREAT | x | O_BINARY,
                 S_IRUSR | S_IWUSR | S_IRGRP);
     if (fd < 0)
     {
@@ -2026,7 +2026,7 @@ char            pathname[MAX_PATH];     /* file path in host format  */
 
     /* Create the DASD image file */
     hostpath(pathname, fname, sizeof(pathname));
-    fd = open (pathname, O_WRONLY | O_CREAT | x | O_BINARY,
+    fd = hopen(pathname, O_WRONLY | O_CREAT | x | O_BINARY,
                 S_IRUSR | S_IWUSR | S_IRGRP);
     if (fd < 0)
     {

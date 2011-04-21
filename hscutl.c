@@ -741,7 +741,20 @@ void socket_keepalive( int sfd, int idle_time, int probe_interval,
   #endif
 }
 
-#endif // !defined(WIN32)
+/* Hercules file open */
+DLL_EXPORT int hopen(const char* path, int oflag, ...)
+{
+    int pmode = 0;
+    if (oflag & O_CREAT)
+    {
+        va_list vargs;
+        va_start(vargs, oflag);
+        pmode = va_arg(vargs, int);
+    }
+    return open(path, oflag, pmode);
+}
+
+#endif // !defined(_MSVC_)
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // (testing)

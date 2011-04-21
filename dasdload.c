@@ -375,7 +375,7 @@ char            pathname[MAX_PATH];     /* iplfnm in host path format*/
 
     /* Open the object file */
     hostpath(pathname, iplfnm, sizeof(pathname));
-    tfd = open (pathname, O_RDONLY|O_BINARY);
+    tfd = hopen(pathname, O_RDONLY|O_BINARY);
     if (tfd < 0)
     {
         XMERRF ("HHCDL034E Cannot open %s: %s\n",
@@ -2683,7 +2683,7 @@ char            pathname[MAX_PATH];     /* xfname in host path format*/
 
     /* Open the input file */
     hostpath(pathname, xfname, sizeof(pathname));
-    xfd = open (pathname, O_RDONLY|O_BINARY);
+    xfd = hopen(pathname, O_RDONLY|O_BINARY);
     if (xfd < 0)
     {
         XMERRF ("HHCDL106E Cannot open %s: %s\n",
@@ -3497,7 +3497,7 @@ char            pathname[MAX_PATH];     /* sfname in host path format*/
 
     /* Open the input file */
     hostpath(pathname, sfname, sizeof(pathname));
-    sfd = open (pathname, O_RDONLY|O_BINARY);
+    sfd = hopen(pathname, O_RDONLY|O_BINARY);
     if (sfd < 0)
     {
         XMERRF ("HHCDL125E Cannot open %s: %s\n",

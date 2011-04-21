@@ -464,7 +464,7 @@ char    pathname[MAX_PATH];             /* file path in host format  */
 
     /* Open the device file */
     hostpath(pathname, dev->filename, sizeof(pathname));
-    rc = open (pathname, O_RDONLY | O_BINARY);
+    rc = hopen(pathname, O_RDONLY | O_BINARY);
     if (rc < 0)
     {
         /* Handle open failure */

@@ -131,14 +131,14 @@ char            pathname[MAX_PATH];     /* file path in host format  */
     hostpath(pathname, dev->filename, sizeof(pathname));
     if(!dev->tdparms.logical_readonly)
     {
-        rc = open (pathname, O_RDWR | O_BINARY);
+        rc = hopen(pathname, O_RDWR | O_BINARY);
     }
 
     /* If file is read-only, attempt to open again */
     if (dev->tdparms.logical_readonly || (rc < 0 && (EROFS == errno || EACCES == errno)))
     {
         dev->readonly = 1;
-        rc = open (pathname, O_RDONLY | O_BINARY);
+        rc = hopen(pathname, O_RDONLY | O_BINARY);
     }
 
     /* Check for successful open */

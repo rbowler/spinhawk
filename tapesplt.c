@@ -99,7 +99,7 @@ char            pathname[MAX_PATH];     /* file path in host format  */
 
     /* Open the tape device */
     hostpath(pathname, infilename, sizeof(pathname));
-    infd = open (pathname, O_RDONLY | O_BINARY);
+    infd = hopen(pathname, O_RDONLY | O_BINARY);
     if (infd < 0)
     {
         printf ("tapesplt: error opening input file %s: %s\n",
@@ -119,7 +119,7 @@ char            pathname[MAX_PATH];     /* file path in host format  */
         outfilename = argv[outfilenum];
         printf ("Writing output file %s.\n", outfilename);
         hostpath(pathname, outfilename, sizeof(pathname));
-        outfd = open (pathname, O_WRONLY | O_CREAT | O_BINARY,
+        outfd = hopen(pathname, O_WRONLY | O_CREAT | O_BINARY,
                         S_IRUSR | S_IWUSR | S_IRGRP);
 
         if (outfd < 0)

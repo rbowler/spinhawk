@@ -123,10 +123,10 @@ char    pathname[MAX_PATH];             /* file path in host format  */
 
     /* Open the device file */
     hostpath(pathname, dev->filename, sizeof(pathname));
-    dev->fd = open (pathname, O_RDWR|O_BINARY);
+    dev->fd = hopen(pathname, O_RDWR|O_BINARY);
     if (dev->fd < 0)
     {
-        dev->fd = open (pathname, O_RDONLY|O_BINARY);
+        dev->fd = hopen(pathname, O_RDONLY|O_BINARY);
         if (dev->fd < 0)
         {
             logmsg (_("HHCDA058E File %s open error: %s\n"),

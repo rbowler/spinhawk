@@ -405,12 +405,12 @@ char            pathname[MAX_PATH];     /* file path in host format  */
     {
         /* Open the CKD image file */
         hostpath(pathname, dev->filename, sizeof(pathname));
-        dev->fd = open (pathname, dev->ckdrdonly ?
+        dev->fd = hopen(pathname, dev->ckdrdonly ?
                         O_RDONLY|O_BINARY : O_RDWR|O_BINARY);
         if (dev->fd < 0)
         {   /* Try read-only if shadow file present */
             if (!dev->ckdrdonly && dev->dasdsfn != NULL)
-                dev->fd = open (pathname, O_RDONLY|O_BINARY);
+                dev->fd = hopen(pathname, O_RDONLY|O_BINARY);
             if (dev->fd < 0)
             {
                 logmsg (_("HHCDA005E %s open error: %s\n"),

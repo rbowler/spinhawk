@@ -96,7 +96,7 @@ char            pathname[MAX_PATH];     /* file path in host format  */
 
     /* Open the devmap file */
     hostpath(pathname, filename, sizeof(pathname));
-    infd = open (pathname, O_RDONLY | O_BINARY);
+    infd = hopen(pathname, O_RDONLY | O_BINARY);
     if (infd < 0)
     {
         fprintf (stderr,"dmap2hrc: Error opening %s: %s\n",

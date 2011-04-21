@@ -701,7 +701,7 @@ int             rc;                     /* Return code               */
         {
             open_flags |= O_TRUNC;
         }
-        fd = open (pathname, open_flags,
+        fd = hopen(pathname, open_flags,
                     S_IRUSR | S_IWUSR | S_IRGRP);
         if (fd < 0)
         {

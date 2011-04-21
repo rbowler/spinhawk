@@ -88,7 +88,7 @@ char            pathname[MAX_PATH];     /* file path in host format  */
 
     /* Open the tape descriptor file */
     hostpath(pathname, dev->filename, sizeof(pathname));
-    fd = open (pathname, O_RDONLY | O_BINARY);
+    fd = hopen(pathname, O_RDONLY | O_BINARY);
     if (fd < 0)
     {
         logmsg (_("HHCTA239E %4.4X: Error opening TDF file %s: %s\n"),
@@ -386,7 +386,7 @@ char            pathname[MAX_PATH];     /* file path in host format  */
 
     /* Open the OMATAPE file */
     hostpath(pathname, omadesc->filename, sizeof(pathname));
-    fd = open (pathname, O_RDONLY | O_BINARY);
+    fd = hopen(pathname, O_RDONLY | O_BINARY);
 
     /* Check for successful open */
     if (fd < 0 || lseek (fd, 0, SEEK_END) > LONG_MAX)

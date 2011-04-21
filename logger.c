@@ -598,7 +598,7 @@ int   new_hrdcpyfd;
         char pathname[MAX_PATH];
         hostpath(pathname, filename, sizeof(pathname));
 
-        new_hrdcpyfd = open(pathname,
+        new_hrdcpyfd = hopen(pathname,
                 O_WRONLY | O_CREAT | O_TRUNC /* O_SYNC */,
                             S_IRUSR  | S_IWUSR | S_IRGRP);
         if(new_hrdcpyfd < 0)

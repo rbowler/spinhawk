@@ -585,7 +585,7 @@ char            pathname[MAX_PATH];     /* file path in host format  */
         cckd_close (dev, sfx);
 
     hostpath(pathname, cckd_sf_name (dev, sfx), sizeof(pathname));
-    cckd->fd[sfx] = open (pathname, flags, mode);
+    cckd->fd[sfx] = hopen(pathname, flags, mode);
     if (sfx == 0) dev->fd = cckd->fd[sfx];
 
     if (cckd->fd[sfx] >= 0)

@@ -468,7 +468,7 @@ static void http_download(WEBBLK *webblk, char *filename)
         http_error(webblk, "404 File Not Found","",
                            "The requested file is not a regular file");
 
-    fd = open(fullname,O_RDONLY|O_BINARY,0);
+    fd = hopen(fullname,O_RDONLY|O_BINARY,0);
     if (fd == -1)
         http_error(webblk, "404 File Not Found","",
                            strerror(errno));
