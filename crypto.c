@@ -218,7 +218,8 @@ void renew_wrapping_keys(void)
   BYTE byte;
 
   obtain_lock(&sysblk.wklock);
-  srandom(host_tod()); /* Randomize related to time */
+  for(i = 0; i < 0x100; i++)
+    srandom(random() * host_tod()); /* Randomize related to time */
   for(i = 0; i < 32; i++)
     sysblk.wkaes_reg[i] = random();
   for(i = 0; i < 24; i++)
