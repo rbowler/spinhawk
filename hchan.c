@@ -27,6 +27,8 @@
 // Add CVS message log
 //
 
+#include "hstdinc.h"
+
 #include "hercules.h"
 
 #include "devtype.h"
