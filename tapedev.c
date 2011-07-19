@@ -1528,7 +1528,7 @@ void tapedev_query_device ( DEVBLK *dev, char **class,
 
         if ( TAPEDEVT_SCSITAPE != dev->tapedevt
 #if defined(OPTION_SCSI_TAPE)
-            || !STS_NOT_MOUNTED(dev)
+            || STS_MOUNTED(dev)
 #endif
         )
         {
@@ -1588,7 +1588,7 @@ void UpdateDisplay( DEVBLK *dev )
 #if defined(OPTION_SCSI_TAPE)
     else
         if (TAPEDEVT_SCSITAPE == dev->tapedevt)
-            int_scsi_status_update( dev, 1, 0 );
+            int_scsi_status_update( dev, 1 );
 #endif
 }
 
@@ -1846,7 +1846,7 @@ void GetDisplayMsg( DEVBLK *dev, char *msgbfr, size_t  lenbfr )
         // (drive doesn't have a display)
 #if defined(OPTION_SCSI_TAPE)
         if (TAPEDEVT_SCSITAPE == dev->tapedevt)
-            int_scsi_status_update( dev, 1, 0 );
+            int_scsi_status_update( dev, 1 );
 #endif
         return;
     }
@@ -2017,7 +2017,7 @@ int ldpt=0;
 
 #if defined(OPTION_SCSI_TAPE)
         case TAPEDEVT_SCSITAPE:
-            int_scsi_status_update( dev, 0, 0 );
+            int_scsi_status_update( dev, 0 );
             if ( STS_BOT( dev ) )
             {
                 dev->eotwarning = 0;
