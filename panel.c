@@ -362,12 +362,12 @@ static void unkeep_by_keepnum( int keepnum, int perm )
 #endif // defined(OPTION_MSGHLD)
 #endif // defined(OPTION_MSGCLR)
 
+#if defined(OPTION_MSGHLD)
 /*-------------------------------------------------------------------*/
 /* unkeep messages once expired                                      */
 /*-------------------------------------------------------------------*/
 void expire_kept_msgs(int unconditional)
 {
-#if defined(OPTION_MSGHLD)
   struct timeval now;
   PANMSG *pk = keptmsgs;
   int i;
@@ -385,8 +385,8 @@ void expire_kept_msgs(int unconditional)
       }
     }
   }
-#endif // defined(OPTION_MSGHLD)
 }
+#endif // defined(OPTION_MSGHLD)
 
 #if defined(OPTION_MSGCLR)  /*  -- Message coloring build option --  */
 /*-------------------------------------------------------------------*/
@@ -535,13 +535,18 @@ static void scroll_up_lines( int numlines, int doexpire )
 {
     int i;
 
+#if defined(OPTION_MSGHLD)
     if (doexpire)
         expire_kept_msgs(0);
+#else
+    UNREFERENCED(doexpire);
+#endif // defined(OPTION_MSGHLD)
 
     for (i=0; i < numlines && topmsg != oldest_msg(); i++)
     {
         topmsg = topmsg->prev;
 
+#if defined(OPTION_MSGHLD)
         // If new topmsg is simply the last entry in the keep chain
         // then we didn't really backup a line (all we did was move
         // our topmsg ptr), so if that's the case then we need to
@@ -559,6 +564,7 @@ static void scroll_up_lines( int numlines, int doexpire )
                 break;
             topmsg = topmsg->prev;
         }
+#endif // defined(OPTION_MSGHLD)
     }
 }
 
@@ -566,11 +572,16 @@ static void scroll_down_lines( int numlines, int doexpire )
 {
     int i;
 
+#if defined(OPTION_MSGHLD)
     if (doexpire)
         expire_kept_msgs(0);
+#else
+    UNREFERENCED(doexpire);
+#endif // defined(OPTION_MSGHLD)
 
     for (i=0; i < numlines && topmsg != newest_msg(); i++)
     {
+#if defined(OPTION_MSGHLD)
         // If the topmsg should be kept and is not already in our
         // keep chain, then adding it to our keep chain before
         // setting topmsg to the next entry does not really scroll
@@ -589,7 +600,7 @@ static void scroll_down_lines( int numlines, int doexpire )
             if (topmsg == newest_msg())
                 break;
         }
-
+#endif // defined(OPTION_MSGHLD)
         if (topmsg != newest_msg())
             topmsg = topmsg->next;
     }
@@ -597,38 +608,60 @@ static void scroll_down_lines( int numlines, int doexpire )
 
 static void page_up( int doexpire )
 {
+#if defined(OPTION_MSGHLD)
     if (doexpire)
         expire_kept_msgs(0);
+#else
+    UNREFERENCED(doexpire);
+#endif // defined(OPTION_MSGHLD)
     scroll_up_lines( SCROLL_LINES - 1, 0 );
 }
 static void page_down( int doexpire )
 {
+#if defined(OPTION_MSGHLD)
     if (doexpire)
         expire_kept_msgs(0);
+#else
+    UNREFERENCED(doexpire);
+#endif // defined(OPTION_MSGHLD)
     scroll_down_lines( SCROLL_LINES - 1, 0 );
 }
 
 static void scroll_to_top_line( int doexpire )
 {
+#if defined(OPTION_MSGHLD)
     if (doexpire)
         expire_kept_msgs(0);
+#else
+    UNREFERENCED(doexpire);
+#endif // defined(OPTION_MSGHLD)
     topmsg = oldest_msg();
+#if defined(OPTION_MSGHLD)
     while (keptmsgs)
         unkeep( keptmsgs );
+#endif // defined(OPTION_MSGHLD)
 }
 
 static void scroll_to_bottom_line( int doexpire )
 {
+#if defined(OPTION_MSGHLD)
     if (doexpire)
         expire_kept_msgs(0);
+#else
+    UNREFERENCED(doexpire);
+#endif // defined(OPTION_MSGHLD)
     while (topmsg != newest_msg())
         scroll_down_lines( 1, 0 );
 }
 
 static void scroll_to_bottom_screen( int doexpire )
 {
+#if defined(OPTION_MSGHLD)
     if (doexpire)
         expire_kept_msgs(0);
+#else
+    UNREFERENCED(doexpire);
+#endif // defined(OPTION_MSGHLD)
     scroll_to_bottom_line( 0 );
     page_up( 0 );
 }
@@ -688,7 +721,8 @@ static void get_dim (int *y, int *x)
 #endif // defined(WIN32) && !defined( _MSVC_ )
 }
 
-int get_keepnum_by_row( int row )
+#if defined(OPTION_EXTCURS)
+static int get_keepnum_by_row( int row )
 {
     // PROGRAMMING NOTE: right now all of our kept messages are
     // always placed at the very top of the screen (starting on
@@ -709,6 +743,7 @@ int get_keepnum_by_row( int row )
 
     return (row - keep_beg_row);
 }
+#endif /*defined(OPTION_EXTCURS)*/
 
 static void set_color (short fg, short bg)
 {
@@ -2448,8 +2483,10 @@ char    buf[1024];                      /* Buffer workarea           */
                         int keepnum = get_keepnum_by_row( cur_cons_row );
                         if (keepnum >= 0)
                         {
+#if defined(OPTION_MSGHLD)
                             /* ENTER pressed on kept msg; remove msg */
                             unkeep_by_keepnum( keepnum, 1 );
+#endif // defined(OPTION_MSGHLD)
                             redraw_msgs = 1;
                             break;
                         }
@@ -2771,11 +2808,14 @@ FinishShutdown:
                 saved_cons_row = cur_cons_row;
                 saved_cons_col = cur_cons_col;
 
+#if defined(OPTION_MSGHLD)
                 /* Unkeep kept messages if needed */
                 expire_kept_msgs(0);
-
+#endif // defined(OPTION_MSGHLD)
+                i = 0;
+#if defined(OPTION_MSGHLD)
                 /* Draw kept messages first */
-                for (i=0, p=keptmsgs; i < (SCROLL_LINES + numkept) && p; i++, p = p->next)
+                for (p=keptmsgs; i < (SCROLL_LINES + numkept) && p; i++, p = p->next)
                 {
                     set_pos (i+1, 1);
 #if defined(OPTION_MSGCLR)
@@ -2785,6 +2825,7 @@ FinishShutdown:
 #endif // defined(OPTION_MSGCLR)
                     write_text (p->msg, MSG_SIZE);
                 }
+#endif // defined(OPTION_MSGHLD)
 
                 /* Then draw current screen */
                 for (p=topmsg; i < (SCROLL_LINES + numkept) && (p != curmsg->next || p == topmsg); i++, p = p->next)
