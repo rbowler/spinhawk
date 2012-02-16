@@ -8,6 +8,8 @@
 
 #include "hercules.h"
 
+#define TTYLINE_SZ 512
+
 typedef struct _COMMADPT_RING
 {
     BYTE *bfr;
@@ -44,6 +46,7 @@ struct COMMADPT
     COMMADPT_RING outbfr;       /* Output buffer ring                       */
     COMMADPT_RING pollbfr;      /* Ring used for POLL data                  */
     COMMADPT_RING rdwrk;        /* Inbound data flow work ring              */
+    COMMADPT_RING ttybuf;       /* async: partial TTY input line            */
     U16  devnum;                /* devnum copy from DEVBLK                  */
     BYTE dialdata[32];          /* Dial data information                    */
     U16  dialcount;             /* data count for dial                      */
@@ -82,8 +85,11 @@ struct COMMADPT
     u_int telnet_int:1;         /* telnet interrupt received                */
     u_int eol_flag:1;           /* carriage return received flag            */
     u_int uctrans:1;            /* Uppercase translate flag                 */
+    u_int dumb_bs:1;            /* perform backspace editing in driver      */
+    u_int dumb_break:1;         /* map ASCII ETX (Ctrl-C) to interrupt/attn */
     BYTE telnet_cmd;            /* telnet command received                  */
     BYTE byte_skip_table[256];  /* async: characters to suppress in output  */
+    BYTE input_byte_skip_table[256];  /* async: characters to suppress in input  */
 };
 
 enum commadpt_lnctl {
