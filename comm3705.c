@@ -367,62 +367,6 @@ struct sockaddr_in *sin;
 
 #endif
 /*-------------------------------------------------------------------*/
-/* SUBROUTINE TO REMOVE ANY IAC SEQUENCES FROM THE DATA STREAM       */
-/* Returns the new length after deleting IAC commands                */
-/*-------------------------------------------------------------------*/
-static int
-remove_iac (BYTE *buf, int len)
-{
-int     m, n, c;
-
-    for (m=0, n=0; m < len; ) {
-        /* Interpret IAC commands */
-        if (buf[m] == IAC) {
-            /* Treat IAC in last byte of buffer as IAC NOP */
-            c = (++m < len)? buf[m++] : NOP;
-            /* Process IAC command */
-            switch (c) {
-            case IAC: /* Insert single IAC in buffer */
-                buf[n++] = IAC;
-                break;
-            case BRK: /* Set ATTN indicator */
-                break;
-            case IP: /* Set SYSREQ indicator */
-                break;
-            case WILL: /* Skip option negotiation command */
-            case WONT:
-            case DO:
-            case DONT:
-                m++;
-                break;
-            case SB: /* Skip until IAC SE sequence found */
-                for (; m < len; m++) {
-                    if (buf[m] != IAC) continue;
-                    if (++m >= len) break;
-                    if (buf[m] == SE) { m++; break; }
-                } /* end for */
-            default: /* Ignore NOP or unknown command */
-                break;
-            } /* end switch(c) */
-        } else {
-            /* Copy data bytes */
-            if (n < m) buf[n] = buf[m];
-            m++; n++;
-        }
-    } /* end for */
-
-    if (n < m) {
-        TNSDEBUG3("console: DBG001: %d IAC bytes removed, newlen=%d\n",
-                m-n, n);
-        packet_trace (buf, n);
-    }
-
-    return n;
-
-} /* end function remove_iac */
-
-
-/*-------------------------------------------------------------------*/
 /* SUBROUTINE TO DOUBLE UP ANY IAC BYTES IN THE DATA STREAM          */
 /* Returns the new length after inserting extra IAC bytes            */
 /*-------------------------------------------------------------------*/
@@ -1210,7 +1154,7 @@ static void commadpt_read_tty(COMMADPT *ca, BYTE * bfr, int len)
 		ca->eol_flag = 0;
 		if (ca->is_3270) {
                    if (eor) {
-		       ca->inpbufl = remove_iac(ca->inpbuf, ca->rlen3270);
+		       ca->inpbufl = ca->rlen3270;
                        ca->rlen3270 = 0; /* for next msg */
                    }
 		} else {
