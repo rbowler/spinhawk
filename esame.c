@@ -5548,6 +5548,11 @@ BYTE   *stfl_data;                      /* -> STFL data              */
 
     PRIV_CHECK(regs);
 
+#if defined(_FEATURE_SIE)
+    if(SIE_STATB(regs,IC0, STFL))
+        longjmp(regs->progjmp, SIE_INTERCEPT_INST);
+#endif /*defined(_FEATURE_SIE)*/
+
     SIE_INTERCEPT(regs);
 
     PTT(PTT_CL_INF,"STFL",b2,(U32)(effective_addr2 & 0xffffffff),regs->psw.IA_L);
@@ -5588,7 +5593,10 @@ BYTE   *stfl_data;                      /* -> STFL data              */
 
     S(inst, regs, b2, effective_addr2);
 
-    SIE_INTERCEPT(regs);
+#if defined(_FEATURE_SIE)
+    if(SIE_STATB(regs,IC0, STFL))
+        longjmp(regs->progjmp, SIE_INTERCEPT_INST);
+#endif /*defined(_FEATURE_SIE)*/
 
     PTT(PTT_CL_INF,"STFLE",regs->GR_L(0),(U32)(effective_addr2 & 0xffffffff),regs->psw.IA_L);
 
