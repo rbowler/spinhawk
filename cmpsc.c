@@ -401,7 +401,7 @@ static void ARCH_DEP(compress)(int r1, int r2, REGS *regs, REGS *iregs)
 
   /* Initialize values */
   eos = 0;
-  srclen = GR_A(r2 + 1, regs);
+  srclen = GR_A(r2 + 1, iregs);
 
   /* Initialize compression context */
   cc.dctsz = GR0_dctsz(regs);
@@ -411,7 +411,7 @@ static void ARCH_DEP(compress)(int r1, int r2, REGS *regs, REGS *iregs)
     cc.dict[i] = NULL;
     cc.edict[i] = NULL;
   }  
-  cc.dictor = GR1_dictor(regs);
+  cc.dictor = GR1_dictor(iregs);
   cc.f1 = GR0_f1(regs);
   cc.iregs = iregs;
   cc.ofst = 0;
@@ -422,14 +422,14 @@ static void ARCH_DEP(compress)(int r1, int r2, REGS *regs, REGS *iregs)
   cc.src = NULL;
 
   /* Process individual index symbols until cbn bocomes zero */
-  if(unlikely(GR1_cbn(regs)))
+  if(unlikely(GR1_cbn(iregs)))
   {
  
 #ifdef OPTION_CMPSC_DEBUG
     logmsg("Cbn not zero, process individual index symbols\n");
 #endif /* #ifdef OPTION_CMPSC_DEBUG */
 
-    while(likely(GR1_cbn(regs)))
+    while(likely(GR1_cbn(iregs)))
     {
       /* Get the next character, return on end of source */
       if(unlikely(ARCH_DEP(fetch_ch)(&cc, &ch)))
@@ -495,7 +495,7 @@ static void ARCH_DEP(compress)(int r1, int r2, REGS *regs, REGS *iregs)
     COMMITREGS2(regs, iregs, r1, r2);
 
     /* Return with cc3 on interrupt pending after a minumum size of processing */
-    if(unlikely(srclen - GR_A(r2 + 1, regs) >= MINPROC_SIZE && INTERRUPT_PENDING(regs)))
+    if(unlikely(srclen - GR_A(r2 + 1, iregs) >= MINPROC_SIZE && INTERRUPT_PENDING(regs)))
     {
 
 #ifdef OPTION_CMPSC_DEBUG
@@ -507,7 +507,7 @@ static void ARCH_DEP(compress)(int r1, int r2, REGS *regs, REGS *iregs)
     }
   }
 
-  while(GR_A(r2 + 1, regs))
+  while(GR_A(r2 + 1, iregs))
   {
     /* Get the next character, return on end of source */
     if(unlikely(ARCH_DEP(fetch_ch)(&cc, &ch)))
@@ -981,7 +981,7 @@ static int ARCH_DEP(store_is)(struct cc *cc, U16 is)
   if(unlikely(GR0_st(cc->regs)))
   {
     /* Get the interchange symbol */
-    ARCH_DEP(vfetchc)(work, 1, (cc->dictor + GR1_sttoff(cc->regs) + is * 2) & ADDRESS_MAXWRAP(cc->regs), cc->r2, cc->regs);
+    ARCH_DEP(vfetchc)(work, 1, (cc->dictor + GR1_sttoff(cc->iregs) + is * 2) & ADDRESS_MAXWRAP(cc->regs), cc->r2, cc->regs);
 
 #ifdef OPTION_CMPSC_DEBUG
     logmsg("store_is : %04X -> %02X%02X\n", is, work[0], work[1]);
@@ -1047,7 +1047,7 @@ static void ARCH_DEP(store_iss)(struct cc *cc)
   /* Check if symbol translation is requested */
   if(unlikely(GR0_st(cc->regs)))
   {
-    dictor = cc->dictor + GR1_sttoff(cc->regs);
+    dictor = cc->dictor + GR1_sttoff(cc->iregs);
     for(i = 0; i < 8; i++)
     {
       /* Get the interchange symbol */
@@ -1264,11 +1264,11 @@ static void ARCH_DEP(expand)(int r1, int r2, REGS *regs, REGS *iregs)
 
   /* Initialize values */
   dcten = GR0_dcten(regs);
-  destlen = GR_A(r1 + 1, regs);
+  destlen = GR_A(r1 + 1, iregs);
 
   /* Initialize expansion context */
   ec.dest = NULL;
-  ec.dictor = GR1_dictor(regs);
+  ec.dictor = GR1_dictor(iregs);
   for(i = 0; i < (0x01 << GR0_cdss(regs)); i++)
     ec.dict[i] = NULL;
 
@@ -1291,9 +1291,9 @@ static void ARCH_DEP(expand)(int r1, int r2, REGS *regs, REGS *iregs)
   ec.src = NULL;
 
   /* Process individual index symbols until cbn becomes zero */
-  if(unlikely(GR1_cbn(regs)))
+  if(unlikely(GR1_cbn(iregs)))
   {
-    while(likely(GR1_cbn(regs)))
+    while(likely(GR1_cbn(iregs)))
     {
       if(unlikely(ARCH_DEP(fetch_is)(&ec, &is)))
         return;
@@ -1344,7 +1344,7 @@ static void ARCH_DEP(expand)(int r1, int r2, REGS *regs, REGS *iregs)
     COMMITREGS2(regs, iregs, r1, r2);
 
     /* Return with cc3 on interrupt pending */
-    if(unlikely(destlen - GR_A(r1 + 1, regs) >= MINPROC_SIZE && INTERRUPT_PENDING(regs)))
+    if(unlikely(destlen - GR_A(r1 + 1, iregs) >= MINPROC_SIZE && INTERRUPT_PENDING(regs)))
     {
 
 #ifdef OPTION_CMPSC_DEBUG
