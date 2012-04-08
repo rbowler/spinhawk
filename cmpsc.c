@@ -12,8 +12,6 @@
 /*                              Noordwijkerhout, The Netherlands.             */
 /*----------------------------------------------------------------------------*/
 
-// $Id$
-
 #include "hstdinc.h"
 
 #ifndef _HENGINE_DLL_
@@ -174,6 +172,8 @@ struct cc                              /* Compress context                    */
 {
   BYTE *cce;                           /* Character entry under investigation */
   unsigned dctsz;                      /* Dictionary size                     */
+  BYTE dea[0x100][0x100];              /* Dead end administration             */
+  BYTE dead_end;                       /* Needed for dead end administration  */
   BYTE *dest;                          /* Destination MADDR address           */
   BYTE *dict[32];                      /* Dictionary MADDR addresses          */
   GREG dictor;                         /* Dictionary origin                   */
@@ -405,6 +405,7 @@ static void ARCH_DEP(compress)(int r1, int r2, REGS *regs, REGS *iregs)
   srclen = GR_A(r2 + 1, iregs);
 
   /* Initialize compression context */
+  memset(cc.dea, 0, sizeof(cc.dea));
   cc.dctsz = GR0_dctsz(regs);
   cc.dest = NULL;
   for(i = 0; i < (0x01 << GR0_cdss(regs)); i++)
@@ -439,13 +440,38 @@ static void ARCH_DEP(compress)(int r1, int r2, REGS *regs, REGS *iregs)
 
       /* We always match the alpabet entry, so set last match */
       ADJUSTREGS(cc.r2, cc.regs, cc.iregs, 1);
-
-      /* Get the alphabet entry as preparation for searching */
       is = ch;
-      cc.cce = ARCH_DEP(fetch_cce)(&cc, is);
 
-      /* Try to find a child in compression character entry */
-      while(ARCH_DEP(search_cce)(&cc, &ch, &is));
+      /* Do normal searching on eos or unkown dead end */
+      if(ARCH_DEP(fetch_ch)(&cc, &ch) || !cc.dea[is][ch])
+      {      
+        cc.dead_end = 1;
+
+        /* Get the alphabet entry as preparation for searching */
+        cc.cce = ARCH_DEP(fetch_cce)(&cc, is);
+
+        /* Try to find a child in compression character entry */
+        while(ARCH_DEP(search_cce)(&cc, &ch, &is));
+
+        /* Have we found a dead end */
+        if(is < 0x100 && cc.dead_end)
+        {
+          cc.dea[is][ch] = 1;
+
+#ifdef OPTION_CMPSC_DEBUG
+          WRMSG(HHC90365, "D", is, ch, "found");
+#endif /* #ifdef OPTION_CMPSC_DEBUG */
+
+        }
+      }
+      else
+      {
+
+#ifdef OPTION_CMPSC_DEBUG
+        WRMSG(HHC90365, "D", is, ch, "encountered");
+#endif /* #ifdef OPTION_CMPSC_DEBUG */
+
+      }	
 
       /* Write the last match, this can be the alphabet entry */
       if(unlikely(ARCH_DEP(store_is)(&cc, is)))
@@ -475,13 +501,38 @@ static void ARCH_DEP(compress)(int r1, int r2, REGS *regs, REGS *iregs)
 
       /* We always match the alpabet entry, so set last match */
       ADJUSTREGS(cc.r2, cc.regs, cc.iregs, 1);
-
-      /* Get the alphabet entry as preparation for searching */
       is = ch;
-      cc.cce = ARCH_DEP(fetch_cce)(&cc, is);
 
-      /* Try to find a child in compression character entry */
-      while(ARCH_DEP(search_cce)(&cc, &ch, &is));
+      /* Do normal searching on eos or unkown dead end */
+      if(ARCH_DEP(fetch_ch)(&cc, &ch) || !cc.dea[is][ch])
+      {
+        cc.dead_end = 1;
+
+        /* Get the alphabet entry as preparation for searching */
+        cc.cce = ARCH_DEP(fetch_cce)(&cc, is);
+
+        /* Try to find a child in compression character entry */
+        while(ARCH_DEP(search_cce)(&cc, &ch, &is));
+
+        /* Have we found a dead end */	
+        if(is < 0x100 && cc.dead_end)
+        {
+          cc.dea[is][ch] = 1;
+
+#ifdef OPTION_CMPSC_DEBUG
+          WRMSG(HHC90365, "D", is, ch, "found");
+#endif /* #ifdef OPTION_CMPSC_DEBUG */      
+
+        }
+      }
+      else
+      {
+
+#ifdef OPTION_CMPSC_DEBUG
+        WRMSG(HHC90365, "D", is, ch, "encountered");
+#endif /* #ifdef OPTION_CMPSC_DEBUG */
+
+      }
 
       /* Write the last match, this can be the alphabet entry */
       cc.is[i] = is;
@@ -517,13 +568,38 @@ static void ARCH_DEP(compress)(int r1, int r2, REGS *regs, REGS *iregs)
 
     /* We always match the alpabet entry, so set last match */
     ADJUSTREGS(cc.r2, cc.regs, cc.iregs, 1);
-
-    /* Get the alphabet entry as preparation for searching */
     is = ch;
-    cc.cce = ARCH_DEP(fetch_cce)(&cc, is);
 
-    /* Try to find a child in compression character entry */
-    while(ARCH_DEP(search_cce)(&cc, &ch, &is));
+    /* Do normal searching on eos or unkown dead end */
+    if(ARCH_DEP(fetch_ch)(&cc, &ch) || !cc.dea[is][ch])
+    {
+      cc.dead_end = 1;
+
+      /* Get the alphabet entry as preparation for searching */
+      cc.cce = ARCH_DEP(fetch_cce)(&cc, is);
+
+      /* Try to find a child in compression character entry */
+      while(ARCH_DEP(search_cce)(&cc, &ch, &is));
+
+      /* Have we found a dead end */
+      if(is < 0x100 && cc.dead_end)
+      {
+        cc.dea[is][ch] = 1;
+
+#ifdef OPTION_CMPSC_DEBUG
+        WRMSG(HHC90365, "D", is, ch, "found");
+#endif /* #ifdef OPTION_CMPSC_DEBUG */
+
+      }
+    }
+    else
+    {
+
+#ifdef OPTION_CMPSC_DEBUG
+      WRMSG(HHC90365, "D", is, ch, "encountered");
+#endif /* #ifdef OPTION_CMPSC_DEBUG */
+
+    }
 
     /* Write the last match, this can be the alphabet entry */
     if(unlikely(ARCH_DEP(store_is)(&cc, is)))
@@ -779,6 +855,7 @@ static int ARCH_DEP(search_cce)(struct cc *cc, BYTE *ch, U16 *is)
       {
         /* Child is tested, so stop searching for siblings*/
         ind_search_siblings = 0;
+        cc->dead_end = 0;
 
         /* Check if child should not be examined */
         if(unlikely(!CCE_x(cc->cce, i)))
@@ -902,6 +979,7 @@ static int ARCH_DEP(search_sd)(struct cc *cc, BYTE *ch, U16 *is)
       {
         /* Child is tested, so stop searching for siblings*/
         ind_search_siblings = 0;
+        cc->dead_end = 0;
 
         /* Check if child should not be examined */
         if(unlikely(!SD_ecb(cc->f1, sd1, i, cc->cce, y_in_parent)))
@@ -1213,20 +1291,24 @@ static int ARCH_DEP(test_ec)(struct cc *cc, BYTE *cce)
   int i;
   unsigned ofst;
 
-  for(i = 0; i < CCE_ecs(cce); i++)
+  if(CCE_ecs(cce))
   {
-    if(unlikely(GR_A(cc->r2 + 1, cc->iregs) <= (U32) i + 1))
-      return(0);
-    ofst = (GR_A(cc->r2, cc->iregs) + i + 1) & 0x7ff;
-    if(unlikely(!cc->src || ofst < cc->ofst))
-      ch = ARCH_DEP(vfetchb)((GR_A(cc->r2, cc->iregs) + i + 1) & ADDRESS_MAXWRAP(cc->regs), cc->r2, cc->regs);
-    else
+    cc->dead_end = 0;
+    for(i = 0; i < CCE_ecs(cce); i++)
     {
-      ch = cc->src[ofst];
-      ITIMER_SYNC((GR_A(cc->r2, cc->iregs) + i + 1) & ADDRESS_MAXWRAP(cc->regs), 1 - 1, cc->regs);
+      if(unlikely(GR_A(cc->r2 + 1, cc->iregs) <= (U32) i + 1))
+        return(0);
+      ofst = (GR_A(cc->r2, cc->iregs) + i + 1) & 0x7ff;
+      if(unlikely(!cc->src || ofst < cc->ofst))
+        ch = ARCH_DEP(vfetchb)((GR_A(cc->r2, cc->iregs) + i + 1) & ADDRESS_MAXWRAP(cc->regs), cc->r2, cc->regs);
+      else
+      {
+        ch = cc->src[ofst];
+        ITIMER_SYNC((GR_A(cc->r2, cc->iregs) + i + 1) & ADDRESS_MAXWRAP(cc->regs), 1 - 1, cc->regs);
+      }
+      if(unlikely(ch != CCE_ec(cce, i)))
+        return(0);
     }
-    if(unlikely(ch != CCE_ec(cce, i)))
-      return(0);
   }
 
   /* a perfect match */
