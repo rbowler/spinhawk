@@ -1698,7 +1698,7 @@ BYTE            rustat;                 /* Addl CSW stat on Rewind Unload */
         argv[0] = strdup( newfile );
 
         /* Attempt reinitializing the device using the new filename... */
-        rc = tapedev_init_handler( dev, argc, argv );
+        rc = (int)(dev->hnd->init)( dev, argc, argv );
 
         /* (free temp copy of parms to prevent memory leak) */
         for (i=0; i < argc; i++)
