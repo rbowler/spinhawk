@@ -4947,7 +4947,6 @@ DEVBLK*  dev;
 U16      devnum;
 U16      lcss;
 int      i, rc;
-int      nomountedtapereinit = sysblk.nomountedtapereinit;
 int      init_argc;
 char   **init_argv;
 
@@ -4983,33 +4982,6 @@ char   **init_argv;
         logmsg( _("HHCPN096E Device %d:%4.4X busy or interrupt pending\n"),
                   lcss, devnum );
         return -1;
-    }
-
-    /* Prevent accidental re-init'ing of already loaded tape drives */
-    if (nomountedtapereinit)
-    {
-        char*  devclass;
-
-        ASSERT( dev->hnd && dev->hnd->query );
-        dev->hnd->query( dev, &devclass, 0, NULL );
-
-        if (1
-            && strcmp(devclass,"TAPE") == 0
-            && (0
-                || TAPEDEVT_SCSITAPE == dev->tapedevt
-                || (argc >= 3 && strcmp(argv[2], TAPE_UNLOADED) != 0)
-               )
-        )
-        {
-            ASSERT( dev->tmh && dev->tmh->tapeloaded );
-            if (dev->tmh->tapeloaded( dev, NULL, 0 ))
-            {
-                release_lock (&dev->lock);
-                logmsg(_("HHCPN183E Reinit rejected for drive %u:%4.4X; drive not empty\n"),
-                    SSID_TO_LCSS(dev->ssid), dev->devnum);
-                return -1;
-            }
-        }
     }
 
     /* Close the existing file, if any */
