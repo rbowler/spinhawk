@@ -235,8 +235,8 @@ static int   ARCH_DEP(vstore)(struct ec *ec, BYTE *buf, unsigned len);
 DEF_INST(compression_call)
 {
   REGS iregs;                          /* Intermediate registers              */
-  int r1;
-  int r2;
+  int r1;                              /* Guess what                          */
+  int r2;                              /* Yep                                 */
 
   RRE(inst, regs, r1, r2);
 
@@ -395,8 +395,8 @@ static void ARCH_DEP(compress)(int r1, int r2, REGS *regs, REGS *iregs)
 {
   struct cc cc;                        /* Compression context                 */
   BYTE ch;                             /* Character read                      */
-  int eos;                             /* indication end of source            */
-  int i;
+  int eos;                             /* Indication end of source            */
+  int i;                               /* Index                               */
   U16 is;                              /* Last matched index symbol           */
   GREG srclen;                         /* Source length                       */
 
@@ -615,7 +615,7 @@ static void ARCH_DEP(compress)(int r1, int r2, REGS *regs, REGS *iregs)
 /*----------------------------------------------------------------------------*/
 static BYTE *ARCH_DEP(fetch_cce)(struct cc *cc, unsigned index)
 {
-  BYTE *cce;
+  BYTE *cce;                           /* Compression child entry             */
   unsigned cct;                        /* Child count                         */
 
   index *= 8;
@@ -693,8 +693,8 @@ static int ARCH_DEP(fetch_ch)(struct cc *cc, BYTE *ch)
 /*----------------------------------------------------------------------------*/
 static void print_cce(BYTE *cce)
 {
-  int j;
-  int prt_detail;
+  int j;                               /* Index                               */
+  int prt_detail;                      /* Switch for detailed printing        */
 
   logmsg("  cce    : ");
   prt_detail = 0;
@@ -764,8 +764,8 @@ static void print_cce(BYTE *cce)
 /*----------------------------------------------------------------------------*/
 static void print_sd(int f1, BYTE *sd1, BYTE *sd2)
 {
-  int j;
-  int prt_detail;
+  int j;                               /* Index                               */
+  int prt_detail;                      /* Switch for detailed printing        */
 
   if(f1)
   {
@@ -828,9 +828,9 @@ static void print_sd(int f1, BYTE *sd1, BYTE *sd2)
 /*----------------------------------------------------------------------------*/
 static int ARCH_DEP(search_cce)(struct cc *cc, BYTE *ch, U16 *is)
 {
-  BYTE *ccce;                          /* child compression character entry   */
+  BYTE *ccce;                          /* Child compression character entry   */
   int ccs;                             /* Number of child characters          */
-  int i;                               /* child character index               */
+  int i;                               /* Child character index               */
   int ind_search_siblings;             /* Indicator for searching siblings    */
 
   /* Initialize values */
@@ -1036,8 +1036,8 @@ static int ARCH_DEP(search_sd)(struct cc *cc, BYTE *ch, U16 *is)
 static int ARCH_DEP(store_is)(struct cc *cc, U16 is)
 {
   unsigned cbn;                        /* Compressed-data bit number          */
-  U32 set_mask;                        /* mask to set the bits                */
-  BYTE work[3];                        /* work bytes                          */
+  U32 set_mask;                        /* Mask to set the bits                */
+  BYTE work[3];                        /* Work bytes                          */
 
   /* Initialize values */
   cbn = GR1_cbn(cc->iregs);
@@ -1115,7 +1115,7 @@ static int ARCH_DEP(store_is)(struct cc *cc, U16 is)
 /*----------------------------------------------------------------------------*/
 static void ARCH_DEP(store_iss)(struct cc *cc)
 {
-  GREG dictor;                         /* dictionary origin                   */ 
+  GREG dictor;                         /* Dictionary origin                   */ 
   int i;
   U16 *is;                             /* Index symbol array                  */
   unsigned len1;                       /* Length in first page                */
@@ -1287,9 +1287,9 @@ static void ARCH_DEP(store_iss)(struct cc *cc)
 /*----------------------------------------------------------------------------*/
 static int ARCH_DEP(test_ec)(struct cc *cc, BYTE *cce)
 {
-  BYTE ch;
-  int i;
-  unsigned ofst;
+  BYTE ch;                             /* Character                           */
+  int i;                               /* Index                               */
+  unsigned ofst;                       /* Offset                              */
 
   if(CCE_ecs(cce))
   {
@@ -1342,7 +1342,7 @@ static void ARCH_DEP(expand)(int r1, int r2, REGS *regs, REGS *iregs)
   int dcten;                           /* Number of different symbols         */
   GREG destlen;                        /* Destination length                  */
   struct ec ec;                        /* Expand cache                        */
-  int i;
+  int i;                               /* Index                               */
   U16 is;                              /* Index symbol                        */
   U16 iss[8];                          /* Index symbols                       */
 
@@ -1549,8 +1549,8 @@ static void ARCH_DEP(expand_is)(struct ec *ec, U16 is)
 static int ARCH_DEP(fetch_is)(struct ec *ec, U16 *is)
 {
   unsigned cbn;                        /* Compressed-data bit number          */
-  U32 mask;
-  BYTE work[3];
+  U32 mask;                            /* Working mask                        */
+  BYTE work[3];                        /* Working field                       */
 
   /* Initialize values */
   cbn = GR1_cbn(ec->iregs);
@@ -1729,8 +1729,8 @@ static void ARCH_DEP(fetch_iss)(struct ec *ec, U16 is[8])
 /*----------------------------------------------------------------------------*/
 static void print_ece(BYTE *ece)
 {
-  int i;
-  int prt_detail;
+  int i;                               /* Index                               */
+  int prt_detail;                      /* Switch detailed printing            */
 
   logmsg("  ece    : ");
   prt_detail = 0;
@@ -1780,10 +1780,10 @@ static int ARCH_DEP(vstore)(struct ec *ec, BYTE *buf, unsigned len)
   BYTE *sk;                            /* Storage key                         */
 
 #ifdef OPTION_CMPSC_DEBUG
-  char buf2[256];
-  unsigned i;
-  unsigned j;
-  static BYTE pbuf[2060];
+  char buf2[256];                      /* Buffer                              */
+  unsigned i;                          /* Index                               */
+  unsigned j;                          /* Index                               */
+  static BYTE pbuf[2060];              /* Print buffer                        */
   static unsigned plen = 2061;         /* Impossible value                    */
 #endif /* #ifdef OPTION_CMPSC_DEBUG */
 
