@@ -4759,7 +4759,7 @@ char    c;                              /* work for sscan            */
     else
     {
         argv++; argc--;
-        if (argc < 0 || (devascii = argv[0]) == NULL)
+        if (argc <= 0 || (devascii = argv[0]) == NULL)
         {
             missing_devnum();
             return -1;
