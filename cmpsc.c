@@ -395,13 +395,11 @@ static void ARCH_DEP(compress)(int r1, int r2, REGS *regs, REGS *iregs)
 {
   struct cc cc;                        /* Compression context                 */
   BYTE ch;                             /* Character read                      */
-  int eos;                             /* Indication end of source            */
   int i;                               /* Index                               */
   U16 is;                              /* Last matched index symbol           */
   GREG srclen;                         /* Source length                       */
 
   /* Initialize values */
-  eos = 0;
   srclen = GR_A(r2 + 1, iregs);
 
   /* Initialize compression context */
@@ -438,24 +436,20 @@ static void ARCH_DEP(compress)(int r1, int r2, REGS *regs, REGS *iregs)
       if(unlikely(ARCH_DEP(fetch_ch)(&cc, &ch)))
         return;
 
-      /* We always match the alpabet entry, so set last match */
+      /* Set last match (alphabet entry) and initiate search */
       ADJUSTREGS(cc.r2, cc.regs, cc.iregs, 1);
+      cc.dead_end = 1;
       is = ch;
 
-      /* Do normal searching on eos or unkown dead end */
+      /* Do normal searching on eos or unknown dead end */
       if(ARCH_DEP(fetch_ch)(&cc, &ch) || !cc.dea[is][ch])
       {      
-        cc.dead_end = 1;
-
-        /* Get the alphabet entry as preparation for searching */
+        /* Get the alphabet entry and try to find a child */
         cc.cce = ARCH_DEP(fetch_cce)(&cc, is);
-
-        /* Try to find a child in compression character entry */
         while(ARCH_DEP(search_cce)(&cc, &ch, &is));
-
-        /* Have we found a dead end */
-        if(is < 0x100 && cc.dead_end)
+        if(cc.dead_end)
         {
+          /* We found a dead end combination */
           cc.dea[is][ch] = 1;
 
 #ifdef OPTION_CMPSC_DEBUG
@@ -473,11 +467,9 @@ static void ARCH_DEP(compress)(int r1, int r2, REGS *regs, REGS *iregs)
 
       }	
 
-      /* Write the last match, this can be the alphabet entry */
+      /* Write the last match and commit */
       if(unlikely(ARCH_DEP(store_is)(&cc, is)))
         return;
-
-      /* Commit registers, we have completed a full compression */
       COMMITREGS(regs, iregs, r1, r2);
     }
   }
@@ -499,24 +491,20 @@ static void ARCH_DEP(compress)(int r1, int r2, REGS *regs, REGS *iregs)
         return;
       }
 
-      /* We always match the alpabet entry, so set last match */
+      /* Set last match (alphabet entry) and initiate search */
       ADJUSTREGS(cc.r2, cc.regs, cc.iregs, 1);
+      cc.dead_end = 1;
       is = ch;
 
-      /* Do normal searching on eos or unkown dead end */
+      /* Do normal searching on eos or unknown dead end */
       if(ARCH_DEP(fetch_ch)(&cc, &ch) || !cc.dea[is][ch])
       {
-        cc.dead_end = 1;
-
-        /* Get the alphabet entry as preparation for searching */
+        /* Get the alphabet entry and try to find a child */      
         cc.cce = ARCH_DEP(fetch_cce)(&cc, is);
-
-        /* Try to find a child in compression character entry */
         while(ARCH_DEP(search_cce)(&cc, &ch, &is));
-
-        /* Have we found a dead end */	
-        if(is < 0x100 && cc.dead_end)
+        if(cc.dead_end)
         {
+          /* We found a dead end combination */
           cc.dea[is][ch] = 1;
 
 #ifdef OPTION_CMPSC_DEBUG
@@ -542,9 +530,9 @@ static void ARCH_DEP(compress)(int r1, int r2, REGS *regs, REGS *iregs)
 #endif /* #ifdef OPTION_CMPSC_DEBUG */
 
     }
-    ARCH_DEP(store_iss)(&cc);
 
-    /* Commit registers */
+    /* Write last matches and commit */
+    ARCH_DEP(store_iss)(&cc);
     COMMITREGS2(regs, iregs, r1, r2);
 
     /* Return with cc3 on interrupt pending after a minumum size of processing */
@@ -566,24 +554,20 @@ static void ARCH_DEP(compress)(int r1, int r2, REGS *regs, REGS *iregs)
     if(unlikely(ARCH_DEP(fetch_ch)(&cc, &ch)))
       return;
 
-    /* We always match the alpabet entry, so set last match */
+    /* Set last match (alphabet entry) and initiate search */ 
     ADJUSTREGS(cc.r2, cc.regs, cc.iregs, 1);
+    cc.dead_end = 1;
     is = ch;
 
-    /* Do normal searching on eos or unkown dead end */
+    /* Do normal searching on eos or unknown dead end */
     if(ARCH_DEP(fetch_ch)(&cc, &ch) || !cc.dea[is][ch])
     {
-      cc.dead_end = 1;
-
-      /* Get the alphabet entry as preparation for searching */
+      /* Get the alphabet entry and try to find a child */
       cc.cce = ARCH_DEP(fetch_cce)(&cc, is);
-
-      /* Try to find a child in compression character entry */
       while(ARCH_DEP(search_cce)(&cc, &ch, &is));
-
-      /* Have we found a dead end */
-      if(is < 0x100 && cc.dead_end)
+      if(cc.dead_end)
       {
+        /* We found a dead end combination */
         cc.dea[is][ch] = 1;
 
 #ifdef OPTION_CMPSC_DEBUG
@@ -601,11 +585,9 @@ static void ARCH_DEP(compress)(int r1, int r2, REGS *regs, REGS *iregs)
 
     }
 
-    /* Write the last match, this can be the alphabet entry */
+    /* Write the last match and commit */
     if(unlikely(ARCH_DEP(store_is)(&cc, is)))
       return;
-
-    /* Commit registers, we have completed a full compression */
     COMMITREGS(regs, iregs, r1, r2);
   }
 }
