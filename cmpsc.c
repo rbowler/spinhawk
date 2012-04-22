@@ -650,6 +650,10 @@ static int ARCH_DEP(fetch_ch)(struct cc *cc, BYTE *ch)
 /*----------------------------------------------------------------------------*/
 static int ARCH_DEP(fetch_chs_and_adjust)(struct cc *cc, BYTE *ch1, BYTE *ch2)
 {
+#ifdef OPTION_CMPSC_DEBUG
+  char buf[6];                         /* Print buffer for 2 or 1 character   */
+#endif /* #ifdef OPTION_CMPSC_DEBUG */
+
   U64 len;                             /* Source length left                  */
   unsigned ofst;                       /* Offset within page                  */
 
@@ -675,17 +679,21 @@ static int ARCH_DEP(fetch_chs_and_adjust)(struct cc *cc, BYTE *ch1, BYTE *ch2)
   *ch1 = cc->src[ofst];
   cc->ofst = ofst;
 
-#ifdef OPTION_CMPSC_DEBUG
-  WRMSG(HHC90318, "D", *ch1, GR_A(cc->r2, cc->iregs));
-#endif /* #ifdef OPTION_CMPSC_DEBUG */
-
   /* Adjust registers, we always match the alphabet entry */
   ADJUSTREGS(cc->r2, cc->regs, cc->iregs, 1);
   len--;
 
   /* Check if 2nd character available */
   if(unlikely(!len))
+  {
+
+#ifdef OPTION_CMPSC_DEBUG
+    snprintf(buf, 6, "%02X", *ch1);
+    WRMSG(HHC90313, "D", buf, GR_A(cc->r2, cc->iregs) - 1);
+#endif /* #ifdef OPTION_CMPSC_DEBUG */
+
     return(0);                         /* It is ok when dead_end is detected  */
+  }
 
   ITIMER_SYNC(GR_A(cc->r2, cc->iregs) & ADDRESS_MAXWRAP(cc->regs), 1 - 1, cc->regs);
 
@@ -700,7 +708,8 @@ static int ARCH_DEP(fetch_chs_and_adjust)(struct cc *cc, BYTE *ch1, BYTE *ch2)
   cc->ofst = ofst;
 
 #ifdef OPTION_CMPSC_DEBUG
-   WRMSG(HHC90318, "D", *ch2, GR_A(cc->r2, cc->iregs));
+  snprintf(buf, 6, "%02X %02X", *ch1, *ch2);
+  WRMSG(HHC90313, "D", buf, GR_A(cc->r2, cc->iregs) - 1);
 #endif /* #ifdef OPTION_CMPSC_DEBUG */
 
   return(0);
