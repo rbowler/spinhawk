@@ -46,9 +46,7 @@
                                            of inter-thread signaling */
 #define OPTION_TIMESTAMP_LOGFILE        /* Hardcopy logfile HH:MM:SS */
 #define OPTION_IPLPARM                  /* IPL PARM a la VM          */
-#ifndef FISH_HANG
 #define OPTION_PTTRACE                  /* Pthreads tracing          */
-#endif
 //#define OPTION_DEBUG_MESSAGES         /* Prefix msgs with filename
 //                                         and line# if DEBUG build  */
 #define OPTION_SET_STSI_INFO            /* Set STSI info in cfg file */

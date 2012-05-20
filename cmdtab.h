@@ -591,19 +591,6 @@ COMMAND ( "asn_and_lx_reuse", CONFIG, alrf_cmd, "Enable/Disable ASN and LX reuse
 COMMAND ( "alrf"            , CONFIG, alrf_cmd, "Alias for asn_and_lx_reuse\n", NULL )
 #endif /* defined(_FEATURE_ASN_AND_LX_REUSE) */
 
-#if defined(FISH_HANG)
-COMMAND ( "FishHangReport",   PANEL, FishHangReport_cmd,
-  "Display thread/lock/event objects (DEBUG)\n",
-    "When built with --enable-fthreads --enable-fishhang, a detailed record of\n"
-    "every thread, lock and event that is created is maintained for debugging purposes.\n"
-    "If a lock is accessed before it has been initialized or if a thread exits while\n"
-    "still holding a lock, etc (including deadlock situations), the FishHang logic will\n"
-    "detect and report it. If you suspect one of hercules's threads is hung waiting for\n"
-    "a condition to be signalled for example, entering \"FishHangReport\" will display\n"
-    "the internal list of thread, locks and events to possibly help you determine where\n"
-    "it's hanging and what event (condition) it's hung on.\n"             )
-#endif
-
 #if defined(OPTION_CONFIG_SYMBOLS)
 COMMAND ( "defsym",    PANEL+CONFIG, defsym_cmd,
   "Define symbol",

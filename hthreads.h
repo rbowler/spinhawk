@@ -24,48 +24,21 @@ typedef fthread_mutex_t   LOCK;
 typedef fthread_cond_t    COND;
 typedef fthread_attr_t    ATTR;
 
-#if defined(FISH_HANG)
-
-    #define create_thread(ptid,pat,fn,arg,nm)      fthread_create(PTT_LOC,(ptid),(pat),(PFT_THREAD_FUNC)&(fn),(arg),(nm))
-    #define join_thread(tid,pcode)                 fthread_join(PTT_LOC,(tid),(pcode))
-
-    #define initialize_lock(plk)                   fthread_mutex_init(PTT_LOC,(plk),NULL)
-    #define destroy_lock(plk)                      fthread_mutex_destroy(PTT_LOC,(plk))
-    #define obtain_lock(plk)                       fthread_mutex_lock(PTT_LOC,(plk))
-    #define try_obtain_lock(plk)                   fthread_mutex_trylock(PTT_LOC,(plk))
-    #define test_lock(plk) \
-            (fthread_mutex_trylock(PTT_LOC,(plk)) ? 1 : fthread_mutex_unlock(PTT_LOC,(plk)) )
-    #define release_lock(plk)                      fthread_mutex_unlock(PTT_LOC,(plk))
-
-    #define initialize_condition(pcond)            fthread_cond_init(PTT_LOC,(pcond))
-    #define destroy_condition(pcond)               fthread_cond_destroy(PTT_LOC,(pcond))
-    #define signal_condition(pcond)                fthread_cond_signal(PTT_LOC,(pcond))
-    #define broadcast_condition(pcond)             fthread_cond_broadcast(PTT_LOC,(pcond))
-    #define wait_condition(pcond,plk)              fthread_cond_wait(PTT_LOC,(pcond),(plk))
-    #define timed_wait_condition(pcond,plk,tm)     fthread_cond_timedwait(PTT_LOC,(pcond),(plk),(tm))
-
-#else // !defined(FISH_HANG)
-
-    #define create_thread(ptid,pat,fn,arg,nm)      fthread_create((ptid),(pat),(PFT_THREAD_FUNC)&(fn),(arg),nm)
-    #define join_thread(tid,pcode)                 fthread_join((tid),(pcode))
-
-    #define initialize_lock(plk)                   fthread_mutex_init((plk),NULL)
-    #define destroy_lock(plk)                      fthread_mutex_destroy((plk))
-    #define obtain_lock(plk)                       fthread_mutex_lock((plk))
-    #define try_obtain_lock(plk)                   fthread_mutex_trylock((plk))
-    #define test_lock(plk) \
-            (fthread_mutex_trylock((plk)) ? 1 : fthread_mutex_unlock((plk)) )
-    #define release_lock(plk)                      fthread_mutex_unlock((plk))
-
-    #define initialize_condition(pcond)            fthread_cond_init((pcond))
-    #define destroy_condition(pcond)               fthread_cond_destroy((pcond))
-    #define signal_condition(pcond)                fthread_cond_signal((pcond))
-    #define broadcast_condition(pcond)             fthread_cond_broadcast((pcond))
-    #define wait_condition(pcond,plk)              fthread_cond_wait((pcond),(plk))
-    #define timed_wait_condition(pcond,plk,tm)     fthread_cond_timedwait((pcond),(plk),(tm))
-
-#endif // defined(FISH_HANG)
-
+#define create_thread(ptid,pat,fn,arg,nm)      fthread_create((ptid),(pat),(PFT_THREAD_FUNC)&(fn),(arg),nm)
+#define join_thread(tid,pcode)                 fthread_join((tid),(pcode))
+#define initialize_lock(plk)                   fthread_mutex_init((plk),NULL)
+#define destroy_lock(plk)                      fthread_mutex_destroy((plk))
+#define obtain_lock(plk)                       fthread_mutex_lock((plk))
+#define try_obtain_lock(plk)                   fthread_mutex_trylock((plk))
+#define test_lock(plk) \
+        (fthread_mutex_trylock((plk)) ? 1 : fthread_mutex_unlock((plk)) )
+#define release_lock(plk)                      fthread_mutex_unlock((plk))
+#define initialize_condition(pcond)            fthread_cond_init((pcond))
+#define destroy_condition(pcond)               fthread_cond_destroy((pcond))
+#define signal_condition(pcond)                fthread_cond_signal((pcond))
+#define broadcast_condition(pcond)             fthread_cond_broadcast((pcond))
+#define wait_condition(pcond,plk)              fthread_cond_wait((pcond),(plk))
+#define timed_wait_condition(pcond,plk,tm)     fthread_cond_timedwait((pcond),(plk),(tm))
 #define initialize_detach_attr(pat)            fthread_attr_init((pat)); \
                                                fthread_attr_setstacksize((pat),1048576); \
                                                fthread_attr_setdetachstate((pat),FTHREAD_CREATE_DETACHED)

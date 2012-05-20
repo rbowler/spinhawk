@@ -31,17 +31,10 @@
 /////////////////////////////////////////////////////////////////////////////
 // Internal scheduler helper macros...
 
-#if defined(FISH_HANG)
-    #define LockScheduler()                         (FishHang_EnterCriticalSection(__FILE__,__LINE__,&IOSchedulerLock))
-    #define LockThreadParms(pThreadParms)           (FishHang_EnterCriticalSection(__FILE__,__LINE__,&pThreadParms->IORequestListLock))
-    #define UnlockScheduler()                       (FishHang_LeaveCriticalSection(__FILE__,__LINE__,&IOSchedulerLock))
-    #define UnlockThreadParms(pThreadParms)         (FishHang_LeaveCriticalSection(__FILE__,__LINE__,&pThreadParms->IORequestListLock))
-#else
-    #define LockScheduler()                         (EnterCriticalSection(&IOSchedulerLock))
-    #define LockThreadParms(pThreadParms)           (EnterCriticalSection(&pThreadParms->IORequestListLock))
-    #define UnlockScheduler()                       (LeaveCriticalSection(&IOSchedulerLock))
-    #define UnlockThreadParms(pThreadParms)         (LeaveCriticalSection(&pThreadParms->IORequestListLock))
-#endif
+#define LockScheduler()                     (EnterCriticalSection(&IOSchedulerLock))
+#define LockThreadParms(pThreadParms)       (EnterCriticalSection(&pThreadParms->IORequestListLock))
+#define UnlockScheduler()                   (LeaveCriticalSection(&IOSchedulerLock))
+#define UnlockThreadParms(pThreadParms)     (LeaveCriticalSection(&pThreadParms->IORequestListLock))
 
 /////////////////////////////////////////////////////////////////////////////
 // i/o scheduler variables...  (some private, some externally visible)
@@ -337,11 +330,7 @@ DEVTHREADPARMS*  CreateDeviceThread(unsigned short wDevNum)
     pThreadParms->bThreadIsDead = FALSE;
     pThreadParms->dwThreadID = 0;
 
-#ifdef FISH_HANG
-    if (fthread_create(__FILE__,__LINE__,&dwThreadID,NULL,DeviceThread,pThreadParms,"DeviceThread") != 0)
-#else
     if (fthread_create(&dwThreadID,NULL,DeviceThread,pThreadParms,"DeviceThread") != 0)
-#endif
     {
         logmsg(_("HHCCP089E fthread_create(DeviceThread) failed; device=%4.4X, strerror=\"%s\"\n"),
             wDevNum,strerror(errno));
@@ -660,153 +649,6 @@ void  RemoveThisThreadFromOurList(DEVTHREADPARMS* pThreadParms)
     free(pThreadParms);
     ios_devtnbr--;          // (track number of active device_thread)
 }
-
-/////////////////////////////////////////////////////////////////////////////
-// Debugging...
-
-#if defined(FISH_HANG)
-
-char PrintDEVIOREQUESTBuffer[2048];
-
-char*  PrintDEVIOREQUEST(DEVIOREQUEST* pIORequest, DEVTHREADPARMS* pDEVTHREADPARMS)
-{
-    LIST_ENTRY*    pListEntry;
-    DEVIOREQUEST*  pNextDEVIOREQUEST;
-
-    pListEntry = pIORequest->IORequestListLinkingListEntry.Flink;
-
-    if (pListEntry != &pDEVTHREADPARMS->IORequestListHeadListEntry)
-    {
-        pNextDEVIOREQUEST = CONTAINING_RECORD(pListEntry,DEVIOREQUEST,IORequestListLinkingListEntry);
-    }
-    else pNextDEVIOREQUEST = (DEVIOREQUEST*) &pDEVTHREADPARMS->IORequestListHeadListEntry;
-
-    snprintf(PrintDEVIOREQUESTBuffer,sizeof(PrintDEVIOREQUESTBuffer),
-        "DEVIOREQUEST @ %8.8X\n"
-        "               pDevBlk                       = %8.8X\n"
-        "               wDevNum                       = %4.4X\n"
-        "               IORequestListLinkingListEntry = %8.8X\n",
-        (int)pIORequest,
-            (int)pIORequest->pDevBlk,
-            pIORequest->wDevNum,
-            (int)pNextDEVIOREQUEST
-        );
-
-    PrintDEVIOREQUESTBuffer[ sizeof(PrintDEVIOREQUESTBuffer) - 1 ] = 0;
-
-    return PrintDEVIOREQUESTBuffer;
-}
-
-/////////////////////////////////////////////////////////////////////////////
-
-void  PrintAllDEVIOREQUESTs(DEVTHREADPARMS* pDEVTHREADPARMS)
-{
-    DEVIOREQUEST*  pDEVIOREQUEST;
-    LIST_ENTRY*    pListEntry;
-
-    pListEntry = pDEVTHREADPARMS->IORequestListHeadListEntry.Flink;
-
-    while (pListEntry != &pDEVTHREADPARMS->IORequestListHeadListEntry)
-    {
-        pDEVIOREQUEST = CONTAINING_RECORD(pListEntry,DEVIOREQUEST,IORequestListLinkingListEntry);
-        pListEntry = pListEntry->Flink;
-        FishHang_Printf("%s\n",PrintDEVIOREQUEST(pDEVIOREQUEST,pDEVTHREADPARMS));
-    }
-}
-
-/////////////////////////////////////////////////////////////////////////////
-
-char PrintDEVTHREADPARMSBuffer[4096];
-
-char*  PrintDEVTHREADPARMS(DEVTHREADPARMS* pDEVTHREADPARMS)
-{
-    LIST_ENTRY*      pListEntry;
-    DEVIOREQUEST*    pDEVIOREQUEST;
-    DEVTHREADPARMS*  pNextDEVTHREADPARMS;
-
-    pListEntry = pDEVTHREADPARMS->IORequestListHeadListEntry.Flink;
-
-    if (pListEntry != &pDEVTHREADPARMS->IORequestListHeadListEntry)
-    {
-        pDEVIOREQUEST = CONTAINING_RECORD(pListEntry,DEVIOREQUEST,IORequestListLinkingListEntry);
-    }
-    else pDEVIOREQUEST = NULL;
-
-    pListEntry = pDEVTHREADPARMS->ThreadListLinkingListEntry.Flink;
-
-    if (pListEntry != &ThreadListHeadListEntry)
-    {
-        pNextDEVTHREADPARMS = CONTAINING_RECORD(pListEntry,DEVTHREADPARMS,ThreadListLinkingListEntry);
-    }
-    else pNextDEVTHREADPARMS = (DEVTHREADPARMS*) &ThreadListHeadListEntry;
-
-    snprintf(PrintDEVTHREADPARMSBuffer,sizeof(PrintDEVTHREADPARMSBuffer),
-
-        "DEVTHREADPARMS @ %8.8X\n"
-        "                 dwThreadID                 = %8.8X\n"
-        "                 bThreadIsDead              = %s\n"
-        "                 hShutdownEvent             = %8.8X  %s\n"
-        "                 hRequestQueuedEvent        = %8.8X  %s\n"
-        "                 IORequestListHeadListEntry = %8.8X\n"
-        "                 ThreadListLinkingListEntry = %8.8X\n"
-
-        ,(int)pDEVTHREADPARMS
-            ,(int)pDEVTHREADPARMS->dwThreadID
-            ,pDEVTHREADPARMS->bThreadIsDead                      ?      "TRUE"      :      "false"
-            ,(unsigned int)pDEVTHREADPARMS->hShutdownEvent
-            ,   IsEventSet(pDEVTHREADPARMS->hShutdownEvent)      ? "** SIGNALED **" : "(not signaled)"
-            ,(unsigned int)pDEVTHREADPARMS->hRequestQueuedEvent
-            ,   IsEventSet(pDEVTHREADPARMS->hRequestQueuedEvent) ? "** SIGNALED **" : "(not signaled)"
-            ,(int)pDEVIOREQUEST
-            ,(int)pNextDEVTHREADPARMS
-        );
-
-    PrintDEVTHREADPARMSBuffer[ sizeof(PrintDEVTHREADPARMSBuffer) - 1 ] = 0;
-
-    return PrintDEVTHREADPARMSBuffer;
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// (called by panel.c "FishHangReport" command...)
-
-void  PrintAllDEVTHREADPARMSs()
-{
-    LIST_ENTRY*      pListEntry;
-    DEVTHREADPARMS*  pDEVTHREADPARMS;
-
-    LockScheduler();
-
-    pListEntry = ThreadListHeadListEntry.Flink;
-
-    if (pListEntry != &ThreadListHeadListEntry)
-    {
-        pDEVTHREADPARMS = CONTAINING_RECORD(pListEntry,DEVTHREADPARMS,ThreadListLinkingListEntry);
-    }
-    else pDEVTHREADPARMS = (DEVTHREADPARMS*) &ThreadListHeadListEntry;
-
-    FishHang_Printf("\nDEVTHREADPARMS LIST ANCHOR @ %8.8X --> %8.8X\n\n",
-        (int)&ThreadListHeadListEntry,(int)pDEVTHREADPARMS);
-
-    while (pListEntry != &ThreadListHeadListEntry)
-    {
-        pDEVTHREADPARMS = CONTAINING_RECORD(pListEntry,DEVTHREADPARMS,ThreadListLinkingListEntry);
-
-        LockThreadParms(pDEVTHREADPARMS);
-
-        FishHang_Printf("%s\n",PrintDEVTHREADPARMS(pDEVTHREADPARMS));
-        PrintAllDEVIOREQUESTs(pDEVTHREADPARMS);
-
-        UnlockThreadParms(pDEVTHREADPARMS);
-
-        pListEntry = pListEntry->Flink;
-    }
-
-    UnlockScheduler();
-}
-
-/////////////////////////////////////////////////////////////////////////////
-
-#endif // defined(FISH_HANG)
 
 /////////////////////////////////////////////////////////////////////////////
 

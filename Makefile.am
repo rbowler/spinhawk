@@ -99,19 +99,12 @@ endif
 
 fthreads_SRC  = fthreads.c
 fishio_SRC    = w32chan.c
-fishhang_SRC  = fishhang.c
 
 if BUILD_FTHREADS
   FTHREADS    = $(fthreads_SRC)
   FISHIO      = $(fishio_SRC)
-if BUILD_FISHHANG
-    FISHHANG  = $(fishhang_SRC)
-else
-    FISHHANG  =
-endif
 else
   FTHREADS    =
-  FISHHANG    =
   FISHIO      =
 endif
 
@@ -374,7 +367,6 @@ endif
                         parser.c     \
                         pttrace.c    \
                         $(FTHREADS)  \
-                        $(FISHHANG)  \
                         $(LTDL)
 
   libhercu_la_LDFLAGS = $(LIB_LD_FLAGS)
@@ -447,7 +439,6 @@ endif
                        ecpsvm.c
 
   EXTRA_libherc_la_SOURCES = $(fthreads_SRC)  \
-                             $(fishhang_SRC)  \
                              $(fishio_SRC)    \
                              memrchr.c        \
                              $(dynamic_SRC)   \
@@ -698,8 +689,7 @@ EXTRA_DIST = autoconf/config.rpath \
 #
 # Source Header files. No 'build' for those
 #
-noinst_HEADERS = fishhang.h     \
-                 hostinfo.h     \
+noinst_HEADERS = hostinfo.h     \
                  cpuint.h       \
                  feat370.h      \
                  feat390.h      \
