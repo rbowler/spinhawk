@@ -1,7 +1,7 @@
 # ***************************************************************************
 #     VERSION.msvc    (!INCLUDE ed by "makefile-dllmod.msvc")
 # --------------------------------------------------------------------------
-# (c) Copyright Roger Bowler, 2005-2007
+# (c) Copyright Roger Bowler, 2005-2012
 # --------------------------------------------------------------------------
 # $Id$
 #
@@ -10,19 +10,19 @@
 # ***************************************************************************
 
 !UNDEF fna
-!IFNDEF VERSION
+!IF !DEFINED(VERSION) || !DEFINED(V1) || !DEFINED(V2) || !DEFINED(V3) || !DEFINED(V4)
 
-# The following logic determines the Hercules version number and SVN 
-# revision number and sets variables VERSION,V1,V2,V3,V4 when VERSION
-# is not already set by makefile.bat
+# The following logic determines the Hercules version number, attempts
+# to construct a pseudo-revision number using the git commit history,
+# and sets variables V1,V2,V3,V4 and VERSION
 
 # First extract the Hercules version number from the configure.ac file.
 # We scan the file looking for AM_INIT_AUTOMAKE=(hercules,x.y[.z]) # 
-# and we create a temporary file containing statements V1=x V2=y V3=z
-# Finally we include the temporary file to set the variables V1,V2,V3
+# and we create a temporary file containing statements V1=x V2=y 
+# Finally we include the temporary file to set the variables V1,V2
 opt = "tokens=1-5 delims=(),. "
 fna = $(TEMP)\hercver$(BUILD_TYPE).txt
-cmd = @echo V1=%c >$(fna) && @echo V2=%d >>$(fna) && @echo V3=%e >>$(fna)
+cmd = @echo V1=%c >$(fna) && @echo V2=%d >>$(fna) 
 !IF ["for /f $(opt) %a in (configure.ac) do @if %a==AM_INIT_AUTOMAKE $(cmd)"] == 0
 !INCLUDE $(fna)
 !ELSE
@@ -30,24 +30,26 @@ V1 = 0
 V2 = 0
 !ENDIF
 
-# If svn.exe exists in the path, use the 'svn info' command to find the
-# subversion revision number, and write V4=nnnn to the temporary file.
-# Then include the temporary file to set the variable V4
-opt="tokens=1-2 usebackq"
-cmd = for /f $(opt) %a in (`svn info`) do @if %a==Revision: @echo V4=%b>$(fna)
-!IF ["for %I in (svn.exe) do @if exist %~$$PATH:I $(cmd)"] == 0
+# If git.exe exists in the path, use the 'git log' command to count the 
+# number of commits (nnnn), and write V3=nnnn to the temporary file.
+# Then include the temporary file to set the variable V3
+opt="tokens=1 usebackq"
+cmd = for /f $(opt) %a in (`"git log --oneline | wc -l"`) do @echo V3=%a>$(fna)
+!IF ["for %I in (git.exe) do @if exist %~$$PATH:I $(cmd)"] == 0
 !INCLUDE $(fna)
 !ENDIF
 
-# If V4 is not set, use the TortoiseSVN program subwcrev (if it exists in the path)
-# to find the subversion revision number, and write V4=nnnn to the temporary file.
-# Then include the temporary file to set the variable V4
-!IF !DEFINED(V4) || "$(V4)" == ""
-opt="tokens=1-5 usebackq"
-cmd = for /f $(opt) %a in (`subwcrev .`) do @if %a%b==Lastcommitted @echo V4=%e>$(fna)
-!IF ["for %I in (subwcrev.exe) do @if exist %~$$PATH:I $(cmd)"] == 0
-!INCLUDE $(fna)
+# If V3 is still not set, then set it to zero 
+!IF !DEFINED(V3) || "$(V3)" == ""
+V3 = 0
 !ENDIF
+
+# If date.exe exists in the path, write V4=yyddd to the temporary file.
+# Then include the temporary file to set the variable V4
+opt="tokens=1 usebackq"
+cmd = for /f $(opt) %a in (`"%~$$PATH:I" +%y%j`) do @echo V4=%a>$(fna)
+!IF ["for %I in (date.exe) do @if exist %~$$PATH:I $(cmd)"] == 0
+!INCLUDE $(fna)
 !ENDIF
 
 # If V4 is still not set, then set it to zero 
@@ -55,28 +57,18 @@ cmd = for /f $(opt) %a in (`subwcrev .`) do @if %a%b==Lastcommitted @echo V4=%e>
 V4 = 0
 !ENDIF
 
-# Set the version string x.y or x.y.z
-sharp = ^#
-!IF !DEFINED(V3) || "$(V3)" == "" || "$(V3)" == "$(sharp)"
-VERSION = $(V1).$(V2)
-V3 = 0
-!ELSE
-VERSION = $(V1).$(V2).$(V3)
-!ENDIF
+# Set the version string
+VERSION = $(V1).$(V2)-spinhawk
 
-# Append the subversion revision number to the version string
-!IF "$(V4)" != "0"
-VERSION = $(VERSION)-svn-$(V4)
+# Append the revision number to the version string
+!IF "$(V3)" != "0"
+VERSION = $(VERSION)-$(V3)
 !ENDIF
 
 !MESSAGE Hercules version number is $(VERSION) ($(V1).$(V2).$(V3).$(V4))
 VERSION = \"$(VERSION)\"
 
 !ELSE
-
-!IF !DEFINED(VERSION) || !DEFINED(V1) || !DEFINED(V2) || !DEFINED(V3) || !DEFINED(V4)
-!  ERROR 'VERSION=', 'V1=', 'V2=', 'V3=', and/or V4=' are undefined. Either build Hercules using the supplied 'makefile.bat' or set the variables manually yourself before invoking nmake.
-!ENDIF
 
 !MESSAGE VERSION = $(VERSION) ($(V1).$(V2).$(V3).$(V4))
 
