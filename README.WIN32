@@ -1,0 +1,31 @@
+HERCULES FOR WIN32 README FILE
+
+HOW TO COMPILE HERCULES FOR WINDOWS 32 BIT MSVC x86
+
+1. Install Visual C++ 2010 Express from the Visual Studio 2010 Express page:
+   http://www.microsoft.com/visualstudio/en-us/products/2010-editions/express
+
+2. Go to the start menu and choose "All Programs"
+   - "Microsoft Visual Studio 2010 Express" - "Visual Studio Command Prompt (2010)"
+
+3. If you require gzip or bzip2 for disk or tape compression, or if you
+   require PCRE for the Hercules Automatic Operator facility, you should
+   install the WIN32 versions of these programs in winbuild\zlib\
+   winbuild\bzip2\ and winbuild\pcre\ under the Hercules directory. 
+   You may override these default directory locations by setting
+   environment variables, for example:
+   SET ZLIB_DIR=c:\packages\zlib
+   SET BZIP2_DIR=c:\packages\bzip2
+   SET PCRE_DIR=c:\packages\pcre
+
+4. nmake -f makefile-dllmod.msvc clean
+   nmake -f makefile-dllmod.msvc
+
+5. The binaries will be installed into subfolder "msvc.dllmod.bin"
+
+6. If you copy the binaries to a machine which does not have Visual
+   Studio 2010 (VS10) installed, then you must also install the
+   Microsoft Visual C++ 2010 Redistributable Package (x86)
+   on the target machine. This package can be downloaded from
+   http://www.microsoft.com/en-us/download/details.aspx?id=5555
+
