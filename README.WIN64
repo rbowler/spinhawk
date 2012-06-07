@@ -15,30 +15,38 @@ HOW TO COMPILE HERCULES FOR AMD64
    http://www.microsoft.com/en-us/download/details.aspx?id=8279
    IMPORTANT: select all components *except* the Visual C++ Compilers
 
-3. Install Visual C++ 2010 SP1 Compiler Update for the Windows SDK 7.1 from:
+3. Install Visual Studio 2010 Service Pack 1 (VS10sp1-KB983509) from:
+   http://www.microsoft.com/en-us/download/details.aspx?id=23691
+
+4. Install Visual C++ 2010 Service Pack 1 Compiler Update
+   for the Windows SDK 7.1 (VC-Compiler-KB2519277) from:
    http://www.microsoft.com/en-us/download/details.aspx?id=4422
 
-4. Go to the start menu and choose "All Programs"
+5. Go to the start menu and choose "All Programs"
    - "Microsoft Windows SDK v7.1" - "Microsoft Windows SDK 7.1 Command Prompt"
 
-5. If you require gzip or bzip2 for disk or tape compression, or if you
+6. Change to the directory where you unpacked the Hercules source
+
+7. If you require gzip or bzip2 for disk or tape compression, or if you
    require PCRE for the Hercules Automatic Operator facility, you should
    install the AMD64 versions of these programs in winbuild\zlib\x64
-   winbuild\bzip2\x64 and winbuild\pcre\x64 under the Hercules directory. 
+   winbuild\bzip2\x64 and winbuild\pcre\x64 under the Hercules directory.
    You may override these default directory locations by setting
    environment variables, for example:
    SET ZLIB_DIR=c:\packages\zlib
    SET BZIP2_DIR=c:\packages\bzip2
    SET PCRE_DIR=c:\packages\pcre
 
-6. nmake -f makefile-dllmod.msvc clean
-   nmake -f makefile-dllmod.msvc
+8. copy makefile.msvc makefile
 
-7. The binaries will be installed into subfolder "msvc.AMD64.bin"
+9. nmake clean
+   nmake
+
+10. The binaries will be installed into subfolder "msvc.AMD64.bin"
    If you compiled on a 32-bit Windows system, copy this folder
    to your target 64-bit Windows machine.
 
-8. If you copy the binaries to a machine which does not have Visual
+11. If you copy the binaries to a machine which does not have Visual
    Studio 2010 (VS10) installed, then you must also install the
    Microsoft Visual C++ 2010 Redistributable Package (x64)
    on the target machine. This package can be downloaded from
