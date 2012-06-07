@@ -8,6 +8,11 @@
 /*  additional flags to percolate certain features such as           */
 /*  SIE down to lower architecture levels such that these            */
 /*  can include emulation support                                    */
+/*                                                                   */
+/*  FEATURE_XXXX is defined per architecture mode, and               */
+/*  _FEATURE_XXXX is defined across all architectures                */
+/*  if FEATURE_ XXXX is defined for any architecture mode.           */
+/*                                                                   */
 /*-------------------------------------------------------------------*/
 
 #if defined(FEATCHK_CHECK_ALL)
