@@ -16,6 +16,7 @@
 /*   8 index symbol block fetching and storing, preventing cbn calculations.  */
 /*   Expand symbol translation caching.                                       */
 /*   Compression dead end determination and elimination.                      */
+/*   Proactive dead end determination and elimination.                        */
 /*                                                                            */
 /*                              (c) Copyright Bernard van der Helm, 2000-2012 */
 /*                              Noordwijkerhout, The Netherlands.             */
@@ -196,6 +197,7 @@ struct cc                              /* Compress context                    */
   int r1;                              /* Guess what                          */
   int r2;                              /* Yep                                 */
   REGS *regs;                          /* Registers                           */
+  BYTE searchadm[1][0x100 / 8];        /* Search administration               */
   unsigned smbsz;                      /* Symbol size                         */
   BYTE *src;                           /* Source MADDR page address           */
   unsigned srclen;                     /* Source length left in page          */
@@ -415,8 +417,8 @@ DEF_INST(compression_call)
     (cc)->srclen = 0; \
   } \
 }
-#define DEADEND_get(cc, is, ch) ((cc)->deadadm[(is)][(ch) / 8] & (0x80 >> ((ch) % 8)))
-#define DEADEND_set(cc, is, ch) ((cc)->deadadm[(is)][(ch) / 8] |= (0x80 >> ((ch) % 8)))
+#define BIT_get(array, is, ch) ((array)[(is)][(ch) / 8] & (0x80 >> ((ch) % 8)))
+#define BIT_set(array, is, ch) ((array)[(is)][(ch) / 8] |= (0x80 >> ((ch) % 8)))
 
 /*============================================================================*/
 
@@ -427,6 +429,7 @@ static void ARCH_DEP(cmpsc_compress)(int r1, int r2, REGS *regs, REGS *iregs)
 {
   struct cc cc;                        /* Compression context                 */
   int i;                               /* Index                               */
+  int j;                               /* Index                               */
   U16 is;                              /* Last matched index symbol           */
   GREG srclen;                         /* Source length                       */
 
@@ -474,15 +477,20 @@ static void ARCH_DEP(cmpsc_compress)(int r1, int r2, REGS *regs, REGS *iregs)
     cc.cce = ARCH_DEP(cmpsc_fetch_cce)(&cc, is);
     while(ARCH_DEP(cmpsc_search_cce)(&cc, &is));
 
-    /* Registrate possible found dead end */
+    /* Registrate possible found dead ends */
     if(unlikely(cc.deadend && cc.src))
     {
-      DEADEND_set(&cc, is, *cc.src);
 
 #ifdef OPTION_CMPSC_DEBUG
       WRMSG(HHC90365, "D", is, *cc.src, "discovered");
 #endif /* #ifdef OPTION_CMPSC_DEBUG */
 
+      /* Registrate all discovered dead ends */
+      for(j = 0; j < 0x100; j++)
+      {
+        if(!BIT_get(cc.searchadm, 0, j))
+          BIT_set(cc.deadadm, is, j);
+      }
     }
 
     /* Write the last match, return on end of destination */
@@ -503,8 +511,6 @@ static void ARCH_DEP(cmpsc_compress)(int r1, int r2, REGS *regs, REGS *iregs)
       /* Get the next character, return on end of source */
       if(unlikely(!cc.src && ARCH_DEP(cmpsc_fetch_ch)(&cc)))
       {
-        int j;
-
         /* Write individual found index symbols */
         for(j = 0; j < i; j++)
           ARCH_DEP(cmpsc_store_is)(&cc, cc.is[j]);
@@ -521,14 +527,14 @@ static void ARCH_DEP(cmpsc_compress)(int r1, int r2, REGS *regs, REGS *iregs)
       ADJUSTREGSC(&cc, cc.r2, cc.regs, cc.iregs, 1);
 
       /* Check for alphabet entry ch dead end combination */
-      if(unlikely(!(cc.src && DEADEND_get(&cc, is, *cc.src))))
+      if(unlikely(!(cc.src && BIT_get(cc.deadadm, is, *cc.src))))
       {
         /* Get the alphabet entry and try to find a child */
         cc.cce = ARCH_DEP(cmpsc_fetch_cce)(&cc, is);
         while(ARCH_DEP(cmpsc_search_cce)(&cc, &is))
         {
           /* Check for other dead end combination */
-          if(unlikely(cc.src && DEADEND_get(&cc, is, *cc.src)))
+          if(unlikely(cc.src && BIT_get(cc.deadadm, is, *cc.src)))
           {
 
 #ifdef OPTION_CMPSC_DEBUG
@@ -539,15 +545,20 @@ static void ARCH_DEP(cmpsc_compress)(int r1, int r2, REGS *regs, REGS *iregs)
           }
         }
 
-        /* Registrate possible found dead end */
+        /* Registrate possible found dead ends */
         if(unlikely(cc.deadend && cc.src))
         {
-          DEADEND_set(&cc, is, *cc.src);
 
 #ifdef OPTION_CMPSC_DEBUG
           WRMSG(HHC90365, "D", is, *cc.src, "discovered");
 #endif /* #ifdef OPTION_CMPSC_DEBUG */
 
+          /* Registrate all discovered dead ends */ 
+          for(j = 0; j < 0x100; j++)
+          {
+            if(!BIT_get(cc.searchadm, 0, j))
+              BIT_set(cc.deadadm, is, j);
+          }
         }
       }
 
@@ -600,14 +611,14 @@ static void ARCH_DEP(cmpsc_compress)(int r1, int r2, REGS *regs, REGS *iregs)
     ADJUSTREGSC(&cc, cc.r2, cc.regs, cc.iregs, 1);
 
     /* Check for alphabet entry ch dead end combination */
-    if(unlikely(!(cc.src && DEADEND_get(&cc, is, *cc.src))))
+    if(unlikely(!(cc.src && BIT_get(cc.deadadm, is, *cc.src))))
     {
       /* Get the alphabet entry and try to find a child */
       cc.cce = ARCH_DEP(cmpsc_fetch_cce)(&cc, is);
       while(ARCH_DEP(cmpsc_search_cce)(&cc, &is))
       {
         /* Check for other dead end */
-        if(unlikely(cc.src && DEADEND_get(&cc, is, *cc.src)))
+        if(unlikely(cc.src && BIT_get(cc.deadadm, is, *cc.src)))
         {
 
 #ifdef OPTION_CMPSC_DEBUG
@@ -848,6 +859,7 @@ static int ARCH_DEP(cmpsc_search_cce)(struct cc *cc, U16 *is)
   BYTE *ccce;                          /* Child compression character entry   */
   int ccs;                             /* Number of child characters          */
   int i;                               /* Child character index               */
+  int j;                               /* Index                               */
   int ind_search_siblings;             /* Indicator for searching siblings    */
 
   /* Initialize values */
@@ -863,6 +875,7 @@ static int ARCH_DEP(cmpsc_search_cce)(struct cc *cc, U16 *is)
     WRMSG(HHC90318, "D", *cc->src, GR_A(cc->r2, cc->iregs));
 #endif /* #ifdef OPTION_CMPSC_DEBUG */
 
+    memset(cc->searchadm, 0, sizeof(cc->searchadm));
     cc->deadend = 1;
     ind_search_siblings = 1;
 
@@ -906,11 +919,22 @@ static int ARCH_DEP(cmpsc_search_cce)(struct cc *cc, U16 *is)
           return(1);
         }
       }
+      BIT_set(cc->searchadm, 0, CCE_cc(cc->cce, i));
     }
 
     /* Are there siblings? */
     if(likely(CCE_mcc(cc->cce)))
       return(ARCH_DEP(cmpsc_search_sd)(cc, is));
+  }
+  else
+  {
+    /* No children, no extension character, always a dead end */
+    if(!CCE_act(cc->cce))
+    {
+      for(j = 0; j < 0x100; j++)
+        BIT_set(cc->deadadm, *is, j);
+    }
+    cc->deadend = 0;
   }
 
   /* No siblings, write found index symbol */
@@ -966,15 +990,14 @@ static int ARCH_DEP(cmpsc_search_sd)(struct cc *cc, U16 *is)
       if(unlikely(!SD1_sct(sd1)))
         ARCH_DEP(program_interrupt)((cc->regs), PGM_DATA_EXCEPTION);
     }
+
+#ifdef OPTION_CMPSC_DEBUG    
     else
     {
-
-#ifdef OPTION_CMPSC_DEBUG
       logmsg("fetch_sd0: index %04X\n", CCE_cptr(cc->cce) + sd_ptr);
       cmpsc_print_sd(0, sd1, sd2);
-#endif /* #ifdef OPTION_CMPSC_DEBUG */
-
     }
+#endif /* #ifdef OPTION_CMPSC_DEBUG */
 
     /* Check all children in sibling descriptor */
     scs = SD_scs(cc->f1, sd1);
@@ -1015,6 +1038,7 @@ static int ARCH_DEP(cmpsc_search_sd)(struct cc *cc, U16 *is)
           return(1);
         }
       }
+      BIT_set(cc->searchadm, 0, SD_sc(cc->f1, sd1, sd2, i));
     }
 
     /* Next sibling follows last possible child */
@@ -1296,7 +1320,7 @@ static int ARCH_DEP(cmpsc_test_ec)(struct cc *cc, BYTE *cce)
   cc->deadend = 0;
 
   /* Get address of source */
-  if(likely(cc->srclen > CCE_ecs(cce)))
+  if(likely(cc->srclen > (unsigned) CCE_ecs(cce)))
   {
     src = &cc->src[1];
     ITIMER_SYNC((GR_A(cc->r2, cc->iregs) + 1) & ADDRESS_MAXWRAP(cc->regs), CCE_ecs(cce) - 1, cc->regs);
@@ -1304,7 +1328,7 @@ static int ARCH_DEP(cmpsc_test_ec)(struct cc *cc, BYTE *cce)
   else
   {
     /* Return nomatch on end of source condition */
-    if(unlikely(GR_A(cc->r2 + 1, cc->iregs) <= CCE_ecs(cce)))
+    if(unlikely(GR_A(cc->r2 + 1, cc->iregs) <= (unsigned) CCE_ecs(cce)))
       return(1);
 
     /* Get the cross page data */
