@@ -722,7 +722,7 @@ int     i;                              /* Index                     */
 BYTE    unitstat;                       /* Unit Status               */
 
     /* Write the last track image if it's modified */
-    ckddasd_read_track (dev, -1, &unitstat);
+    (dev->hnd->read) (dev, -1, &unitstat);
 
     /* Free the cache */
     cache_lock(CACHE_DEVBUF);
@@ -776,7 +776,7 @@ int             trk;                    /* Track number              */
 /*-------------------------------------------------------------------*/
 /* Return track image length                                         */
 /*-------------------------------------------------------------------*/
-static int ckd_trklen (DEVBLK *dev, BYTE *buf)
+int ckd_trklen (DEVBLK *dev, BYTE *buf)
 {
 int             sz;                     /* Size so far               */
 
@@ -1143,13 +1143,12 @@ void ckddasd_end (DEVBLK *dev)
 BYTE    unitstat;                       /* Unit Status               */
 
     /* Write the last track image if it's modified */
-    ckddasd_read_track (dev, -1, &unitstat);
+    (dev->hnd->read) (dev, -1, &unitstat);
 }
 
 /*-------------------------------------------------------------------*/
 /* Return used cylinders                                             */
 /*-------------------------------------------------------------------*/
-static
 int ckddasd_used (DEVBLK *dev)
 {
     return dev->ckdcyls;
