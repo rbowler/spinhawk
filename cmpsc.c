@@ -454,7 +454,7 @@ static void ARCH_DEP(cmpsc_compress)(int r1, int r2, REGS *regs, REGS *iregs)
   cc.smbsz = GR0_smbsz(regs);
   cc.src = NULL;
   cc.srclen = 0;
-  cc.st = GR0_st(regs);
+  cc.st = GR0_st(regs) ? 1 : 0;
 
   /*-------------------------------------------------------------------------*/
 
@@ -1369,7 +1369,7 @@ static void ARCH_DEP(cmpsc_expand)(int r1, int r2, REGS *regs, REGS *iregs)
   struct ec ec;                        /* Expand cache                        */
   int i;                               /* Index                               */
   U16 is;                              /* Index symbol                        */
-  U16 iss[8];                          /* Index symbols                       */
+  U16 iss[8] = {0};                    /* Index symbols                       */
 
   /* Initialize values */
   dcten = GR0_dcten(regs);
