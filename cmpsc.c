@@ -1069,18 +1069,16 @@ static int ARCH_DEP(cmpsc_store_is)(struct cc *cc, U16 is)
   cbn = GR1_cbn(cc->iregs);
 
   /* Can we write an index or interchange symbol */
-  if(unlikely(GR_A(cc->r1 + 1, cc->iregs) < 2))
+  if(unlikely(GR_A(cc->r1 + 1, cc->iregs) < 2 ||
+    ((cbn + cc->smbsz - 1) / 8) >= GR_A(cc->r1 + 1, cc->iregs)))
   {
-    if(unlikely(((cbn + cc->smbsz - 1) / 8) >= GR_A(cc->r1 + 1, cc->iregs)))
-    {
-      cc->regs->psw.cc = 1;
+    cc->regs->psw.cc = 1;
 
 #ifdef OPTION_CMPSC_DEBUG
-      logmsg("store_is : end of output buffer\n");
+    logmsg("store_is : end of output buffer\n");
 #endif /* #ifdef OPTION_CMPSC_DEBUG */
 
-      return(-1);
-    }
+    return(-1);
   }
 
   /* Check if symbol translation is requested */
