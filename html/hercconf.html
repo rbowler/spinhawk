@@ -2219,16 +2219,39 @@ and how they are used.
         debugging. Default is to interpret printer CCWs normally.
         <p>
 
-    <dt><code>fcb=</code>
+    <dt><code>fcb=<em>argument</em></code>
     <dd><p>
         specifies an initial FCB image to use for this printer. The argument
-        must be exactly 26 digits long, and consist of digits from 0 to 9.
-        The first pair of digits specifies the number of lines on a printed
-        page. It is followed by 12 pairs of digits which specify, for FCB
-        channels 1-12, the line number on the page that the FCB channel
+        may either consist of 12 numbers separated by commas (these are the
+        line numbers for channels 1 to 12), or of pairs of numbers in the
+        format <em>nn</em><b>:</b><em>chan</em> where <em>chan</em> is the
+        channel number and <em>nn</em> is the line number that the channel
         corresponds to. Use <code>00</code> to leave the line number unset
         for a channel (see <code>fcbcheck</code> above). The default is
-        <code>fcb=66010713192531374361495561</code>.
+        <code>fcb=1,7,13,19,25,31,37,43,63,49,55,61</code>
+        which is equivalent to
+        <code>fcb=1:1,7:2,13:3,19:4,25:5,31:6,37:7,43:8,63:9,49:10,55:11,61:12</code>
+        <p>
+
+    <dt><code>browse &#124; print</code>
+    <dd><p>
+        specifies whether the output should be optimized and cleaned up for
+        browsing, or optimized for printing. The default is <code>browse</code>.
+        <p>
+
+    <dt><code>index=<em>nn</em></code>
+    <dd><p>
+        specifies 3211 indexing. Valid values are 0 to 31. The default is 0.
+        <p>
+
+    <dt><code>lpi=6&#124;8</code>
+    <dd><p>
+        specifies vertical spacing of 6 or 8 lines per inch.
+        <p>
+
+    <dt><code>lpp=<em>nn</em></code>
+    <dd><p>
+        specifies the number of lines per page. The default is 66.
         <p>
 
     </dl>
