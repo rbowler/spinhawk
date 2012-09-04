@@ -570,9 +570,20 @@ do { \
         (_regs)->program_interrupt( (_regs), PGM_SPECIFICATION_EXCEPTION)
 
     /* Program check if fpc is not valid contents for FPC register */
-#define FPC_CHECK(_fpc, _regs) \
+#if defined(FEATURE_FLOATING_POINT_EXTENSION_FACILITY)          /*810*/
+ #define FPC_BRM FPC_BRM_3BIT
+ #define FPC_CHECK(_fpc, _regs) \
+    if(((_fpc) & FPC_RESV_FPX) \
+     || ((_fpc) & FPC_BRM_3BIT) == BRM_RESV4 \
+     || ((_fpc) & FPC_BRM_3BIT) == BRM_RESV5 \
+     || ((_fpc) & FPC_BRM_3BIT) == BRM_RESV6) \
+        (_regs)->program_interrupt( (_regs), PGM_SPECIFICATION_EXCEPTION)
+#else /*!defined(FEATURE_FLOATING_POINT_EXTENSION_FACILITY)*/   /*810*/
+ #define FPC_BRM FPC_BRM_2BIT
+ #define FPC_CHECK(_fpc, _regs) \
     if((_fpc) & FPC_RESERVED) \
         (_regs)->program_interrupt( (_regs), PGM_SPECIFICATION_EXCEPTION)
+#endif /*!defined(FEATURE_FLOATING_POINT_EXTENSION_FACILITY)*/  /*810*/
 
 #define SSID_CHECK(_regs) \
     if((!((_regs)->GR_LHH(1) & 0x0001)) \
@@ -3496,7 +3507,8 @@ DEF_INST(store_fpc);
 DEF_INST(load_fpc);
 DEF_INST(set_fpc);
 DEF_INST(extract_fpc);
-DEF_INST(set_bfp_rounding_mode);
+DEF_INST(set_bfp_rounding_mode_2bit);
+DEF_INST(set_bfp_rounding_mode_3bit);                           /*810*/
 DEF_INST(trap2);
 DEF_INST(trap4);
 DEF_INST(resume_program);
@@ -3795,15 +3807,27 @@ DEF_INST(compare_and_signal_bfp_short);
 DEF_INST(convert_fix32_to_bfp_ext_reg);
 DEF_INST(convert_fix32_to_bfp_long_reg);
 DEF_INST(convert_fix32_to_bfp_short_reg);
+DEF_INST(convert_u32_to_bfp_ext_reg);                           /*810*/
+DEF_INST(convert_u32_to_bfp_long_reg);                          /*810*/
+DEF_INST(convert_u32_to_bfp_short_reg);                         /*810*/
 DEF_INST(convert_fix64_to_bfp_ext_reg);
 DEF_INST(convert_fix64_to_bfp_long_reg);
 DEF_INST(convert_fix64_to_bfp_short_reg);
+DEF_INST(convert_u64_to_bfp_ext_reg);                           /*810*/
+DEF_INST(convert_u64_to_bfp_long_reg);                          /*810*/
+DEF_INST(convert_u64_to_bfp_short_reg);                         /*810*/
 DEF_INST(convert_bfp_ext_to_fix32_reg);
 DEF_INST(convert_bfp_long_to_fix32_reg);
 DEF_INST(convert_bfp_short_to_fix32_reg);
+DEF_INST(convert_bfp_ext_to_u32_reg);                           /*810*/
+DEF_INST(convert_bfp_long_to_u32_reg);                          /*810*/
+DEF_INST(convert_bfp_short_to_u32_reg);                         /*810*/
 DEF_INST(convert_bfp_ext_to_fix64_reg);
 DEF_INST(convert_bfp_long_to_fix64_reg);
 DEF_INST(convert_bfp_short_to_fix64_reg);
+DEF_INST(convert_bfp_ext_to_u64_reg);                           /*810*/
+DEF_INST(convert_bfp_long_to_u64_reg);                          /*810*/
+DEF_INST(convert_bfp_short_to_u64_reg);                         /*810*/
 DEF_INST(divide_bfp_ext_reg);
 DEF_INST(divide_bfp_long_reg);
 DEF_INST(divide_bfp_long);
@@ -3884,14 +3908,26 @@ DEF_INST(compare_and_signal_dfp_ext_reg);
 DEF_INST(compare_and_signal_dfp_long_reg);
 DEF_INST(compare_exponent_dfp_ext_reg);
 DEF_INST(compare_exponent_dfp_long_reg);
+DEF_INST(convert_fix32_to_dfp_ext_reg);                         /*810*/
+DEF_INST(convert_fix32_to_dfp_long_reg);                        /*810*/
+DEF_INST(convert_u32_to_dfp_ext_reg);                           /*810*/
+DEF_INST(convert_u32_to_dfp_long_reg);                          /*810*/
 DEF_INST(convert_fix64_to_dfp_ext_reg);
 DEF_INST(convert_fix64_to_dfp_long_reg);
+DEF_INST(convert_u64_to_dfp_ext_reg);                           /*810*/
+DEF_INST(convert_u64_to_dfp_long_reg);                          /*810*/
 DEF_INST(convert_sbcd128_to_dfp_ext_reg);
 DEF_INST(convert_sbcd64_to_dfp_long_reg);
 DEF_INST(convert_ubcd128_to_dfp_ext_reg);
 DEF_INST(convert_ubcd64_to_dfp_long_reg);
+DEF_INST(convert_dfp_ext_to_fix32_reg);                         /*810*/
+DEF_INST(convert_dfp_long_to_fix32_reg);                        /*810*/
+DEF_INST(convert_dfp_ext_to_u32_reg);                           /*810*/
+DEF_INST(convert_dfp_long_to_u32_reg);                          /*810*/
 DEF_INST(convert_dfp_ext_to_fix64_reg);
 DEF_INST(convert_dfp_long_to_fix64_reg);
+DEF_INST(convert_dfp_ext_to_u64_reg);                           /*810*/
+DEF_INST(convert_dfp_long_to_u64_reg);                          /*810*/
 DEF_INST(convert_dfp_ext_to_sbcd128_reg);
 DEF_INST(convert_dfp_long_to_sbcd64_reg);
 DEF_INST(convert_dfp_ext_to_ubcd128_reg);

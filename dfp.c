@@ -839,6 +839,437 @@ int             exp;                    /* Adjusted exponent         */
 #define _DFP_ARCH_INDEPENDENT_
 #endif /*!defined(_DFP_ARCH_INDEPENDENT_)*/
 
+#if defined(FEATURE_FLOATING_POINT_EXTENSION_FACILITY)          /*810*/
+#if !defined(_DFP_FPE_ARCH_INDEPENDENT_)
+/*-------------------------------------------------------------------*/
+/* Convert 32-bit signed binary integer to decimal number            */
+/*                                                                   */
+/* This subroutine is called by the CDFTR and CXFTR instructions.    */
+/* It converts a 32-bit signed binary integer value into a           */
+/* decimal number structure. The inexact condition will be set       */
+/* in the decimal context structure if the number is rounded to      */
+/* fit the maximum number of digits specified in the context.        */
+/*                                                                   */
+/* Input:                                                            */
+/*      dn      Pointer to decimal number structure                  */
+/*      n       32-bit signed binary integer value                   */
+/*      pset    Pointer to decimal number context structure          */
+/* Output:                                                           */
+/*      The decimal number structure is updated.                     */
+/*-------------------------------------------------------------------*/
+static void
+dfp_number_from_fix32(decNumber *dn, S32 n, decContext *pset)
+{
+int             sign = 0;               /* Sign of binary integer    */
+int             i;                      /* Counter                   */
+char            zoned[32];              /* Zoned decimal work area   */
+static char     maxnegzd[]="-2147483648";
+static U32      maxneg32 = 0x80000000UL;
+
+    /* Handle maximum negative number as special case */
+    if (n == (S32)maxneg32)
+    {
+        decNumberFromString(dn, maxnegzd, pset);
+        return;
+    }
+
+    /* Convert binary value to zoned decimal */
+    if (n < 0) { n = -n; sign = 1; }
+    i = sizeof(zoned) - 1;
+    zoned[i] = '\0';
+    do {
+        zoned[--i] = (n % 10) + '0';
+        n /= 10;
+    } while(i > 1 && n > 0);
+    if (sign) zoned[--i] = '-';
+
+    /* Convert zoned decimal value to decimal number structure */
+    decNumberFromString(dn, zoned+i, pset);
+
+} /* end function dfp_number_from_fix32 */
+
+/*-------------------------------------------------------------------*/
+/* Convert 32-bit unsigned binary integer to decimal number          */
+/*                                                                   */
+/* This subroutine is called by the CDLFTR and CXLFTR instructions.  */
+/* It converts a 32-bit unsigned binary integer value into a         */
+/* decimal number structure. The inexact condition will be set       */
+/* in the decimal context structure if the number is rounded to      */
+/* fit the maximum number of digits specified in the context.        */
+/*                                                                   */
+/* Input:                                                            */
+/*      dn      Pointer to decimal number structure                  */
+/*      n       32-bit unsigned binary integer value                 */
+/*      pset    Pointer to decimal number context structure          */
+/* Output:                                                           */
+/*      The decimal number structure is updated.                     */
+/*-------------------------------------------------------------------*/
+static void
+dfp_number_from_u32(decNumber *dn, U32 n, decContext *pset)
+{
+int             i;                      /* Counter                   */
+char            zoned[32];              /* Zoned decimal work area   */
+
+    /* Convert unsigned binary value to zoned decimal */
+    i = sizeof(zoned) - 1;
+    zoned[i] = '\0';
+    do {
+        zoned[--i] = (n % 10) + '0';
+        n /= 10;
+    } while(i > 1 && n > 0);
+
+    /* Convert zoned decimal value to decimal number structure */
+    decNumberFromString(dn, zoned+i, pset);
+
+} /* end function dfp_number_from_u32 */
+
+/*-------------------------------------------------------------------*/
+/* Convert 64-bit unsigned binary integer to decimal number          */
+/*                                                                   */
+/* This subroutine is called by the CDLGTR and CXLGTR instructions.  */
+/* It converts a 64-bit unsigned binary integer value into a         */
+/* decimal number structure. The inexact condition will be set       */
+/* in the decimal context structure if the number is rounded to      */
+/* fit the maximum number of digits specified in the context.        */
+/*                                                                   */
+/* Input:                                                            */
+/*      dn      Pointer to decimal number structure                  */
+/*      n       64-bit unsigned binary integer value                 */
+/*      pset    Pointer to decimal number context structure          */
+/* Output:                                                           */
+/*      The decimal number structure is updated.                     */
+/*-------------------------------------------------------------------*/
+static void
+dfp_number_from_u64(decNumber *dn, U64 n, decContext *pset)
+{
+int             i;                      /* Counter                   */
+char            zoned[32];              /* Zoned decimal work area   */
+
+    /* Convert unsigned binary value to zoned decimal */
+    i = sizeof(zoned) - 1;
+    zoned[i] = '\0';
+    do {
+        zoned[--i] = (n % 10) + '0';
+        n /= 10;
+    } while(i > 1 && n > 0);
+
+    /* Convert zoned decimal value to decimal number structure */
+    decNumberFromString(dn, zoned+i, pset);
+
+} /* end function dfp_number_from_u64 */
+
+/*-------------------------------------------------------------------*/
+/* Convert decimal number to 32-bit signed binary integer            */
+/*                                                                   */
+/* This subroutine is called by the CFDTR and CFXTR instructions.    */
+/* It converts a decimal number structure to a 32-bit signed         */
+/* binary integer value.  The inexact condition will be set in       */
+/* the decimal context structure if the number is rounded to         */
+/* an integer. The invalid operation condition will be set if        */
+/* the decimal value is outside the range of a 32-bit integer.       */
+/*                                                                   */
+/* Input:                                                            */
+/*      b       Pointer to decimal number structure                  */
+/*      pset    Pointer to decimal number context structure          */
+/* Output:                                                           */
+/*      The return value is the 32-bit signed binary integer result  */
+/*-------------------------------------------------------------------*/
+static S32
+dfp_number_to_fix32(decNumber *b, decContext *pset)
+{
+S32             n;                      /* 32-bit signed result      */
+int32_t         scale;                  /* Scaling factor            */
+unsigned        i;                      /* Array subscript           */
+BYTE            packed[17];             /* 33-digit packed work area */
+decNumber       p, c;                   /* Working decimal numbers   */
+static U32      mp32 = 0x7FFFFFFFUL;    /* Max positive fixed 32     */
+static U32      mn32 = 0x80000000UL;    /* Max negative fixed 32     */
+static char     mp32zd[]="2147483647";  /* Max positive zoned dec    */
+static char     mn32zd[]="-2147483648"; /* Max negative zoned dec    */
+static BYTE     mp32flag = 0;           /* 1=mp32dn,mn32dn inited    */
+static decNumber mp32dn, mn32dn;        /* Decimal maximum pos,neg   */
+decContext      setmax;                 /* Working context           */
+
+    /* Prime the decimal number structures representing the maximum
+       positive and negative numbers representable in 32 bits. Use
+       a 64-bit DFP working context because these numbers are too
+       big to be represented in the 32-bit DFP format */
+    if (mp32flag == 0)
+    {
+        decContextDefault(&setmax, DEC_INIT_DECIMAL64);
+        decNumberFromString(&mp32dn, mp32zd, &setmax);
+        decNumberFromString(&mn32dn, mn32zd, &setmax);
+        mp32flag = 1;
+    }
+
+    /* If operand is a NaN then set invalid operation
+       and return maximum negative result */
+    if (decNumberIsNaN(b))
+    {
+        pset->status |= DEC_IEEE_854_Invalid_operation;
+        return (S32)mn32;
+    }
+
+    /* Remove fractional part of decimal number */
+    decNumberToIntegralValue(&p, b, pset);
+
+    /* Special case if operand is less than maximum negative
+       number (including where operand is negative infinity) */
+    decNumberCompare(&c, b, &mn32dn, pset);
+    if (decNumberIsNegative(&c))
+    {
+        /* If rounded value is less than maximum negative number
+           then set invalid operation otherwise set inexact */
+        decNumberCompare(&c, &p, &mn32dn, pset);
+        if (decNumberIsNegative(&c))
+            pset->status |= DEC_IEEE_854_Invalid_operation;
+        else
+            pset->status |= DEC_IEEE_854_Inexact;
+
+        /* Return maximum negative result */
+        return (S32)mn32;
+    }
+
+    /* Special case if operand is greater than maximum positive
+       number (including where operand is positive infinity) */
+    decNumberCompare(&c, b, &mp32dn, pset);
+    if (decNumberIsNegative(&c) == 0 && decNumberIsZero(&c) == 0)
+    {
+        /* If rounded value is greater than maximum positive number
+           then set invalid operation otherwise set inexact */
+        decNumberCompare(&c, &p, &mp32dn, pset);
+        if (decNumberIsNegative(&c) == 0 && decNumberIsZero(&c) == 0)
+            pset->status |= DEC_IEEE_854_Invalid_operation;
+        else
+            pset->status |= DEC_IEEE_854_Inexact;
+
+        /* Return maximum positive result */
+        return (S32)mp32;
+    }
+
+    /* Raise inexact condition if result was rounded */
+    decNumberCompare(&c, &p, b, pset);
+    if (decNumberIsZero(&c) == 0)
+    {
+        pset->status |= DEC_IEEE_854_Inexact;
+        if (decNumberIsNegative(&c) == decNumberIsNegative(b))
+            pset->status |= DEC_Rounded;
+    }
+
+    /* Convert decimal number structure to packed decimal */
+    decPackedFromNumber(packed, sizeof(packed), &scale, &p);
+
+    /* Convert packed decimal to binary value */
+    for (i = 0, n = 0; i < sizeof(packed)-1; i++)
+    {
+        n = n * 10 + ((packed[i] & 0xF0) >> 4);
+        n = n * 10 + (packed[i] & 0x0F);
+    }
+    n = n * 10 + ((packed[i] & 0xF0) >> 4);
+    while (scale++) n *= 10;
+    if ((packed[i] & 0x0F) == 0x0D) n = -n;
+
+    /* Return 32-bit signed result */
+    return n;
+
+} /* end function dfp_number_to_fix32 */
+
+/*-------------------------------------------------------------------*/
+/* Convert decimal number to 32-bit unsigned binary integer          */
+/*                                                                   */
+/* This subroutine is called by the CLFDTR and CLFXTR instructions.  */
+/* It converts a decimal number structure to a 32-bit unsigned       */
+/* binary integer value.  The inexact condition will be set in       */
+/* the decimal context structure if the number is rounded to         */
+/* an integer. The invalid operation condition will be set if        */
+/* the decimal value is outside the range of a 32-bit unsigned int.  */
+/*                                                                   */
+/* Input:                                                            */
+/*      b       Pointer to decimal number structure                  */
+/*      pset    Pointer to decimal number context structure          */
+/* Output:                                                           */
+/*      The return value is the 32-bit unsigned integer result       */
+/*-------------------------------------------------------------------*/
+static U32
+dfp_number_to_u32(decNumber *b, decContext *pset)
+{
+U32             n;                      /* 32-bit unsigned result    */
+int32_t         scale;                  /* Scaling factor            */
+unsigned        i;                      /* Array subscript           */
+BYTE            packed[17];             /* 33-digit packed work area */
+decNumber       p, c;                   /* Working decimal numbers   */
+static U32      mu32 = 0xFFFFFFFFUL;    /* Max unsigned integer      */
+static char     mu32zd[]="4294967295";  /* Max unsigned zoned dec    */
+static BYTE     mu32flag = 0;           /* 1=mu32dn is initialized   */
+static decNumber mu32dn;                /* Decimal maximum unsigned  */
+decContext      setmax;                 /* Working context           */
+
+    /* Prime the decimal number structure representing the maximum
+       unsigned number representable in 32 bits. Use a 64-bit DFP
+       working context because this number is too big to be
+       represented in the 32-bit DFP format */
+    if (mu32flag == 0)
+    {
+        decContextDefault(&setmax, DEC_INIT_DECIMAL64);
+        decNumberFromString(&mu32dn, mu32zd, &setmax);
+        mu32flag = 1;
+    }
+
+    /* If operand is a NaN then set invalid operation
+       and return zero result */
+    if (decNumberIsNaN(b))
+    {
+        pset->status |= DEC_IEEE_854_Invalid_operation;
+        return (U32)0;
+    }
+
+    /* Round decimal number to integer using current rounding mode */
+    decNumberToIntegralValue(&p, b, pset);
+
+    /* If rounded value is less than zero then set invalid operation 
+       and return zero result */
+    if (decNumberIsNegative(&p))
+    {
+        pset->status |= DEC_IEEE_854_Invalid_operation;
+        return (U32)0;
+    }
+
+    /* If rounded value is greater than maximum unsigned number
+       (including where operand is positive infinity) then set
+       invalid operation and return maximum unsigned result */
+    decNumberCompare(&c, &p, &mu32dn, pset);
+    if (decNumberIsNegative(&c) == 0 && decNumberIsZero(&c) == 0)
+    {
+        pset->status |= DEC_IEEE_854_Invalid_operation;
+        return (U32)mu32;
+    }
+
+    /* Raise inexact condition if result was rounded */
+    decNumberCompare(&c, &p, b, pset);
+    if (decNumberIsZero(&c) == 0)
+    {
+        pset->status |= DEC_IEEE_854_Inexact;
+        if (decNumberIsNegative(&c) == decNumberIsNegative(b))
+            pset->status |= DEC_Rounded;
+    }
+
+    /* Convert decimal number structure to packed decimal */
+    decPackedFromNumber(packed, sizeof(packed), &scale, &p);
+
+    /* Convert packed decimal to binary value */
+    for (i = 0, n = 0; i < sizeof(packed)-1; i++)
+    {
+        n = n * 10 + ((packed[i] & 0xF0) >> 4);
+        n = n * 10 + (packed[i] & 0x0F);
+    }
+    n = n * 10 + ((packed[i] & 0xF0) >> 4);
+    while (scale++) n *= 10;
+
+    /* Return 32-bit unsigned result */
+    return n;
+
+} /* end function dfp_number_to_u32 */
+
+/*-------------------------------------------------------------------*/
+/* Convert decimal number to 64-bit unsigned binary integer          */
+/*                                                                   */
+/* This subroutine is called by the CLGDTR and CLGXTR instructions.  */
+/* It converts a decimal number structure to a 64-bit unsigned       */
+/* binary integer value.  The inexact condition will be set in       */
+/* the decimal context structure if the number is rounded to         */
+/* an integer. The invalid operation condition will be set if        */
+/* the decimal value is outside the range of a 64-bit unsigned int.  */
+/*                                                                   */
+/* Input:                                                            */
+/*      b       Pointer to decimal number structure                  */
+/*      pset    Pointer to decimal number context structure          */
+/* Output:                                                           */
+/*      The return value is the 64-bit unsigned integer result       */
+/*-------------------------------------------------------------------*/
+static U64
+dfp_number_to_u64(decNumber *b, decContext *pset)
+{
+U64             n;                      /* 64-bit unsigned result    */
+int32_t         scale;                  /* Scaling factor            */
+unsigned        i;                      /* Array subscript           */
+BYTE            packed[17];             /* 33-digit packed work area */
+decNumber       p, c;                   /* Working decimal numbers   */
+static U64      mu64 = 0xFFFFFFFFFFFFFFFFULL;    /* Max unsigned int */
+static char     mu64zd[]="18446744073709551615"; /* Max zoned dec    */
+static BYTE     mu64flag = 0;           /* 1=mu64dn is initialized   */
+static decNumber mu64dn;                /* Decimal maximum unsigned  */
+decContext      setmax;                 /* Working context           */
+
+    /* Prime the decimal number structure representing the maximum
+       unsigned number representable in 64 bits. Use a 128-bit DFP
+       working context because this number is too big to be
+       represented in the 32-bit or 64-bit DFP format */
+    if (mu64flag == 0)
+    {
+        decContextDefault(&setmax, DEC_INIT_DECIMAL128);
+        decNumberFromString(&mu64dn, mu64zd, &setmax);
+        mu64flag = 1;
+    }
+
+    /* If operand is a NaN then set invalid operation
+       and return zero result */
+    if (decNumberIsNaN(b))
+    {
+        pset->status |= DEC_IEEE_854_Invalid_operation;
+        return (U64)0;
+    }
+
+    /* Round decimal number to integer using current rounding mode */
+    decNumberToIntegralValue(&p, b, pset);
+
+    /* If rounded value is less than zero then set invalid operation 
+       and return zero result */
+    if (decNumberIsNegative(&p))
+    {
+        pset->status |= DEC_IEEE_854_Invalid_operation;
+        return (U64)0;
+    }
+
+    /* If rounded value is greater than maximum unsigned number
+       (including where operand is positive infinity) then set
+       invalid operation and return maximum unsigned result */
+    decNumberCompare(&c, &p, &mu64dn, pset);
+    if (decNumberIsNegative(&c) == 0 && decNumberIsZero(&c) == 0)
+    {
+        pset->status |= DEC_IEEE_854_Invalid_operation;
+        return (U64)mu64;
+    }
+
+    /* Raise inexact condition if result was rounded */
+    decNumberCompare(&c, &p, b, pset);
+    if (decNumberIsZero(&c) == 0)
+    {
+        pset->status |= DEC_IEEE_854_Inexact;
+        if (decNumberIsNegative(&c) == decNumberIsNegative(b))
+            pset->status |= DEC_Rounded;
+    }
+
+    /* Convert decimal number structure to packed decimal */
+    decPackedFromNumber(packed, sizeof(packed), &scale, &p);
+
+    /* Convert packed decimal to binary value */
+    for (i = 0, n = 0; i < sizeof(packed)-1; i++)
+    {
+        n = n * 10 + ((packed[i] & 0xF0) >> 4);
+        n = n * 10 + (packed[i] & 0x0F);
+    }
+    n = n * 10 + ((packed[i] & 0xF0) >> 4);
+    while (scale++) n *= 10;
+
+    /* Return 64-bit unsigned result */
+    return n;
+
+} /* end function dfp_number_to_u64 */
+
+#define _DFP_FPE_ARCH_INDEPENDENT_
+#endif /*!defined(_DFP_FPE_ARCH_INDEPENDENT_)*/
+#endif /*defined(FEATURE_FLOATING_POINT_EXTENSION_FACILITY)*/   /*810*/
+
 /*-------------------------------------------------------------------*/
 /* Set rounding mode in decimal context structure                    */
 /*                                                                   */
@@ -1503,6 +1934,146 @@ decContext      set;                    /* Working context           */
 } /* end DEF_INST(compare_exponent_dfp_long_reg) */
 
 
+#if defined(FEATURE_FLOATING_POINT_EXTENSION_FACILITY)          /*810*/
+/*-------------------------------------------------------------------*/
+/* B959 CXFTR - Convert from fixed 32 to DFP Extended Register [RRF] */
+/*-------------------------------------------------------------------*/
+DEF_INST(convert_fix32_to_dfp_ext_reg)
+{
+int             r1, r2;                 /* Values of R fields        */
+int             m3, m4;                 /* Values of M fields        */
+S32             n2;                     /* Value of R2 register      */
+decimal128      x1;                     /* Extended DFP value        */
+decNumber       d1;                     /* Working decimal number    */
+decContext      set;                    /* Working context           */
+
+    RRF_MM(inst, regs, r1, r2, m3, m4);
+    DFPINST_CHECK(regs);
+    DFPREGPAIR_CHECK(r1, regs);
+
+    /* Initialise the context for extended DFP */
+    decContextDefault(&set, DEC_INIT_DECIMAL128);
+    ARCH_DEP(dfp_rounding_mode)(&set, m3, regs);
+
+    /* Load 32-bit binary integer value from r2 register */
+    n2 = (S32)(regs->GR_L(r2));
+
+    /* Convert binary integer to extended DFP format */
+    dfp_number_from_fix32(&d1, n2, &set);
+    decimal128FromNumber(&x1, &d1, &set);
+
+    /* Load result into FP register r1 */
+    ARCH_DEP(dfp_reg_from_decimal128)(r1, &x1, regs);
+
+} /* end DEF_INST(convert_fix32_to_dfp_ext_reg) */
+
+
+/*-------------------------------------------------------------------*/
+/* B951 CDFTR - Convert from fixed 32 to DFP Long Register     [RRF] */
+/*-------------------------------------------------------------------*/
+DEF_INST(convert_fix32_to_dfp_long_reg)
+{
+int             r1, r2;                 /* Values of R fields        */
+int             m3, m4;                 /* Values of M fields        */
+S32             n2;                     /* Value of R2 register      */
+decimal64       x1;                     /* Long DFP value            */
+decNumber       d1;                     /* Working decimal number    */
+decContext      set;                    /* Working context           */
+BYTE            dxc;                    /* Data exception code       */
+
+    RRF_MM(inst, regs, r1, r2, m3, m4);
+    DFPINST_CHECK(regs);
+
+    /* Initialise the context for long DFP */
+    decContextDefault(&set, DEC_INIT_DECIMAL64);
+    ARCH_DEP(dfp_rounding_mode)(&set, m3, regs);
+
+    /* Load 32-bit binary integer value from r2 register */
+    n2 = (S32)(regs->GR_L(r2));
+
+    /* Convert binary integer to long DFP format */
+    dfp_number_from_fix32(&d1, n2, &set);
+    decimal64FromNumber(&x1, &d1, &set);
+
+    /* Check for exception condition */
+    dxc = ARCH_DEP(dfp_status_check)(&set, regs);
+
+    /* Load result into FP register r1 */
+    ARCH_DEP(dfp_reg_from_decimal64)(r1, &x1, regs);
+
+} /* end DEF_INST(convert_fix32_to_dfp_long_reg) */
+
+
+/*-------------------------------------------------------------------*/
+/* B95B CXLFTR - Convert from unsigned 32 to DFP Ext Register [RRF]  */
+/*-------------------------------------------------------------------*/
+DEF_INST(convert_u32_to_dfp_ext_reg)
+{
+int             r1, r2;                 /* Values of R fields        */
+int             m3, m4;                 /* Values of M fields        */
+U32             n2;                     /* Value of R2 register      */
+decimal128      x1;                     /* Extended DFP value        */
+decNumber       d1;                     /* Working decimal number    */
+decContext      set;                    /* Working context           */
+
+    RRF_MM(inst, regs, r1, r2, m3, m4);
+    DFPINST_CHECK(regs);
+    DFPREGPAIR_CHECK(r1, regs);
+
+    /* Initialise the context for extended DFP */
+    decContextDefault(&set, DEC_INIT_DECIMAL128);
+    ARCH_DEP(dfp_rounding_mode)(&set, m3, regs);
+
+    /* Load 32-bit unsigned value from r2 register */
+    n2 = regs->GR_L(r2);
+
+    /* Convert unsigned binary integer to extended DFP format */
+    dfp_number_from_u32(&d1, n2, &set);
+    decimal128FromNumber(&x1, &d1, &set);
+
+    /* Load result into FP register r1 */
+    ARCH_DEP(dfp_reg_from_decimal128)(r1, &x1, regs);
+
+} /* end DEF_INST(convert_u32_to_dfp_ext_reg) */
+
+
+/*-------------------------------------------------------------------*/
+/* B953 CDLFTR - Convert from unsigned 32 to DFP Long Register [RRF] */
+/*-------------------------------------------------------------------*/
+DEF_INST(convert_u32_to_dfp_long_reg)
+{
+int             r1, r2;                 /* Values of R fields        */
+int             m3, m4;                 /* Values of M fields        */
+U32             n2;                     /* Value of R2 register      */
+decimal64       x1;                     /* Long DFP value            */
+decNumber       d1;                     /* Working decimal number    */
+decContext      set;                    /* Working context           */
+BYTE            dxc;                    /* Data exception code       */
+
+    RRF_MM(inst, regs, r1, r2, m3, m4);
+    DFPINST_CHECK(regs);
+
+    /* Initialise the context for long DFP */
+    decContextDefault(&set, DEC_INIT_DECIMAL64);
+    ARCH_DEP(dfp_rounding_mode)(&set, m3, regs);
+
+    /* Load 32-bit unsigned value from r2 register */
+    n2 = regs->GR_L(r2);
+
+    /* Convert unsigned binary integer to long DFP format */
+    dfp_number_from_u32(&d1, n2, &set);
+    decimal64FromNumber(&x1, &d1, &set);
+
+    /* Check for exception condition */
+    dxc = ARCH_DEP(dfp_status_check)(&set, regs);
+
+    /* Load result into FP register r1 */
+    ARCH_DEP(dfp_reg_from_decimal64)(r1, &x1, regs);
+
+} /* end DEF_INST(convert_u32_to_dfp_long_reg) */
+#endif /*defined(FEATURE_FLOATING_POINT_EXTENSION_FACILITY)*/   /*810*/
+
+
 /*-------------------------------------------------------------------*/
 /* B3F9 CXGTR - Convert from fixed 64 to DFP Extended Register [RRE] */
 /*-------------------------------------------------------------------*/
@@ -1575,6 +2146,77 @@ BYTE            dxc;                    /* Data exception code       */
     }
 
 } /* end DEF_INST(convert_fix64_to_dfp_long_reg) */
+
+
+#if defined(FEATURE_FLOATING_POINT_EXTENSION_FACILITY)          /*810*/
+/*-------------------------------------------------------------------*/
+/* B95A CXLGTR - Convert from unsigned 64 to DFP Ext Register [RRF]  */
+/*-------------------------------------------------------------------*/
+DEF_INST(convert_u64_to_dfp_ext_reg)
+{
+int             r1, r2;                 /* Values of R fields        */
+int             m3, m4;                 /* Values of M fields        */
+U64             n2;                     /* Value of R2 register      */
+decimal128      x1;                     /* Extended DFP value        */
+decNumber       d1;                     /* Working decimal number    */
+decContext      set;                    /* Working context           */
+
+    RRF_MM(inst, regs, r1, r2, m3, m4);
+    DFPINST_CHECK(regs);
+    DFPREGPAIR_CHECK(r1, regs);
+
+    /* Initialise the context for extended DFP */
+    decContextDefault(&set, DEC_INIT_DECIMAL128);
+    ARCH_DEP(dfp_rounding_mode)(&set, m3, regs);
+
+    /* Load 64-bit unsigned value from r2 register */
+    n2 = regs->GR_G(r2);
+
+    /* Convert unsigned binary integer to extended DFP format */
+    dfp_number_from_u64(&d1, n2, &set);
+    decimal128FromNumber(&x1, &d1, &set);
+
+    /* Load result into FP register r1 */
+    ARCH_DEP(dfp_reg_from_decimal128)(r1, &x1, regs);
+
+} /* end DEF_INST(convert_u64_to_dfp_ext_reg) */
+
+
+/*-------------------------------------------------------------------*/
+/* B952 CDLGTR - Convert from unsigned 64 to DFP Long Register [RRF] */
+/*-------------------------------------------------------------------*/
+DEF_INST(convert_u64_to_dfp_long_reg)
+{
+int             r1, r2;                 /* Values of R fields        */
+int             m3, m4;                 /* Values of M fields        */
+U64             n2;                     /* Value of R2 register      */
+decimal64       x1;                     /* Long DFP value            */
+decNumber       d1;                     /* Working decimal number    */
+decContext      set;                    /* Working context           */
+BYTE            dxc;                    /* Data exception code       */
+
+    RRF_MM(inst, regs, r1, r2, m3, m4);
+    DFPINST_CHECK(regs);
+
+    /* Initialise the context for long DFP */
+    decContextDefault(&set, DEC_INIT_DECIMAL64);
+    ARCH_DEP(dfp_rounding_mode)(&set, m3, regs);
+
+    /* Load 64-bit unsigned value from r2 register */
+    n2 = regs->GR_G(r2);
+
+    /* Convert unsigned binary integer to long DFP format */
+    dfp_number_from_u64(&d1, n2, &set);
+    decimal64FromNumber(&x1, &d1, &set);
+
+    /* Check for exception condition */
+    dxc = ARCH_DEP(dfp_status_check)(&set, regs);
+
+    /* Load result into FP register r1 */
+    ARCH_DEP(dfp_reg_from_decimal64)(r1, &x1, regs);
+
+} /* end DEF_INST(convert_u64_to_dfp_long_reg) */
+#endif /*defined(FEATURE_FLOATING_POINT_EXTENSION_FACILITY)*/   /*810*/
 
 
 /*-------------------------------------------------------------------*/
@@ -1757,6 +2399,202 @@ int32_t         scale = 0;              /* Scaling factor            */
 } /* end DEF_INST(convert_ubcd64_to_dfp_long_reg) */
 
 
+#if defined(FEATURE_FLOATING_POINT_EXTENSION_FACILITY)          /*810*/
+/*-------------------------------------------------------------------*/
+/* B949 CFXTR - Convert from DFP Extended Register to fixed 32 [RRF] */
+/*-------------------------------------------------------------------*/
+DEF_INST(convert_dfp_ext_to_fix32_reg)
+{
+int             r1, r2;                 /* Values of R fields        */
+int             m3, m4;                 /* Values of M fields        */
+S32             n1;                     /* Result value              */
+decimal128      x2;                     /* Extended DFP value        */
+decNumber       d2;                     /* Working decimal number    */
+decContext      set;                    /* Working context           */
+BYTE            dxc;                    /* Data exception code       */
+
+    RRF_MM(inst, regs, r1, r2, m3, m4);
+    DFPINST_CHECK(regs);
+    DFPREGPAIR_CHECK(r2, regs);
+
+    /* Initialise the context for extended DFP */
+    decContextDefault(&set, DEC_INIT_DECIMAL128);
+    ARCH_DEP(dfp_rounding_mode)(&set, m3, regs);
+
+    /* Load extended DFP value from FP register r2 */
+    ARCH_DEP(dfp_reg_to_decimal128)(r2, &x2, regs);
+    decimal128ToNumber(&x2, &d2);
+
+    /* Convert decimal number to 32-bit binary integer */
+    n1 = dfp_number_to_fix32(&d2, &set);
+
+    /* Check for exception condition */
+    dxc = ARCH_DEP(dfp_status_check)(&set, regs);
+
+    /* Load result into general register r1 */
+    regs->GR_L(r1) = n1;
+
+    /* Set condition code */
+    regs->psw.cc = (set.status & DEC_IEEE_854_Invalid_operation) ? 3 :
+                   decNumberIsZero(&d2) ? 0 :
+                   decNumberIsNegative(&d2) ? 1 : 2;
+
+    /* Raise data exception if error occurred */
+    if (dxc != 0)
+    {
+        regs->dxc = dxc;
+        ARCH_DEP(program_interrupt) (regs, PGM_DATA_EXCEPTION);
+    }
+
+} /* end DEF_INST(convert_dfp_ext_to_fix32_reg) */
+
+
+/*-------------------------------------------------------------------*/
+/* B941 CFDTR - Convert from DFP Long Register to fixed 32     [RRF] */
+/*-------------------------------------------------------------------*/
+DEF_INST(convert_dfp_long_to_fix32_reg)
+{
+int             r1, r2;                 /* Values of R fields        */
+int             m3, m4;                 /* Values of M fields        */
+S32             n1;                     /* Result value              */
+decimal64       x2;                     /* Long DFP value            */
+decNumber       d2;                     /* Working decimal number    */
+decContext      set;                    /* Working context           */
+BYTE            dxc;                    /* Data exception code       */
+
+    RRF_MM(inst, regs, r1, r2, m3, m4);
+    DFPINST_CHECK(regs);
+
+    /* Initialise the context for long DFP */
+    decContextDefault(&set, DEC_INIT_DECIMAL64);
+    ARCH_DEP(dfp_rounding_mode)(&set, m3, regs);
+
+    /* Load long DFP value from FP register r2 */
+    ARCH_DEP(dfp_reg_to_decimal64)(r2, &x2, regs);
+    decimal64ToNumber(&x2, &d2);
+
+    /* Convert decimal number to 32-bit binary integer */
+    n1 = dfp_number_to_fix32(&d2, &set);
+
+    /* Check for exception condition */
+    dxc = ARCH_DEP(dfp_status_check)(&set, regs);
+
+    /* Load result into general register r1 */
+    regs->GR_L(r1) = n1;
+
+    /* Set condition code */
+    regs->psw.cc = (set.status & DEC_IEEE_854_Invalid_operation) ? 3 :
+                   decNumberIsZero(&d2) ? 0 :
+                   decNumberIsNegative(&d2) ? 1 : 2;
+
+    /* Raise data exception if error occurred */
+    if (dxc != 0)
+    {
+        regs->dxc = dxc;
+        ARCH_DEP(program_interrupt) (regs, PGM_DATA_EXCEPTION);
+    }
+
+} /* end DEF_INST(convert_dfp_long_to_fix32_reg) */
+
+ 
+/*-------------------------------------------------------------------*/
+/* B94B CLFXTR - Convert from DFP Ext Register to unsigned 32 [RRF]  */
+/*-------------------------------------------------------------------*/
+DEF_INST(convert_dfp_ext_to_u32_reg)
+{
+int             r1, r2;                 /* Values of R fields        */
+int             m3, m4;                 /* Values of M fields        */
+U32             n1;                     /* Result value              */
+decimal128      x2;                     /* Extended DFP value        */
+decNumber       d2;                     /* Working decimal number    */
+decContext      set;                    /* Working context           */
+BYTE            dxc;                    /* Data exception code       */
+
+    RRF_MM(inst, regs, r1, r2, m3, m4);
+    DFPINST_CHECK(regs);
+    DFPREGPAIR_CHECK(r2, regs);
+
+    /* Initialise the context for extended DFP */
+    decContextDefault(&set, DEC_INIT_DECIMAL128);
+    ARCH_DEP(dfp_rounding_mode)(&set, m3, regs);
+
+    /* Load extended DFP value from FP register r2 */
+    ARCH_DEP(dfp_reg_to_decimal128)(r2, &x2, regs);
+    decimal128ToNumber(&x2, &d2);
+
+    /* Convert decimal number to 32-bit unsigned integer */
+    n1 = dfp_number_to_u32(&d2, &set);
+
+    /* Check for exception condition */
+    dxc = ARCH_DEP(dfp_status_check)(&set, regs);
+
+    /* Load result into general register r1 */
+    regs->GR_L(r1) = n1;
+
+    /* Set condition code */
+    regs->psw.cc = (set.status & DEC_IEEE_854_Invalid_operation) ? 3 :
+                   decNumberIsZero(&d2) ? 0 :
+                   decNumberIsNegative(&d2) ? 1 : 2;
+
+    /* Raise data exception if error occurred */
+    if (dxc != 0)
+    {
+        regs->dxc = dxc;
+        ARCH_DEP(program_interrupt) (regs, PGM_DATA_EXCEPTION);
+    }
+
+} /* end DEF_INST(convert_dfp_ext_to_u32_reg) */
+
+
+/*-------------------------------------------------------------------*/
+/* B943 CLFDTR - Convert from DFP Long Register to unsigned 32 [RRF] */
+/*-------------------------------------------------------------------*/
+DEF_INST(convert_dfp_long_to_u32_reg)
+{
+int             r1, r2;                 /* Values of R fields        */
+int             m3, m4;                 /* Values of M fields        */
+U32             n1;                     /* Result value              */
+decimal64       x2;                     /* Long DFP value            */
+decNumber       d2;                     /* Working decimal number    */
+decContext      set;                    /* Working context           */
+BYTE            dxc;                    /* Data exception code       */
+
+    RRF_MM(inst, regs, r1, r2, m3, m4);
+    DFPINST_CHECK(regs);
+
+    /* Initialise the context for long DFP */
+    decContextDefault(&set, DEC_INIT_DECIMAL64);
+    ARCH_DEP(dfp_rounding_mode)(&set, m3, regs);
+
+    /* Load long DFP value from FP register r2 */
+    ARCH_DEP(dfp_reg_to_decimal64)(r2, &x2, regs);
+    decimal64ToNumber(&x2, &d2);
+
+    /* Convert decimal number to 32-bit unsigned integer */
+    n1 = dfp_number_to_u32(&d2, &set);
+
+    /* Check for exception condition */
+    dxc = ARCH_DEP(dfp_status_check)(&set, regs);
+
+    /* Load result into general register r1 */
+    regs->GR_L(r1) = n1;
+
+    /* Set condition code */
+    regs->psw.cc = (set.status & DEC_IEEE_854_Invalid_operation) ? 3 :
+                   decNumberIsZero(&d2) ? 0 :
+                   decNumberIsNegative(&d2) ? 1 : 2;
+
+    /* Raise data exception if error occurred */
+    if (dxc != 0)
+    {
+        regs->dxc = dxc;
+        ARCH_DEP(program_interrupt) (regs, PGM_DATA_EXCEPTION);
+    }
+
+} /* end DEF_INST(convert_dfp_long_to_u32_reg) */
+#endif /*defined(FEATURE_FLOATING_POINT_EXTENSION_FACILITY)*/   /*810*/
+
+
 /*-------------------------------------------------------------------*/
 /* B3E9 CGXTR - Convert from DFP Extended Register to fixed 64 [RRF] */
 /*-------------------------------------------------------------------*/
@@ -1852,6 +2690,105 @@ BYTE            dxc;                    /* Data exception code       */
     }
 
 } /* end DEF_INST(convert_dfp_long_to_fix64_reg) */
+
+
+#if defined(FEATURE_FLOATING_POINT_EXTENSION_FACILITY)          /*810*/
+/*-------------------------------------------------------------------*/
+/* B94A CLGXTR - Convert from DFP Ext Register to unsigned 64 [RRF]  */
+/*-------------------------------------------------------------------*/
+DEF_INST(convert_dfp_ext_to_u64_reg)
+{
+int             r1, r2;                 /* Values of R fields        */
+int             m3, m4;                 /* Values of M fields        */
+U64             n1;                     /* Result value              */
+decimal128      x2;                     /* Extended DFP value        */
+decNumber       d2;                     /* Working decimal number    */
+decContext      set;                    /* Working context           */
+BYTE            dxc;                    /* Data exception code       */
+
+    RRF_MM(inst, regs, r1, r2, m3, m4);
+    DFPINST_CHECK(regs);
+    DFPREGPAIR_CHECK(r2, regs);
+
+    /* Initialise the context for extended DFP */
+    decContextDefault(&set, DEC_INIT_DECIMAL128);
+    ARCH_DEP(dfp_rounding_mode)(&set, m3, regs);
+
+    /* Load extended DFP value from FP register r2 */
+    ARCH_DEP(dfp_reg_to_decimal128)(r2, &x2, regs);
+    decimal128ToNumber(&x2, &d2);
+
+    /* Convert decimal number to 64-bit unsigned integer */
+    n1 = dfp_number_to_u64(&d2, &set);
+
+    /* Check for exception condition */
+    dxc = ARCH_DEP(dfp_status_check)(&set, regs);
+
+    /* Load result into general register r1 */
+    regs->GR_G(r1) = n1;
+
+    /* Set condition code */
+    regs->psw.cc = (set.status & DEC_IEEE_854_Invalid_operation) ? 3 :
+                   decNumberIsZero(&d2) ? 0 :
+                   decNumberIsNegative(&d2) ? 1 : 2;
+
+    /* Raise data exception if error occurred */
+    if (dxc != 0)
+    {
+        regs->dxc = dxc;
+        ARCH_DEP(program_interrupt) (regs, PGM_DATA_EXCEPTION);
+    }
+
+} /* end DEF_INST(convert_dfp_ext_to_u64_reg) */
+
+
+/*-------------------------------------------------------------------*/
+/* B942 CLGDTR - Convert from DFP Long Register to unsigned 64 [RRF] */
+/*-------------------------------------------------------------------*/
+DEF_INST(convert_dfp_long_to_u64_reg)
+{
+int             r1, r2;                 /* Values of R fields        */
+int             m3, m4;                 /* Values of M fields        */
+U64             n1;                     /* Result value              */
+decimal64       x2;                     /* Long DFP value            */
+decNumber       d2;                     /* Working decimal number    */
+decContext      set;                    /* Working context           */
+BYTE            dxc;                    /* Data exception code       */
+
+    RRF_MM(inst, regs, r1, r2, m3, m4);
+    DFPINST_CHECK(regs);
+
+    /* Initialise the context for long DFP */
+    decContextDefault(&set, DEC_INIT_DECIMAL64);
+    ARCH_DEP(dfp_rounding_mode)(&set, m3, regs);
+
+    /* Load long DFP value from FP register r2 */
+    ARCH_DEP(dfp_reg_to_decimal64)(r2, &x2, regs);
+    decimal64ToNumber(&x2, &d2);
+
+    /* Convert decimal number to 64-bit unsigned integer */
+    n1 = dfp_number_to_u64(&d2, &set);
+
+    /* Check for exception condition */
+    dxc = ARCH_DEP(dfp_status_check)(&set, regs);
+
+    /* Load result into general register r1 */
+    regs->GR_G(r1) = n1;
+
+    /* Set condition code */
+    regs->psw.cc = (set.status & DEC_IEEE_854_Invalid_operation) ? 3 :
+                   decNumberIsZero(&d2) ? 0 :
+                   decNumberIsNegative(&d2) ? 1 : 2;
+
+    /* Raise data exception if error occurred */
+    if (dxc != 0)
+    {
+        regs->dxc = dxc;
+        ARCH_DEP(program_interrupt) (regs, PGM_DATA_EXCEPTION);
+    }
+
+} /* end DEF_INST(convert_dfp_long_to_u64_reg) */
+#endif /*defined(FEATURE_FLOATING_POINT_EXTENSION_FACILITY)*/   /*810*/
 
 
 /*-------------------------------------------------------------------*/
