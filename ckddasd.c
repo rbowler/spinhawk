@@ -1718,7 +1718,10 @@ char           *orient[] = {"none", "index", "count", "key", "data", "eot"};
         dev->ckdorient = CKDORIENT_COUNT;
         dev->ckdcurkl = rechdr->klen;
         dev->ckdcurdl = (rechdr->dlen[0] << 8) + rechdr->dlen[1];
-        dev->ckdtrkof = (rechdr->cyl[0] == 0xFF) ? 0 : rechdr->cyl[0] >> 7;
+        if(dev->ckdcyls < 32768)
+            dev->ckdtrkof = (rechdr->cyl[0] == 0xFF) ? 0 : rechdr->cyl[0] >> 7;
+        else
+            dev->ckdtrkof = 0;
 
         logdevtr (dev, _("HHCDA043I cyl %d head %d record %d kl %d dl %d of %d\n"),
                 dev->ckdcurcyl, dev->ckdcurhead, dev->ckdcurrec,
@@ -2017,7 +2020,7 @@ int             ckdlen;                 /* Count+key+data length     */
     dev->ckdcurdl = datalen;
     dev->ckdrem = 0;
     dev->ckdorient = CKDORIENT_DATA;
-    dev->ckdtrkof = trk_ovfl & 1;
+    dev->ckdtrkof = dev->ckdcyls < 32768 ? trk_ovfl & 1 : 0;
 
     return 0;
 } /* end function ckd_write_ckd */
@@ -2586,7 +2589,8 @@ BYTE            trk_ovfl;               /* == 1 if track ovfl write  */
         memcpy (iobuf, &rechdr, CKDDASD_RECHDR_SIZE);
 
         /* Turn off track overflow flag in read record header */
-        *iobuf &= 0x7F;
+        if(dev->ckdcyls < 32768)
+            *iobuf &= 0x7F;
 
         /* Save size and offset of data not used by this CCW */
         dev->ckdrem = size - num;
@@ -2658,7 +2662,8 @@ BYTE            trk_ovfl;               /* == 1 if track ovfl write  */
         memcpy (iobuf, &rechdr, CKDDASD_RECHDR_SIZE);
 
         /* Turn off track overflow flag in read record header */
-        *iobuf &= 0x7F;
+        if(dev->ckdcyls < 32768)
+            *iobuf &= 0x7F;
 
         /* Read key field */
         rc = ckd_read_key (dev, code,
@@ -2853,7 +2858,8 @@ BYTE            trk_ovfl;               /* == 1 if track ovfl write  */
         memcpy (iobuf, &rechdr, CKDDASD_RECHDR_SIZE);
 
         /* Turn off track overflow flag in read record header */
-        *iobuf &= 0x7F;
+        if(dev->ckdcyls < 32768)
+            *iobuf &= 0x7F;
 
         /* Read key field */
         rc = ckd_read_key (dev, code,
@@ -2953,7 +2959,8 @@ BYTE            trk_ovfl;               /* == 1 if track ovfl write  */
             size += CKDDASD_RECHDR_SIZE;
 
             /* Turn off track overflow flag */
-            *(iobuf + size) &= 0x7F;
+            if(dev->ckdcyls < 32768)
+                *(iobuf + size) &= 0x7F;
 
             /* Read key field */
             rc = ckd_read_key (dev, code, iobuf + size, unitstat);
@@ -3040,7 +3047,8 @@ BYTE            trk_ovfl;               /* == 1 if track ovfl write  */
             size += CKDDASD_RECHDR_SIZE;
 
             /* Turn off track overflow flag */
-            *(iobuf+size) &= 0x7F;
+            if(dev->ckdcyls < 32768)
+                *(iobuf+size) &= 0x7F;
 
             /* Exit if end of track marker was read */
             if (memcmp (&rechdr, eighthexFF, 8) == 0)
@@ -3698,7 +3706,8 @@ BYTE            trk_ovfl;               /* == 1 if track ovfl write  */
         *residual = count - num;
 
         /* Turn off track overflow flag in record header if present */
-        rechdr.cyl[0] &= 0x7F;
+        if(dev->ckdcyls < 32768)
+            rechdr.cyl[0] &= 0x7F;
 
         /* Compare count with search argument */
         rc = memcmp(&rechdr, iobuf, num);
@@ -4388,7 +4397,7 @@ BYTE            trk_ovfl;               /* == 1 if track ovfl write  */
         }
 
         /* Set track overflow flag if WRITE SPECIAL CKD */
-        trk_ovfl = (code==0x01) ? 1 : 0;
+        trk_ovfl = (dev->ckdcyls < 32768 && code==0x01) ? 1 : 0;
 
         /* Write count key and data */
         rc = ckd_write_ckd (dev, iobuf, count, unitstat, trk_ovfl);
@@ -4681,7 +4690,8 @@ BYTE            trk_ovfl;               /* == 1 if track ovfl write  */
                 if (rc < 0) break;
 
                 /* Turn off track overflow flag */
-                rechdr.cyl[0] &= 0x7F;
+                if(dev->ckdcyls < 32768)
+                    rechdr.cyl[0] &= 0x7F;
 
                 /* Compare the count field with the search CCHHR */
                 if (memcmp (&rechdr, cchhr, 5) == 0)
@@ -5223,7 +5233,8 @@ BYTE            trk_ovfl;               /* == 1 if track ovfl write  */
             if (rc < 0) break;
 
             /* Turn off track overflow flag */
-            rechdr.cyl[0] &= 0x7F;
+            if(dev->ckdcyls < 32768)
+                rechdr.cyl[0] &= 0x7F;
 
             /* For extended op code skip r0 */
             if ((iobuf[0] & CKDOPER_CODE) == CKDOPER_EXTOP)
