@@ -1232,6 +1232,12 @@ U16     sx, px;                         /* Segment and page index,
                 if ((rte & REGTAB_TT) != TT_R1TABL)
                     goto tran_spec_excp;
 
+#if defined(FEATURE_ENHANCED_DAT_FACILITY)
+                if ((regs->CR_L(0) & CR0_ED)
+                 && (rte & REGTAB_P))
+                    regs->dat.protect |= 1;
+#endif /*defined(FEATURE_ENHANCED_DAT_FACILITY)*/
+
                 /* Extract the region-second table origin, offset, and
                    length from the region-first table entry */
                 rto = rte & REGTAB_TO;
@@ -1279,6 +1285,12 @@ U16     sx, px;                         /* Segment and page index,
                 if ((rte & REGTAB_TT) != TT_R2TABL)
                     goto tran_spec_excp;
 
+#if defined(FEATURE_ENHANCED_DAT_FACILITY)
+                if ((regs->CR_L(0) & CR0_ED)
+                 && (rte & REGTAB_P))
+                    regs->dat.protect |= 1;
+#endif /*defined(FEATURE_ENHANCED_DAT_FACILITY)*/
+
                 /* Extract the region-third table origin, offset, and
                    length from the region-second table entry */
                 rto = rte & REGTAB_TO;
@@ -1325,6 +1337,12 @@ U16     sx, px;                         /* Segment and page index,
                    correct type of region table */
                 if ((rte & REGTAB_TT) != TT_R3TABL)
                     goto tran_spec_excp;
+
+#if defined(FEATURE_ENHANCED_DAT_FACILITY)
+                if ((regs->CR_L(0) & CR0_ED)
+                 && (rte & REGTAB_P))
+                    regs->dat.protect |= 1;
+#endif /*defined(FEATURE_ENHANCED_DAT_FACILITY)*/
 
                 /* Extract the segment table origin, offset, and
                    length from the region-third table entry */
@@ -1376,6 +1394,53 @@ U16     sx, px;                         /* Segment and page index,
             if (regs->dat.private && (ste & ZSEGTAB_C))
                 goto tran_spec_excp;
 
+#if defined(FEATURE_ENHANCED_DAT_FACILITY)
+            if ((regs->CR_L(0) & CR0_ED)
+              && (ste & ZSEGTAB_FC))
+            {
+            
+                /* Set protection indicator if page protection is indicated */
+                if (ste & ZSEGTAB_P)
+                    regs->dat.protect |= 1;
+
+                /* For LPTEA instruction, return the address of the STE */
+                if (unlikely(acctype & ACC_LPTEA))
+                {
+                    regs->dat.raddr = sto | (regs->dat.protect ? 0x04 : 0);
+//                  logmsg("raddr:%16.16" I64_FMT "X cc=2\n",regs->dat.raddr);
+                    regs->dat.xcode = 0;
+                    cc = 2;
+                    return cc;
+                } /* end if(ACCTYPE_LPTEA) */
+
+                /* Combine the page frame real address with the byte index
+                   of the virtual address to form the real address */
+                regs->dat.raddr = (ste & ZSEGTAB_SFAA) | (vaddr & ~ZSEGTAB_SFAA);
+                /* Fake 4K PFRA for TLB purposes */
+                regs->dat.rpfra = ((ste & ZSEGTAB_SFAA) | (vaddr & ~ZSEGTAB_SFAA)) & PAGEFRAME_PAGEMASK;
+
+//              logmsg("raddr:%16.16" I64_FMT "X cc=0\n",regs->dat.raddr);
+
+                /* [3.11.4.2] Place the translated address in the TLB */
+                if (!(acctype & ACC_NOTLB))
+                {
+                    regs->tlb.TLB_ASD(tlbix)   = regs->dat.asd;
+                    regs->tlb.TLB_VADDR(tlbix) = (vaddr & TLBID_PAGEMASK) | regs->tlbID;
+                    /* Fake 4K PTE for TLB purposes */
+                    regs->tlb.TLB_PTE(tlbix)   = ((ste & ZSEGTAB_SFAA) | (vaddr & ~ZSEGTAB_SFAA)) & PAGEFRAME_PAGEMASK;
+                    regs->tlb.common[tlbix]    = (ste & SEGTAB_COMMON) ? 1 : 0;
+                    regs->tlb.protect[tlbix]   = regs->dat.protect;
+                    regs->tlb.acc[tlbix]       = 0;
+                    regs->tlb.main[tlbix]      = NULL;
+                }
+
+                /* Clear exception code and return with zero return code */
+                regs->dat.xcode = 0;
+                return 0;
+
+            }
+#endif /*defined(FEATURE_ENHANCED_DAT_FACILITY)*/
+
             /* Extract the page table origin from segment table entry */
             pto = ste & ZSEGTAB_PTO;
 
@@ -1391,6 +1456,11 @@ U16     sx, px;                         /* Segment and page index,
                 regs->dat.raddr = pto;
                 regs->dat.xcode = 0;
                 cc = (ste & ZSEGTAB_P) ? 1 : 0;
+#if defined(FEATURE_ENHANCED_DAT_FACILITY)
+                if ((regs->CR_L(0) & CR0_ED)
+                  && regs->dat.protect)
+                    cc = 1;
+#endif /*defined(FEATURE_ENHANCED_DAT_FACILITY)*/
                 return cc;
             } /* end if(ACCTYPE_LPTEA) */
 
