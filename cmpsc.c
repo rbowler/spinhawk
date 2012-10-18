@@ -1,4 +1,4 @@
-/* CMPSC.C      (c) Bernard van der Helm, 2000-2011                  */
+/* CMPSC.C      (c) Bernard van der Helm, 2000-2012                  */
 /*              S/390 compression call instruction                   */
 
 /*----------------------------------------------------------------------------*/
@@ -466,7 +466,7 @@ static void ARCH_DEP(cmpsc_compress)(int r1, int r2, REGS *regs, REGS *iregs)
       return;
 
 #ifdef OPTION_CMPSC_DEBUG
-    WRMSG(HHC90318, "D", *cc.src, GR_A(cc.r2, cc.iregs));
+    logmsg("fetch_ch : %02X at " F_VADR "\n", *cc.src, GR_A(cc.r2, cc.iregs));
 #endif /* #ifdef OPTION_CMPSC_DEBUG */
 
     /* Set the alphabet entry and adjust registers */
@@ -482,7 +482,7 @@ static void ARCH_DEP(cmpsc_compress)(int r1, int r2, REGS *regs, REGS *iregs)
     {
 
 #ifdef OPTION_CMPSC_DEBUG
-      WRMSG(HHC90365, "D", is, *cc.src, "discovered");
+      logmsg("dead end : %04X %02X discovered\n", is, *cc.src);
 #endif /* #ifdef OPTION_CMPSC_DEBUG */
 
       /* Registrate all discovered dead ends */
@@ -519,7 +519,7 @@ static void ARCH_DEP(cmpsc_compress)(int r1, int r2, REGS *regs, REGS *iregs)
       }
 
 #ifdef OPTION_CMPSC_DEBUG
-      WRMSG(HHC90318, "D", *cc.src, GR_A(cc.r2, cc.iregs));
+      logmsg("fetch_ch : %02X at " F_VADR "\n", *cc.src, GR_A(cc.r2, cc.iregs));
 #endif /* #ifdef OPTION_CMPSC_DEBUG */
 
       /* Set the alphabet entry and adjust registers */
@@ -538,7 +538,7 @@ static void ARCH_DEP(cmpsc_compress)(int r1, int r2, REGS *regs, REGS *iregs)
           {
 
 #ifdef OPTION_CMPSC_DEBUG
-            WRMSG(HHC90365, "D", is, *cc.src, "encountered");
+            logmsg("dead end : %04X %02X encountered\n", is, *cc.src);
 #endif /* #ifdef OPTION_CMPSC_DEBUG */
 
             break;
@@ -550,7 +550,7 @@ static void ARCH_DEP(cmpsc_compress)(int r1, int r2, REGS *regs, REGS *iregs)
         {
 
 #ifdef OPTION_CMPSC_DEBUG
-          WRMSG(HHC90365, "D", is, *cc.src, "discovered");
+          logmsg("dead end : %04X %02X discovered\n", is, *cc.src);
 #endif /* #ifdef OPTION_CMPSC_DEBUG */
 
           /* Registrate all discovered dead ends */ 
@@ -564,7 +564,7 @@ static void ARCH_DEP(cmpsc_compress)(int r1, int r2, REGS *regs, REGS *iregs)
 
 #ifdef OPTION_CMPSC_DEBUG
       else
-        WRMSG(HHC90365, "D", is, *cc.src, "encountered");
+        logmsg("dead end : %04X %02X encountered\n", is, *cc.src);
 #endif /* #ifdef OPTION_CMPSC_DEBUG */
 
       /* Write the last match */
@@ -585,7 +585,7 @@ static void ARCH_DEP(cmpsc_compress)(int r1, int r2, REGS *regs, REGS *iregs)
     {
 
 #ifdef OPTION_CMPSC_DEBUG
-      WRMSG(HHC90315, "D");
+      logmsg("Interrupt pending, commit and return with cc3\n");
 #endif /* #ifdef OPTION_CMPSC_DEBUG */
 
       regs->psw.cc = 3;
@@ -603,7 +603,7 @@ static void ARCH_DEP(cmpsc_compress)(int r1, int r2, REGS *regs, REGS *iregs)
       return;
 
 #ifdef OPTION_CMPSC_DEBUG
-    WRMSG(HHC90318, "D", *cc.src, GR_A(cc.r2, cc.iregs));
+    logmsg("fetch_ch : %02X at " F_VADR "\n", *cc.src, GR_A(cc.r2, cc.iregs));
 #endif /* #ifdef OPTION_CMPSC_DEBUG */
 
     /* Set the alphabet entry and adjust registers */
@@ -622,7 +622,7 @@ static void ARCH_DEP(cmpsc_compress)(int r1, int r2, REGS *regs, REGS *iregs)
         {
 
 #ifdef OPTION_CMPSC_DEBUG
-          WRMSG(HHC90365, "D", is, *cc.src, "encountered");
+          logmsg("dead end : %04X %02X encountered\n", is, *cc.src);
 #endif /* #ifdef OPTION_CMPSC_DEBUG */
 
           break;
@@ -632,7 +632,7 @@ static void ARCH_DEP(cmpsc_compress)(int r1, int r2, REGS *regs, REGS *iregs)
 
 #ifdef OPTION_CMPSC_DEBUG
     else
-      WRMSG(HHC90365, "D", is, *cc.src, "encountered");
+      logmsg("dead end : %04X %02X encountered\n", is, *cc.src);
 #endif /* #ifdef OPTION_CMPSC_DEBUG */
 
     /* Write the last match, return on end of destination */
@@ -872,7 +872,7 @@ static int ARCH_DEP(cmpsc_search_cce)(struct cc *cc, U16 *is)
       return(0);
 
 #ifdef OPTION_CMPSC_DEBUG
-    WRMSG(HHC90318, "D", *cc->src, GR_A(cc->r2, cc->iregs));
+    logmsg("fetch_ch : %02X at " F_VADR "\n", *cc->src, GR_A(cc->r2, cc->iregs));
 #endif /* #ifdef OPTION_CMPSC_DEBUG */
 
     memset(cc->searchadm, 0, sizeof(cc->searchadm));
@@ -1456,7 +1456,7 @@ static void ARCH_DEP(cmpsc_expand)(int r1, int r2, REGS *regs, REGS *iregs)
     {
 
 #ifdef OPTION_CMPSC_DEBUG
-      WRMSG(HHC90315, "D");
+      logmsg("Interrupt pending, commit and return with cc3\n");
 #endif /* #ifdef OPTION_CMPSC_DEBUG */
 
       regs->psw.cc = 3;
@@ -1806,7 +1806,6 @@ static int ARCH_DEP(cmpsc_vstore)(struct ec *ec, BYTE *buf, unsigned len)
   BYTE *sk;                            /* Storage key                         */
 
 #ifdef OPTION_CMPSC_DEBUG
-  char buf2[256];                      /* Buffer                              */
   unsigned i;                          /* Index                               */
   unsigned j;                          /* Index                               */
   static BYTE pbuf[2060];              /* Print buffer                        */
@@ -1827,11 +1826,6 @@ static int ARCH_DEP(cmpsc_vstore)(struct ec *ec, BYTE *buf, unsigned len)
   }
 
 #ifdef OPTION_CMPSC_DEBUG
-  unsigned i;
-  unsigned j;
-  static BYTE pbuf[2060];
-  static unsigned plen = 2061;         /* Impossible value                    */
-
   if(plen == len && !memcmp(pbuf, buf, plen))
     logmsg(F_GREG " - " F_GREG " Same buffer as previously shown\n",
           ec->iregs->GR(ec->r1), ec->iregs->GR(ec->r1) + len - 1);
