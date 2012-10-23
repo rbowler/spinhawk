@@ -213,7 +213,7 @@ BYTE    c;                              /* Print character           */
         /* Perform end of record processing if not data-chaining,
            and append carriage return and newline if required */
         if ((flags & CCW_FLAGS_CD) == 0
-//        && code == 0x09
+          && code == 0x09
           && len < BUFLEN_1052)
             iobuf[len++] = '\n';
 
