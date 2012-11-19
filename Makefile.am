@@ -639,17 +639,14 @@ EXTRA_DIST = autoconf/config.rpath \
              README.ECPSVM         \
              README.HAO            \
              README.HDL            \
-             README.ISSUES         \
-             README.MINGW          \
              README.NETWORKING     \
              README.OSX            \
              README.TAPE           \
              README.HERCLOGO       \
-             CHANGES               \
              RELEASE.NOTES         \
-             README.MSVC           \
+             README.WIN32          \
+             README.WIN64          \
              README.SUN            \
-             _TODO.txt             \
              makefile.msvc         \
              makefile-dllmod.msvc  \
              msvc.makefile.includes/BZIP2_DIR.msvc    \
@@ -672,12 +669,6 @@ EXTRA_DIST = autoconf/config.rpath \
              msvc.makefile.includes/ZLIB_DIR.msvc     \
              msvc.makefile.includes/ZLIB_FLAGS.msvc   \
              msvc.makefile.includes/ZLIB_RULES.msvc   \
-             makefile.bat          \
-             dynmake.bat           \
-             Hercules.dsp          \
-             Hercules.dsw          \
-             Hercules.vcproj       \
-             Hercules.sln          \
              hercver.rc            \
              build_pch.c           \
              conspawn.c            \
