@@ -44,7 +44,6 @@ ecpsvm.c
 esame.c
 external.c
 fbadasd.c
-fishhang.c
 float.c
 fthreads.c
 general1.c
