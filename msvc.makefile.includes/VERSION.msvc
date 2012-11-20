@@ -65,6 +65,10 @@ VERSION = $(V1).$(V2)-spinhawk
 VERSION = $(VERSION)-$(V3)
 !ENDIF
 
+!IF DEFINED(HERCVER)
+VERSION = $(HERCVER)
+!ENDIF
+
 !MESSAGE Hercules version number is $(VERSION) ($(V1).$(V2).$(V3).$(V4))
 VERSION = \"$(VERSION)\"
 
