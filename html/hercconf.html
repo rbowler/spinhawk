@@ -845,7 +845,9 @@ and how they are used.
     <tt>SET MAX_CPU_ENGINES=<em>nn</em></tt>
     before performing nmake.
     <p>
-    <code>MAX_CPU_ENGINES</code> cannot exceed 64. For performance reasons,
+    <code>MAX_CPU_ENGINES</code> may be up to 128 on 64-bit Linux platforms.
+    On Windows, and on all 32-bit platforms, the maximum value is 64.
+    For performance reasons,
     values above 32 are not recommended for 32-bit platforms.
     If <code>MAX_CPU_ENGINES</code> is set to 1 then multiprocessing is disabled.
     See also <a href="#NUMCPU">NUMCPU</a> for a discussion of the performance
