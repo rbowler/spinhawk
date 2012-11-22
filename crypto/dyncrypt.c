@@ -3051,7 +3051,7 @@ static void ARCH_DEP(kmf_aes)(int r1, int r2, REGS *regs)
   lcfb = GR0_lcfb(regs);
   
   /* Check special conditions */
-  if(unlikely(GR_A(r2 + 1, regs) % lcfb || !lcfb || lcfb > 16))
+  if(unlikely(!lcfb || lcfb > 16 || GR_A(r2 + 1, regs) % lcfb))
     ARCH_DEP(program_interrupt)(regs, PGM_SPECIFICATION_EXCEPTION);
 
   /* Return with cc 0 on zero length */
