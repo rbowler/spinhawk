@@ -1383,7 +1383,7 @@ AC_ARG_ENABLE( external-gui,
 
     AC_HELP_STRING( [--disable-external-gui],
 
-        [disable external Windows GUI interface]
+        [disable external GUI interface]
     ),
     [
         case "${enableval}" in
@@ -1394,7 +1394,7 @@ AC_ARG_ENABLE( external-gui,
              ;;
         esac
     ],
-    [hc_cv_opt_external_gui=$hc_cv_is_windows]
+    [hc_cv_opt_external_gui=yes]
 )
 
 AC_ARG_ENABLE( fthreads,
