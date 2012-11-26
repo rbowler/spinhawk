@@ -964,7 +964,7 @@ char    buf[80];
         else
             logmsg("         ");
         DISASM_INSTRUCTION(inst, buf);
-	logmsg("%s", buf);
+        logmsg("%s\n", buf);
         saddr += ilc;
     } /* end for(i) */
 
@@ -1200,7 +1200,7 @@ REGS   *regs;                           /* Copied regs               */
     if (ilc > 4) n += sprintf (buf+n, "%2.2X%2.2X", inst[4], inst[5]);
     logmsg ("%s %s", buf,(ilc<4) ? "        " : (ilc<6) ? "    " : "");
     DISASM_INSTRUCTION(inst, buf);
-    logmsg("%s", buf);
+    logmsg("%s\n", buf);
 
 #ifdef DISPLAY_INSTRUCTION_OPERANDS
 
