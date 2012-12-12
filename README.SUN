@@ -38,7 +38,7 @@ HOW TO BUILD HERCULES FROM SVN UNDER SOLARIS
   (d) Check that all the required tools are installed:
 
       pkg-get compare subversion autoconf automake flex gawk gcc3
-      pkg-get compare ggettext ggrep libiconv gm4 gmake perl gsed
+      pkg-get compare ggrep libiconv gm4 gmake perl gsed
 
       which should produce output something like this:
 
@@ -49,7 +49,6 @@ HOW TO BUILD HERCULES FROM SVN UNDER SOLARIS
            flex        2.5.4,REV=2005.10.03                        SAME
            gawk                       3.1.5                        SAME
            gcc3                       3.4.5                        SAME
-       ggettext       0.14.1,REV=2005.06.29                        SAME
           ggrep          2.5,REV=2004.12.01                        SAME
        libiconv                       1.9.2                        SAME
             gm4        1.4.5,REV=2006.07.27                        SAME
@@ -62,7 +61,6 @@ HOW TO BUILD HERCULES FROM SVN UNDER SOLARIS
 
       cd /opt/csw/bin
       ln -s /opt/csw/gcc3/bin/gcc gcc
-      ln -s /opt/csw/bin/ggettext gettext
       ln -s /opt/csw/bin/ggrep grep
       ln -s /opt/csw/bin/gm4 m4
       ln -s /opt/csw/bin/gmake make
@@ -103,11 +101,8 @@ HOW TO BUILD HERCULES FROM SVN UNDER SOLARIS
        OK      flex requires 2.5, found 2.5.4
        OK      gawk requires 3.0, found 3.1.5
        OK      gcc requires 2.95, found 3.4.5
-       OK      gettext requires 0.11, found 0.14.1
        OK      grep requires 0, found 2.5
        OK      libiconv requires 1.8, found 1.9
-               For first-time Libiconv installs, a recompile and reinstall of gettext
-               is recommended.  Source: libiconv-1.8/README
        OK      m4 requires 0.0, found 1.4
        OK      make requires 3.79, found 3.81
        OK      perl requires 5.6, found 5.8.8

@@ -144,10 +144,6 @@ static const char *build_info[] = {
     "No HET BZIP2 support",
 #endif
 
-#if defined(ENABLE_NLS)
-    "National Language Support",
-#endif
-
     "Machine dependent assists:"
 #if !defined( ASSIST_CMPXCHG1  ) \
  && !defined( ASSIST_CMPXCHG4  ) \

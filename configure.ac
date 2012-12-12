@@ -205,9 +205,6 @@ AS_IF([test "x${ac_cv_func_dlopen}" = "xyes" -o "x${ac_cv_lib_dl_dlopen}" = "xye
 
 
 
-AM_GNU_GETTEXT([external])              #
-AM_ICONV
-
 HC_LD_DISALLOWDUPS()                    # (add duplicate symbols option to LDFLAGS)
 
 # -----------------------------------------------------------------------------
@@ -262,7 +259,6 @@ AH_TEMPLATE( [TIMESPEC_IN_TIME_H],      [Define if 'struct timespec' defined in 
 AH_TEMPLATE( [TIMESPEC_IN_SYS_TYPES_H], [Define if 'struct timespec' defined in <sys/types.h>] )
 
 AH_TEMPLATE( [_BSD_SOCKLEN_T_],         [Define missing macro on apple darwin (osx) platform] )
-AH_TEMPLATE( [_INTL_REDIRECT_MACROS],   [Define to 1 if non-Intel architecture (gettext)] )
 
 AH_TEMPLATE( [CCKD_BZIP2],              [Define to enable bzip2 compression in emulated DASDs] )
 AH_TEMPLATE( [HET_BZIP2],               [Define to enable bzip2 compression in emulated tapes] )
@@ -505,8 +501,6 @@ AC_CHECK_HEADERS( dlfcn.h,        [hc_cv_have_dlfcn_h=yes],        [hc_cv_have_d
 AC_CHECK_HEADERS( fenv.h,         [hc_cv_have_fenv_h=yes],         [hc_cv_have_fenv_h=no]         )
 AC_CHECK_HEADERS( inttypes.h,     [hc_cv_have_inttypes_h=yes],     [hc_cv_have_inttypes_h=no]     )
 AC_CHECK_HEADERS( iconv.h,        [hc_cv_have_iconv_h=yes],        [hc_cv_have_iconv_h=no]        )
-AC_CHECK_HEADERS( libintl.h,      [hc_cv_have_libintl_h=yes],      [hc_cv_have_libintl_h=no]      )
-AC_CHECK_HEADERS( locale.h,       [hc_cv_have_locale_h=yes],       [hc_cv_have_locale_h=no]       )
 AC_CHECK_HEADERS( ltdl.h,         [hc_cv_have_ltdl_h=yes],         [hc_cv_have_ltdl_h=no]         )
 AC_CHECK_HEADERS( malloc.h,       [hc_cv_have_malloc_h=yes],       [hc_cv_have_malloc_h=no]       )
 AC_CHECK_HEADERS( math.h,         [hc_cv_have_math_h=yes],         [hc_cv_have_math_h=no]         )
@@ -1801,10 +1795,9 @@ AC_MSG_NOTICE( [ Package destination directory prefixes: ] )
 AC_MSG_NOTICE( [                                         ] )
 AC_MSG_NOTICE( [    Libraries:  ${modexecdir}            ] )
 AC_MSG_NOTICE( [    Data:       \$(datadir)/hercules     ] )
-AC_MSG_NOTICE( [    Locale:     ${localedir}             ] )
 AC_MSG_NOTICE( [                                         ] )
 
-CPPFLAGS="$CPPFLAGS"' -DPKGDATADIR=\"$(pkgdatadir)\" -DMODULESDIR=\"$(modexecdir)\" -DHERC_LOCALEDIR=\"$(localedir)\"'
+CPPFLAGS="$CPPFLAGS"' -DPKGDATADIR=\"$(pkgdatadir)\" -DMODULESDIR=\"$(modexecdir)\"'
 
 #---------------------------------------------------------------#
 #  (place only AC_DEFINE here; place AC_DEFINE_UNQUOTED above)  #
@@ -1857,7 +1850,7 @@ fi
 
 if test "$hc_cv_is_apple" = "yes"; then
 
-    AC_DEFINE(_INTL_REDIRECT_MACROS)
+    :
 
     #
     #  TODO??
@@ -1943,7 +1936,7 @@ AM_CONDITIONAL( USE_DLLTOOL,         [ test "$hc_cv_is_windows"       = "yes" ] 
 
 AC_CACHE_SAVE()
 
-AC_OUTPUT( [ Makefile util/Makefile html/Makefile crypto/Makefile po/Makefile.in po/Makefile man/Makefile m4/Makefile decNumber/Makefile] )
+AC_OUTPUT( [ Makefile util/Makefile html/Makefile crypto/Makefile man/Makefile m4/Makefile decNumber/Makefile] )
 
 ###############################################################################
 #   (end-of-file)

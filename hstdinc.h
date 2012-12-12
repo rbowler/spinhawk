@@ -175,18 +175,6 @@
 #ifdef HAVE_ICONV
   #include <iconv.h>
 #endif
-#ifdef ENABLE_NLS
-  #ifdef HAVE_LOCALE_H
-    #include <locale.h>
-  #else
-    #error ENABLE_NLS requires <locale.h>
-  #endif
-  #ifdef HAVE_LIBINTL_H
-    #include <libintl.h>
-  #else
-    #error ENABLE_NLS requires <libintl.h>
-  #endif
-#endif
 #ifdef HAVE_INTTYPES_H
   #include <inttypes.h>
 #endif

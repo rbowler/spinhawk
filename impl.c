@@ -439,12 +439,6 @@ TID     logcbtid;                       /* RC file thread identifier */
     hdl_main();
 #endif /* defined(OPTION_DYNAMIC_LOAD) */
 
-#if defined(ENABLE_NLS)
-    setlocale(LC_ALL, "");
-    bindtextdomain(PACKAGE, HERC_LOCALEDIR);
-    textdomain(PACKAGE);
-#endif
-
 #ifdef EXTERNALGUI
     /* Set GUI flag if specified as final argument */
     if (argc >= 1 && strncmp(argv[argc-1],"EXTERNALGUI",11) == 0)

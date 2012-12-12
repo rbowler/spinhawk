@@ -39,7 +39,6 @@ my @req = qw(
      flex        2.5    0  http://www.gnu.org/directory/flex.html
      gawk        3.0    0  http://www.gnu.org/directory/gawk.html
      gcc         2.95   0  http://www.gnu.org/directory/gcc.html
-     gettext     0.11   0  http://www.gnu.org/directory/gettext.html
      grep        0      0  http://www.gnu.org/directory/grep.html
      libiconv    1.8    1  http://www.gnu.org/directory/libiconv.html
      m4          0.0    0  http://www.gnu.org/directory/GNU/gnum4.html
@@ -100,8 +99,6 @@ sub weird {
       my $msg = ckvers($level, $instversion);
       print "$msg\t$facility requires $level, found $instversion\n";
     }
-    print "\tFor first-time Libiconv installs, a recompile and reinstall of gettext\n";
-    print "\tis recommended.  Source: libiconv-1.8/README\n";
     print "\tURL: $url\n" if $msg eq 'UPGRADE';
     return;
   }
@@ -123,34 +120,6 @@ sub weird {
       my $msg = ckvers($level, $instversion);
       print "$msg\t$facility requires $level, found $instversion\n";
       print "\tURL: $url\n" if $msg eq 'UPGRADE';
-    }
-    return;
-  }
-  if ($facility eq 'libintl') {
-    my @filelist = glob '/lib/libc.so.*';
-    if (@filelist) {
-      print "OK\tYou are running on a glibc system ($filelist[0] exists)\n";
-      print "\tgettext-0.11.5/PACKAGING says libintl is not installed on glibc systems.\n";
-    } else {
-      print "\tWARNING: I have no personal experience with non-glibc systems\n";
-      print "\t         so take this result as my best guess.\n";
-      my @libintl = glob '/lib/libintl.so.*';
-      if (@libintl) {
-        foreach my $lib (@libintl) {
-          my $msg = ckvers($level, $instversion);
-          if ($msg eq 'OK') {
-            print "OK\t$facility requires $level, found $instversion\n";
-            return;
-          }
-          print "UPGRADE?\t$facility requires $level\n";
-          print "INSTALL\tLibintl is included in the gettext source tarball.\n";
-          print "\tURL: $url\n";
-          return;
-        }
-      } else {
-        print "INSTALL\tLibintl is included in the gettext source tarball.\n";
-        print "\tURL: $url\n";
-      }
     }
     return;
   }
