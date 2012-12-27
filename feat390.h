@@ -1,8 +1,6 @@
 /* FEAT390.H    (c) Copyright Jan Jaeger, 2000-2009                  */
 /*              ESA/390 feature definitions                          */
 
-// $Id$
-
 /*-------------------------------------------------------------------*/
 /* This file defines the architectural features which are included   */
 /* at compilation time for ESA/390 mode                              */

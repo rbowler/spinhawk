@@ -1,3 +1,6 @@
+/*  GETOPT.H    (c) Copyright see notice below                       */
+/*              NetBSD getopt parsing function                       */
+
 /*
  * Copyright (c) 1987, 1993, 1994, 1996
  *  The Regents of the University of California.  All rights reserved.

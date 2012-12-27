@@ -1,8 +1,6 @@
 /* FEATCHK.H    (c) Copyright Jan Jaeger, 2000-2009                  */
 /*              Feature definition consistency checks                */
 
-// $Id$
-
 /*-------------------------------------------------------------------*/
 /*  Perform various checks on feature combinations, and set          */
 /*  additional flags to percolate certain features such as           */

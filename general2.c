@@ -2,8 +2,6 @@
 /*              ESA/390 CPU Emulator                                 */
 /*              Instructions N-Z                                     */
 
-// $Id$
-
 /*              (c) Copyright Peter Kuschnerus, 1999-2009 (UPT & CFC)*/
 
 /* Interpretive Execution - (c) Copyright Jan Jaeger, 1999-2009      */

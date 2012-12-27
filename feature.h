@@ -1,8 +1,6 @@
 /* FEATURE.H    (c) Copyright Jan Jaeger, 2000-2009                  */
 /*              Architecture-dependent macro definitions             */
 
-// $Id$
-
 #ifdef HAVE_CONFIG_H
   #include <config.h> // Hercules build configuration options/settings
 #endif

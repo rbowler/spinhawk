@@ -1,8 +1,6 @@
 /* GENERAL3.C   (c) Copyright Roger Bowler, 2009                     */
 /*              Additional General Instructions                      */
 
-// $Id$
-
 /*-------------------------------------------------------------------*/
 /* This module implements additional general instructions introduced */
 /* as later extensions to z/Architecture and described in the manual */

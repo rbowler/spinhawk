@@ -1,8 +1,6 @@
 /* FBADASD.C    (c) Copyright Roger Bowler, 1999-2009                */
 /*              ESA/390 FBA Direct Access Storage Device Handler     */
 
-// $Id$
-
 /*-------------------------------------------------------------------*/
 /* This module contains device handling functions for emulated       */
 /* fixed block architecture direct access storage devices.           */
@@ -12,26 +10,6 @@
 /* Additional credits:                                               */
 /*      0671 device support by Jay Maynard                           */
 /*-------------------------------------------------------------------*/
-
-// $Log$
-// Revision 1.49  2009/01/23 11:53:48  bernard
-// copyright notice
-//
-// Revision 1.48  2007/11/21 22:54:14  fish
-// Use new BEGIN_DEVICE_CLASS_QUERY macro
-//
-// Revision 1.47  2007/06/23 00:04:09  ivan
-// Update copyright notices to include current year (2007)
-//
-// Revision 1.46  2007/06/06 02:55:39  ivan
-// Allow Byte 0 Bit 3 of FBA Locate CCW to be non-zero
-//
-// Revision 1.45  2007/03/15 20:57:55  gsmith
-// Fix fba when the fba device is > 4G
-//
-// Revision 1.44  2006/12/08 09:43:20  jj
-// Add CVS message log
-//
 
 #include "hstdinc.h"
 

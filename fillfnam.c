@@ -1,18 +1,5 @@
-// $Id$
-//
-// $Log$
-// Revision 1.11  2008/02/18 22:57:08  rbowler
-// Disable filename completion for Solaris 2.9 due to missing scandir function
-//
-// Revision 1.10  2006/12/31 17:52:50  gsmith
-// 31 Dec 2006 Fix typo in line 1 of fillfnam.c
-//
-// Revision 1.9  2006/12/31 11:31:21  fish
-// Fix cmdline tabbed filename-completion for MSVC
-//
-// Revision 1.8  2006/12/08 09:43:21  jj
-// Add CVS message log
-//
+/* FILLFNAM.C   (c) Copyright Volker Bandke, 2003-2006               */
+/*              Hercules filename completion functions               */
 
 #include "hstdinc.h"
 #include "hercules.h"

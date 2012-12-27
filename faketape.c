@@ -1,11 +1,5 @@
-/* FAKETAPE.C   (c) Copyright Roger Bowler, 1999-2009                */
+/* FAKETAPE.C   (c) Copyright "Fish" (David B. Trout), 2009          */
 /*              Hercules Tape Device Handler for FAKETAPE            */
-
-/* Original Author: "Fish" (David B. Trout)                          */
-/* Prime Maintainer: "Fish" (David B. Trout)                         */
-/* Secondary Maintainer: Ivan Warren                                 */
-
-// $Id$
 
 /*-------------------------------------------------------------------*/
 /* This module contains the FAKETAPE emulated tape format support.   */

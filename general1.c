@@ -7,8 +7,6 @@
 /* Interpretive Execution - (c) Copyright Jan Jaeger, 1999-2009      */
 /* z/Architecture support - (c) Copyright Jan Jaeger, 1999-2009      */
 
-// $Id$
-
 /*-------------------------------------------------------------------*/
 /* This module implements general instructions A-M of the            */
 /* S/370 and ESA/390 architectures, as described in the manuals      */
