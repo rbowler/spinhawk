@@ -3,8 +3,6 @@
 
 /* Interpretive Execution - (c) Copyright Jan Jaeger, 1999-2009      */
 
-// $Id$
-
 /*-------------------------------------------------------------------*/
 /* This module builds the configuration tables for the Hercules      */
 /* ESA/390 emulator.  It reads information about the processors      */

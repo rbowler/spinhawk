@@ -1,25 +1,6 @@
 /* CLOCK.H      (c) Copyright Jan Jaeger, 2000-2009                  */
 /*              TOD Clock functions                                  */
 
-// $Id$
-//
-// $Log$
-// Revision 1.28  2007/12/11 15:03:10  rbowler
-// Fix untab columns
-//
-// Revision 1.27  2007/12/10 23:12:02  gsmith
-// Tweaks to OPTION_MIPS_COUNTING processing
-//
-// Revision 1.26  2007/11/21 22:55:49  fish
-// (untab)
-//
-// Revision 1.25  2007/06/23 00:04:04  ivan
-// Update copyright notices to include current year (2007)
-//
-// Revision 1.24  2006/12/08 09:43:18  jj
-// Add CVS message log
-//
-
 #if !defined(_CLOCK_C_)
  #define _CLOCK_EXTERN extern
 #else
@@ -48,12 +29,12 @@ void update_cpu_timer(void);            /* Update the CPU timer      */
 void set_tod_epoch(S64);                /* Set TOD epoch             */
 void adjust_tod_epoch(S64);             /* Adjust TOD epoch          */
 S64 get_tod_epoch(void);                /* Get TOD epoch             */
-U64 hw_clock(void);                     /* Get hardware clock        */ 
+U64 hw_clock(void);                     /* Get hardware clock        */
 S64 cpu_timer(REGS *);                  /* Retrieve CPU timer        */
 void set_cpu_timer(REGS *, S64);        /* Set CPU timer             */
 S32 int_timer(REGS *);                  /* Get interval timer        */
 void set_int_timer(REGS *, S32);        /* Set interval timer        */
-U64 tod_clock(REGS *);                  /* Get TOD clock             */ 
+U64 tod_clock(REGS *);                  /* Get TOD clock             */
 void set_tod_clock(U64);                /* Set TOD clock             */
 int chk_int_timer(REGS *);              /* Check int_timer pending   */
 int clock_hsuspend(void *file);         /* Hercules suspend          */
@@ -128,7 +109,7 @@ _CLOCK_EXTERN U64 hw_tod;               /* Hardware clock            */
     do {                                         \
         if( ITIMER_ACCESS((_addr), (_len)) )     \
             ARCH_DEP(fetch_int_timer) ((_regs)); \
-    } while(0) 
+    } while(0)
  #define ITIMER_SYNC(_addr, _len, _regs)         \
     do {                                         \
         if( ITIMER_ACCESS((_addr), (_len)) )     \

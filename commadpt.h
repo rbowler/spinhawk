@@ -1,8 +1,6 @@
 /* COMMADPT.H   (c)Copyright Ivan Warren, 2003-2009                  */
 /*              Structure definitions for 2703 line driver           */
 
-// $Id$
-
 #ifndef __COMMADPT_H__
 #define __COMMADPT_H__
 

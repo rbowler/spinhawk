@@ -1,8 +1,6 @@
 /* DASDUTIL.C   (c) Copyright Roger Bowler, 1999-2010                */
 /*              Hercules DASD Utilities: Common subroutines          */
 
-// $Id$
-
 /*-------------------------------------------------------------------*/
 /* This module contains common subroutines used by DASD utilities    */
 /*-------------------------------------------------------------------*/

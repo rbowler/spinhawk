@@ -1,33 +1,9 @@
-// ====================================================================
-// Hercules Channel to Channel Emulation Support
-// ====================================================================
-//
-// Copyright (C) 2002-2009 by James A. Pierson    (original author)
-// Copyright (C) 2002-2009 by David B. Trout      (current maintainer)
-
-// $Id$
-//
-// $Log$
-// Revision 1.27  2008/08/19 21:36:37  fish
-// Init LCS interface ASAP to fix wrong MAC being used
-//
-// Revision 1.26  2008/07/17 07:19:12  fish
-// Fix FCS (Frame Check Sequence) bug in LCS_Write function
-// and other minor bugs.
-//
-// Revision 1.24  2008/07/17 03:30:40  fish
-// CTC/LCS cosmetic-only changes -- part 1
-// (no actual functionality was changed!)
-//
-// Revision 1.23  2007/06/23 00:04:07  ivan
-// Update copyright notices to include current year (2007)
-//
-// Revision 1.22  2007/01/14 07:59:58  fish
-// add some field/struct comments re byte-order (network vs.host)
-//
-// Revision 1.21  2006/12/08 09:43:19  jj
-// Add CVS message log
-//
+/* CTCADPT.H    (c) Copyright James A. Pierson, 2002-2012            */
+/*              (c) Copyright Roger Bowler, 2000-2012                */
+/*              (c) Copyright Willem Konynenberg, 2000-2009          */
+/*              (c) Copyright Vic Cross, 2001-2009                   */
+/*              (c) Copyright David B. Trout, 2002-2009              */
+/*              Hercules Channel-to-Channel Emulation Support        */
 
 #ifndef __CTCADPT_H_
 #define __CTCADPT_H_

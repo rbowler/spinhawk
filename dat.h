@@ -4,8 +4,6 @@
 /* Interpretive Execution - (c) Copyright Jan Jaeger, 1999-2009      */
 /* z/Architecture support - (c) Copyright Jan Jaeger, 1999-2009      */
 
-// $Id$
-
 /*-------------------------------------------------------------------*/
 /* This module implements the DAT, ALET, and ASN translation         */
 /* functions of the ESA/390 architecture, described in the manual    */

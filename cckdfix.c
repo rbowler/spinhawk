@@ -1,6 +1,5 @@
-// $Id$
-//
-// $Log$
+/* CCKDFIX.C    (c) Copyright Greg Smith, 2000-2009                  */
+/*              Correct compressed CKD file.                         */
 
 #include "hercules.h"
 int main ( int argc, char *argv[])

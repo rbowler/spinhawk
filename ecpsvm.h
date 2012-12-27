@@ -1,6 +1,5 @@
-// $Id$
-//
-// $Log$
+/*ECPSVM.H      (c) Copyright Ivan Warren, 2003-2009                 */
+/*              Hercules ECPS:VM Support                             */
 
 #ifndef __ECPSVM_H__
 #define __ECPSVM_H__

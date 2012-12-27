@@ -1,19 +1,6 @@
 /* DEVTYPE.H    (c) Copyright Jan Jaeger, 1999-2009                  */
 /*              Hercules Device Definitions                          */
 
-// $Id$
-//
-// $Log$
-// Revision 1.21  2007/11/21 22:48:45  fish
-// New BEGIN_DEVICE_CLASS_QUERY macro
-//
-// Revision 1.20  2007/06/23 00:04:08  ivan
-// Update copyright notices to include current year (2007)
-//
-// Revision 1.19  2006/12/08 09:43:20  jj
-// Add CVS message log
-//
-
 #if !defined(_DEVICES_H)
 
 #define _DEVICES_H

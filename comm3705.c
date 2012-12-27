@@ -1,3 +1,7 @@
+/* COMM3705.C   (c) Copyright Max H. Parke, 2007-2012                */
+/*              Hercules 3705 communications controller              */
+/*              running NCP                                          */
+
 
 /***********************************************************************/
 /*                                                                     */

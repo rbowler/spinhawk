@@ -4,20 +4,6 @@
 /*              Route all Hercules configuration statements          */
 /*              and panel commands to the appropriate functions      */
 
-// $Id$
-
-// $Log$
-// Revision 1.3  2009/01/19 12:16:57  rbowler
-// Fix dynamic linkage errors in cmdtab.c for MSVC
-//
-// Revision 1.2  2009/01/18 21:43:59  jj
-// Always display short help info, detailed info only if available
-//
-// Revision 1.1  2009/01/18 20:49:25  jj
-// Rework command table and move to separate source files
-//
-
-
 #include "hstdinc.h"
 
 #define _CMDTAB_C_

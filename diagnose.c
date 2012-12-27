@@ -1,8 +1,6 @@
 /* DIAGNOSE.C   (c) Copyright Roger Bowler, 2000-2009                */
 /*              ESA/390 Diagnose Functions                           */
 
-// $Id$
-
 /*-------------------------------------------------------------------*/
 /* This module implements miscellaneous diagnose functions           */
 /*-------------------------------------------------------------------*/

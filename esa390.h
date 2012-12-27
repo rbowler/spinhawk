@@ -4,14 +4,12 @@
 /* Interpretive Execution - (c) Copyright Jan Jaeger, 1999-2009      */
 /* z/Architecture support - (c) Copyright Jan Jaeger, 1999-2009      */
 
-// $Id$
-
 #ifndef _ESA390_H
 #define _ESA390_H
 
 /* Platform-independent storage operand definitions */
 
-#include "htypes.h"         // (need Hercules fixed-size data types)
+#include "htypes.h"
 
 #if defined(WORDS_BIGENDIAN)
 

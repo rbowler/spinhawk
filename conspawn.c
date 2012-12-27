@@ -1,7 +1,9 @@
+/* CONSPAWN.C   (c) "Fish" (David B. Trout), 2005-2012               */
+/*              Spawn console command                                */
+
 /*-------------------------------------------------------------------*/
-/* CONSPAWN.C   (c) "Fish" (David B. Trout), 2005-2006               */
 /*       This program is spawned by Hercules as a result of          */
-/*       the 'sh' (shell) command. It's purpose is to simply         */
+/*       the 'sh' (shell) command. Its purpose is to simply          */
 /*       call the host's shell (command interpreter) program         */
 /*       with the arguments supplied (usually to invoke yet          */
 /*       another program), redirecting the results back to           */
@@ -10,13 +12,6 @@
 /*       rather relies on Hercules to have set that up before        */
 /*       invoking this program.                                      */
 /*-------------------------------------------------------------------*/
-
-// $Id$
-//
-// $Log$
-// Revision 1.3  2006/12/08 09:43:18  jj
-// Add CVS message log
-//
 
 #include "hstdinc.h"
 

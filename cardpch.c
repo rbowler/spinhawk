@@ -1,8 +1,6 @@
 /* CARDPCH.C    (c) Copyright Roger Bowler, 1999-2009                */
 /*              ESA/390 Card Punch Device Handler                    */
 
-// $Id$
-
 /*-------------------------------------------------------------------*/
 /* This module contains device handling functions for emulated       */
 /* System/370 card punch devices.                                    */

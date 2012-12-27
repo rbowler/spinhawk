@@ -4,8 +4,6 @@
 /*              Defines all Hercules Configuration statements        */
 /*              and panel commands                                   */
 
-// $Id$
-
 
 //          command    type          function      one-line description...
 // COMMAND ("sample"   PANEL,        sample_cmd,   "short help text", "long help text" )

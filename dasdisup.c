@@ -1,8 +1,6 @@
 /* DASDISUP.C   (c) Copyright Roger Bowler, 1999-2009                */
 /*              Hercules DASD Utilities: IEHIOSUP                    */
 
-// $Id$
-
 /*-------------------------------------------------------------------*/
 /* This program performs the IEHIOSUP function of OS/360.            */
 /* It adjusts the TTRs in the XCTL tables in each of the             */
@@ -12,17 +10,6 @@
 /*      dasdisup ckdfile                                             */
 /* where: ckdfile is the name of the CKD image file                  */
 /*-------------------------------------------------------------------*/
-
-// $Log$
-// Revision 1.31  2008/11/04 04:50:46  fish
-// Ensure consistent utility startup
-//
-// Revision 1.30  2007/06/23 00:04:08  ivan
-// Update copyright notices to include current year (2007)
-//
-// Revision 1.29  2006/12/08 09:43:19  jj
-// Add CVS message log
-//
 
 #include "hstdinc.h"
 

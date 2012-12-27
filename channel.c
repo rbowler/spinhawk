@@ -1,8 +1,6 @@
 /* CHANNEL.C    (c) Copyright Roger Bowler, 1999-2009                */
 /*              ESA/390 Channel Emulator                             */
 
-// $Id$
-
 /*-------------------------------------------------------------------*/
 /* This module contains the channel subsystem functions for the      */
 /* Hercules S/370 and ESA/390 emulator.                              */
@@ -21,51 +19,6 @@
 /*      Read backward fixes contributed by Jay Jaeger   16sep2003    */
 /*      MIDAW support - Roger Bowler                    03aug2005 @MW*/
 /*-------------------------------------------------------------------*/
-
-// $Log$
-// Revision 1.147  2008/11/04 05:56:30  fish
-// Put ensure consistent create_thread ATTR usage change back in
-//
-// Revision 1.146  2008/11/03 15:31:58  rbowler
-// Back out consistent create_thread ATTR modification
-//
-// Revision 1.145  2008/10/18 09:32:20  fish
-// Ensure consistent create_thread ATTR usage
-//
-// Revision 1.144  2008/08/21 18:34:45  fish
-// Fix i/o-interrupt-queue race condition
-//
-// Revision 1.143  2008/05/28 16:33:13  fish
-// (fix typo in comment; no code was changed)
-//
-// Revision 1.142  2008/03/29 08:36:46  fish
-// More complete/extensive 3490/3590 tape support
-//
-// Revision 1.141  2008/03/13 19:55:49  ivan
-// Return Byte Mpx in STIDC for Channel 0 according to GA22-7000-4 Page 192 Chapter 2
-//
-// Revision 1.140  2007/08/07 19:47:59  ivan
-// Fix a couple of gcc-4.2 warnings
-//
-// Revision 1.139  2007/06/23 00:04:04  ivan
-// Update copyright notices to include current year (2007)
-//
-// Revision 1.138  2007/02/15 22:57:04  gsmith
-// Reset syncio_retry to zero appropriately for syncio type 2 devices
-//
-// Revision 1.137  2007/02/03 18:58:06  gsmith
-// Fix MVT tape CMDREJ error
-//
-// Revision 1.136  2007/01/16 01:45:33  gsmith
-// Tweaks to instruction stepping/tracing
-//
-// Revision 1.135  2007/01/09 03:29:02  ivan
-// Temporarily disable dev->crwpending test in channel.c[device_attention] to
-// enable dynamic I/O reconfig in S/370 mode. Interim solution ONLY !
-//
-// Revision 1.134  2006/12/08 09:43:18  jj
-// Add CVS message log
-//
 
 #include "hstdinc.h"
 

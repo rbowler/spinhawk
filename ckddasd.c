@@ -1,8 +1,6 @@
 /* CKDDASD.C    (c) Copyright Roger Bowler, 1999-2009                */
 /*              ESA/390 CKD Direct Access Storage Device Handler     */
 
-// $Id$
-
 /*-------------------------------------------------------------------*/
 /* This module contains device handling functions for emulated       */
 /* count-key-data direct access storage devices.                     */
@@ -17,48 +15,6 @@
 /*      Track overflow write fix by Roger Bowler, thanks to Valery   */
 /*        Pogonchenko and Volker Bandke             V1.71 16/01/2001 */
 /*-------------------------------------------------------------------*/
-
-// $Log$
-// Revision 1.96  2009/01/23 11:43:35  bernard
-// copyright notice
-//
-// Revision 1.95  2008/12/01 21:31:02  rbowler
-// Show filename in msg HHCDA002E by enrico sorichetti
-//
-// Revision 1.94  2008/07/18 23:58:13  fish
-// Revert prior PSF order 18 length change; len s/b 12, not 16.
-// Bug is in S390 Linux dasd_eckd driver, not Hercules.
-//
-// Revision 1.93  2008/05/24 20:54:31  rbowler
-// Increase PSF-PRSD data length from 12 to 16 bytes (by Jacob Dekel)
-//
-// Revision 1.92  2008/05/19 16:40:54  rbowler
-// Modify PSF order 1D to not prepare subsystem data
-//
-// Revision 1.91  2008/05/19 15:40:04  rbowler
-// PSF order 18 suborders (0E,41) and order 1D by Jacob Dekel
-//
-// Revision 1.90  2008/01/07 22:59:11  rbowler
-// Additional LFS validity checks
-//
-// Revision 1.89  2007/11/25 19:30:21  gsmith
-// fix LRE length check, thanks Fish!! - Greg
-//
-// Revision 1.88  2007/11/21 22:54:13  fish
-// Use new BEGIN_DEVICE_CLASS_QUERY macro
-//
-// Revision 1.87  2007/11/21 00:31:38  gsmith
-// LRE support (try #1)
-//
-// Revision 1.86  2007/06/23 00:04:04  ivan
-// Update copyright notices to include current year (2007)
-//
-// Revision 1.85  2007/02/15 00:10:04  gsmith
-// Fix ckd RCD, SNSS, SNSID responses
-//
-// Revision 1.84  2006/12/08 09:43:18  jj
-// Add CVS message log
-//
 
 #include "hstdinc.h"
 

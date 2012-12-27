@@ -1,8 +1,6 @@
 /* DASDCOPY.C   (c) Copyright Roger Bowler, 1999-2010                */
 /*              Copy a dasd file to another dasd file                */
 
-// $Id$
-
 /*-------------------------------------------------------------------*/
 /*      This program copies a dasd file to another dasd file.        */
 /*      Input file and output file may be compressed or not.         */

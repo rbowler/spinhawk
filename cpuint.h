@@ -1,8 +1,6 @@
 /* CPUINT.H     (c) Copyright Jan Jaeger, 2001-2009                  */
 /*              Hercules Interrupt State and Mask Definitions        */
 
-// $Id$
-
 /**********************************************************************
  Interrupts_State & Interrupts_Mask bits definition (Initial_Mask=800E)
  Machine check, PER and external interrupt subclass bit positions

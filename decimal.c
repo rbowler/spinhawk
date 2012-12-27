@@ -1,8 +1,6 @@
 /* DECIMAL.C    (c) Copyright Roger Bowler, 1991-2009                */
 /*              ESA/390 Packed Decimal Routines                      */
 
-// $Id$
-
 /*-------------------------------------------------------------------*/
 /* This module contains packed decimal subroutines for ESA/390.      */
 /*                                                                   */
@@ -23,20 +21,6 @@
 /* packed_to_binary subroutine - Roger Bowler               29/06/03 */
 /* binary_to_packed subroutine - Roger Bowler              02jul2003 */
 /*-------------------------------------------------------------------*/
-
-// $Log$
-// Revision 1.24  2007/06/23 00:04:08  ivan
-// Update copyright notices to include current year (2007)
-//
-// Revision 1.23  2007/01/13 07:15:12  bernard
-// backout ccmask
-//
-// Revision 1.22  2007/01/12 15:21:52  bernard
-// ccmask phase 1
-//
-// Revision 1.21  2006/12/08 09:43:20  jj
-// Add CVS message log
-//
 
 #include "hstdinc.h"
 

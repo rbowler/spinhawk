@@ -3,16 +3,6 @@
 
 //FIXME ?? Dynamic resizing is disabled
 
-// $Id$
-//
-// $Log$
-// Revision 1.16  2007/06/23 00:04:03  ivan
-// Update copyright notices to include current year (2007)
-//
-// Revision 1.15  2006/12/08 09:43:16  jj
-// Add CVS message log
-//
-
 #include "hstdinc.h"
 
 #define _CACHE_C_

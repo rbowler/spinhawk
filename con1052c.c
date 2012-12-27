@@ -1,27 +1,6 @@
 /* CON1052.C    (c)Copyright Jan Jaeger, 2004-2009                   */
 /*              Emulated 1052 on hercules console                    */
 
-// $Id$
-//
-// $Log$
-// Revision 1.14  2007/11/21 22:54:14  fish
-// Use new BEGIN_DEVICE_CLASS_QUERY macro
-//
-// Revision 1.13  2007/06/23 16:13:54  jmaynard
-// Fixing two messages out of internationalization by removing redundant
-// carriage returns.
-//
-// Revision 1.12  2007/06/23 00:04:04  ivan
-// Update copyright notices to include current year (2007)
-//
-// Revision 1.11  2006/12/23 00:51:08  ivan
-// Fix logmsg() call in con1052c.c from logmsg(bfr) to logmsg("%s",bfr) to prevent
-// Write CCW data with embedded '%' characters to be interpreted as printf formating orders
-//
-// Revision 1.10  2006/12/08 09:43:18  jj
-// Add CVS message log
-//
-
 #include "hstdinc.h"
 
 #include "hercules.h"

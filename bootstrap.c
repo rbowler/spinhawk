@@ -2,8 +2,6 @@
 /*              (c) Copyright "Fish" (David B. Trout), 2005-2009     */
 /*              Hercules executable main module                      */
 
-// $Id$
-
 /*-------------------------------------------------------------------*/
 /* This module is the initial entry point of the Hercules emulator.  */
 /* The main() function performs platform-specific functions before   */

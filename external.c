@@ -1,8 +1,6 @@
 /* EXTERNAL.C   (c) Copyright Roger Bowler, 1999-2009                */
 /*              ESA/390 External Interrupt and Timer                 */
 
-// $Id$
-
 /* Interpretive Execution - (c) Copyright Jan Jaeger, 1999-2009      */
 /* z/Architecture support - (c) Copyright Jan Jaeger, 1999-2009      */
 
@@ -23,23 +21,6 @@
 /*      Fix todclock - Jay Maynard                                   */
 /*      Modifications for Interpretive Execution (SIE) by Jan Jaeger */
 /*-------------------------------------------------------------------*/
-
-// $Log$
-// Revision 1.72  2008/12/28 22:00:57  rbowler
-// Issue message if service signal interrupt occurs while stepping or tracing
-//
-// Revision 1.71  2007/06/23 00:04:09  ivan
-// Update copyright notices to include current year (2007)
-//
-// Revision 1.70  2007/02/26 00:54:22  gsmith
-// Display timer interrupts only if tracing/stepping all
-//
-// Revision 1.69  2007/01/16 01:45:33  gsmith
-// Tweaks to instruction stepping/tracing
-//
-// Revision 1.68  2006/12/08 09:43:20  jj
-// Add CVS message log
-//
 
 #include "hstdinc.h"
 

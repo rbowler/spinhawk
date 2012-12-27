@@ -1,7 +1,9 @@
+/* DASDSEQ.C    (c) Copyright Roger Bowler, 1999-2012                */
+/*              (c) Copyright James M. Morrison, 2001-2010           */
+/*              Hercules DASD Utilities: Sequential dataset unloader */
+
 /* Code borrowed from dasdpdsu Copyright 1999-2009 Roger Bowler      */
 /* Changes and additions Copyright 2001-2009, James M. Morrison      */
-
-// $Id$
 
 /*-------------------------------------------------------------------*/
 /*                                                                   */

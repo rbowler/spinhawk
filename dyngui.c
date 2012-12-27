@@ -1,12 +1,5 @@
-/*********************************************************************/
-/* DYNGUI.C     Hercules External GUI Interface DLL                  */
-/*              (c) Copyright "Fish" (David B. Trout), 2003-2009     */
-/*                                                                   */
-/* Primary contact:   Fish   [fish@infidels.com]                     */
-/*                                                                   */
-/*********************************************************************/
-
-// $Id$
+/* DYNGUI.C     (c) Copyright "Fish" (David B. Trout), 2003-2009     */
+/*              Hercules External GUI Interface DLL                  */
 
 #include "hstdinc.h"
 #include "hercules.h"       // (#includes "config." w/#define for VERSION)

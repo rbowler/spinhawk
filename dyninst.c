@@ -1,27 +1,13 @@
 /* DYNINST.C    (c) Copyright Jan Jaeger, 2003-2009                  */
 /*              Hercules Dynamic Loader                              */
 
-// $Id$
-
+/*-------------------------------------------------------------------*/
 /* This module dynamically loads instructions.  Instruction routine  */
 /* names must be registered under the name of s370_opcode_B220 for   */
 /* example, where s370 may also be s390 or z900 for ESA/390 or ESAME */
 /* mode respectively.  B220 is the opcode, and is depending on the   */
 /* instruction 2 3 or 4 digits.                                      */
-
-// $Log$
-// Revision 1.24  2008/02/29 15:53:10  rbowler
-// Instruction decoder for C4xx and C6xx instructions
-//
-// Revision 1.23  2008/02/29 12:05:06  rbowler
-// dyninst.c incorrect restore of C8xx opcodes
-//
-// Revision 1.22  2007/06/23 00:04:09  ivan
-// Update copyright notices to include current year (2007)
-//
-// Revision 1.21  2006/12/08 09:43:20  jj
-// Add CVS message log
-//
+/*-------------------------------------------------------------------*/
 
 #include "hstdinc.h"
 #include "hercules.h"

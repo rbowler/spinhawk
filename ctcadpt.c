@@ -1,12 +1,12 @@
-// Hercules Channel-to-Channel Emulation Support
-// ====================================================================
-//
-// Copyright (C) James A. Pierson, 2002-2009
-//               Roger Bowler, 2000-2009
-//
+/* CTCADPT.C    (c) Copyright James A. Pierson, 2002-2012            */
+/*              (c) Copyright Roger Bowler, 2000-2012                */
+/*              (c) Copyright Willem Konynenberg, 2000-2009          */
+/*              (c) Copyright Vic Cross, 2001-2009                   */
+/*              Hercules Channel-to-Channel Emulation Support        */
+
 // vmnet     (C) Copyright Willem Konynenberg, 2000-2009
 // CTCT      (C) Copyright Vic Cross, 2001-2009
-//
+
 // Notes:
 //   This module contains the remaining CTC emulation modes that
 //   have not been moved to seperate modules. There is also logic
@@ -15,7 +15,6 @@
 //
 //   Please read README.NETWORKING for more info.
 //
-// $Id$
 
 #include "hstdinc.h"
 

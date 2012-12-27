@@ -1,3 +1,7 @@
+/* COMM3705.H   (c) Copyright Max H. Parke, 2007-2012                */
+/*              Hercules 3705 communications controller              */
+/*              running NCP                                          */
+
 #ifndef __COMM3705_H__
 #define __COMM3705_H__
 

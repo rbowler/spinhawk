@@ -1,35 +1,10 @@
-/* CCKDDASD.C   (c) Copyright Roger Bowler, 1999-2009                */
-/*       ESA/390 Compressed CKD Direct Access Storage Device Handler */
-
-// $Id$
+/* CCKDDASD.C   (c) Copyright Greg Smith, 2000-2009                  */
+/*              Compressed CKD Direct Access Storage Device Handler  */
 
 /*-------------------------------------------------------------------*/
 /* This module contains device functions for compressed emulated     */
 /* count-key-data direct access storage devices.                     */
 /*-------------------------------------------------------------------*/
-
-// $Log$
-// Revision 1.146  2008/11/04 05:56:30  fish
-// Put ensure consistent create_thread ATTR usage change back in
-//
-// Revision 1.145  2008/11/03 15:31:58  rbowler
-// Back out consistent create_thread ATTR modification
-//
-// Revision 1.144  2008/10/18 09:32:20  fish
-// Ensure consistent create_thread ATTR usage
-//
-// Revision 1.143  2008/01/04 03:35:30  gsmith
-// Fix to sf- command - Thanks Christopher!
-//
-// Revision 1.142  2008/01/04 02:28:51  gsmith
-// sf commands update
-//
-// Revision 1.141  2007/06/23 00:04:03  ivan
-// Update copyright notices to include current year (2007)
-//
-// Revision 1.140  2006/12/08 09:43:17  jj
-// Add CVS message log
-//
 
 #include "hstdinc.h"
 

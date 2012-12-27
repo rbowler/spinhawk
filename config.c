@@ -1,56 +1,9 @@
 /* CONFIG.C     (c) Copyright Jan Jaeger, 2000-2009                  */
 /*              Device configuration functions                       */
 
-// $Id$
-
 /*-------------------------------------------------------------------*/
 /* The original configuration builder is now called bldcfg.c         */
 /*-------------------------------------------------------------------*/
-
-// $Log$
-// Revision 1.204  2009/01/15 17:36:43  jj
-// Change http server startup
-//
-// Revision 1.203  2008/11/04 05:56:31  fish
-// Put ensure consistent create_thread ATTR usage change back in
-//
-// Revision 1.202  2008/11/03 15:31:57  rbowler
-// Back out consistent create_thread ATTR modification
-//
-// Revision 1.201  2008/10/18 09:32:20  fish
-// Ensure consistent create_thread ATTR usage
-//
-// Revision 1.200  2008/07/08 05:35:49  fish
-// AUTOMOUNT redesign: support +allowed/-disallowed dirs
-// and create associated 'automount' panel command - Fish
-//
-// Revision 1.199  2007/06/23 00:04:04  ivan
-// Update copyright notices to include current year (2007)
-//
-// Revision 1.198  2007/06/22 02:22:50  gsmith
-// revert config_cpu.pat due to problems in testing
-//
-// Revision 1.197  2007/06/20 03:52:19  gsmith
-// configure_cpu now returns when the CPU is fully configured
-//
-// Revision 1.196  2007/06/09 02:10:04  kleonard
-// Skip making CRW pending in S/370 mode
-//
-// Revision 1.195  2007/02/03 18:58:06  gsmith
-// Fix MVT tape CMDREJ error
-//
-// Revision 1.194  2007/01/11 19:54:33  fish
-// Addt'l keep-alive mods: create associated supporting config-file stmt and panel command where individual customer-preferred values can be specified and/or dynamically modified.
-//
-// Revision 1.193  2007/01/02 18:53:33  fish
-// (fix comments only)
-//
-// Revision 1.192  2007/01/02 18:46:16  fish
-// Fix bug in deconfigure_cpu function & tweak power-off diagnose instructions so that they actually work properly now
-//
-// Revision 1.191  2006/12/08 09:43:18  jj
-// Add CVS message log
-//
 
 #include "hstdinc.h"
 

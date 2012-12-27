@@ -4,26 +4,10 @@
 /* Interpretive Execution - (c) Copyright Jan Jaeger, 1999-2009      */
 /* z/Architecture support - (c) Copyright Jan Jaeger, 1999-2009      */
 
-// $Id$
-
 /*-------------------------------------------------------------------*/
 /* This module implements channel subsystem interface functions      */
 /* for the Hercules ESA/390 emulator.                                */
 /*-------------------------------------------------------------------*/
-
-// $Log$
-// Revision 1.12  2007/06/23 00:04:04  ivan
-// Update copyright notices to include current year (2007)
-//
-// Revision 1.11  2007/01/13 07:10:54  bernard
-// backout ccmask
-//
-// Revision 1.10  2007/01/12 15:20:59  bernard
-// ccmask phase 1
-//
-// Revision 1.9  2006/12/08 09:43:18  jj
-// Add CVS message log
-//
 
 #include "hstdinc.h"
 

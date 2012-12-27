@@ -1,12 +1,5 @@
-/***********************************************************/
-/* HERCULES ECPS:VM Support                                */
-/* (c) Copyright 2003-2009 Roger Bowler and Others         */
-/* Use of this program is governed by the QPL License      */
-/* Original Author : Ivan Warren                           */
-/* Prime Maintainer : Ivan Warren                          */
-/***********************************************************/
-
-// $Id$
+/*ECPSVM.C      (c) Copyright Ivan Warren, 2003-2009                 */
+/*              Hercules ECPS:VM Support                             */
 
 /***********************************************************/
 /*                                                         */

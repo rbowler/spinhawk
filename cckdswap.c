@@ -1,22 +1,9 @@
-/* CCKDSWAP.C   (c) Copyright Roger Bowler, 1999-2009                */
-/*       Swap the `endianess' of a compressed CKD file.              */
-
-// $Id$
+/* CCKDSWAP.C   (c) Copyright Greg Smith, 2000-2009                  */
+/*              Swap the endianess of a compressed CKD file          */
 
 /*-------------------------------------------------------------------*/
 /* This module changes the `endianess' of a compressed CKD file.     */
 /*-------------------------------------------------------------------*/
-
-// $Log$
-// Revision 1.22  2008/11/04 04:50:45  fish
-// Ensure consistent utility startup
-//
-// Revision 1.21  2007/06/23 00:04:03  ivan
-// Update copyright notices to include current year (2007)
-//
-// Revision 1.20  2006/12/08 09:43:17  jj
-// Add CVS message log
-//
 
 #include "hstdinc.h"
 

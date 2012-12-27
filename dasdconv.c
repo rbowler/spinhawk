@@ -1,8 +1,6 @@
 /* DASDCONV.C   (c) Copyright Roger Bowler, 1999-2009                */
 /*              Hercules DASD Utilities: DASD image converter        */
 
-// $Id$
-
 /*-------------------------------------------------------------------*/
 /* This program converts a CKD disk image from HDR-30 format         */
 /* to the AWSCKD format used by Hercules.                            */

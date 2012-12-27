@@ -1,8 +1,6 @@
 /* ASSIST.C     (c) Copyright Roger Bowler, 1999-2009                */
 /*              ESA/390 MVS Assist Routines                          */
 
-// $Id$
-
 /*-------------------------------------------------------------------*/
 /* This module contains routines which process the MVS Assist        */
 /* instructions described in the manual GA22-7079-01.                */
@@ -13,17 +11,6 @@
 /* z/Architecture support - (c) Copyright Jan Jaeger, 1999-2009      */
 /*              Add dummy assist instruction - Jay Maynard,          */
 /*                  suggested by Brandon Hill                        */
-
-// $Log$
-// Revision 1.24  2007/06/23 00:04:03  ivan
-// Update copyright notices to include current year (2007)
-//
-// Revision 1.23  2006/12/20 04:26:19  gsmith
-// 19 Dec 2006 ip_all.pat - performance patch - Greg Smith
-//
-// Revision 1.22  2006/12/08 09:43:16  jj
-// Add CVS message log
-//
 
 #include "hstdinc.h"
 
