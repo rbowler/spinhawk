@@ -1,29 +1,8 @@
-/* SOCKDEV.C    (c) Copyright Hercules development, 2003-2009        */
-/*              Socketdevice support                                 */
-
-// $Id$
-//
-// $Log$
-// Revision 1.29  2008/11/04 05:56:31  fish
-// Put ensure consistent create_thread ATTR usage change back in
-//
-// Revision 1.28  2008/11/03 15:31:53  rbowler
-// Back out consistent create_thread ATTR modification
-//
-// Revision 1.27  2008/10/18 09:32:21  fish
-// Ensure consistent create_thread ATTR usage
-//
-// Revision 1.26  2007/06/23 00:04:15  ivan
-// Update copyright notices to include current year (2007)
-//
-// Revision 1.25  2006/12/08 09:43:30  jj
-// Add CVS message log
-//
+/* SOCKDEV.C    (c) Copyright Malcolm Beattie, 2001                  */
+/*              Hercules socket device support                       */
 
 #include "hstdinc.h"
-
 #include "hercules.h"
-
 #include "opcode.h"
 
 

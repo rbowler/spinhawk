@@ -1,8 +1,6 @@
 /* SR.H         (c)Copyright Greg Smith, 2004-2009                   */
 /*              Suspend/Resume a Hercules session                    */
 
-// $Id$
-
 /*
  * The suspend/resume functions allow a hercules instance to be
  * captured to a file and later resumed.  Note that the suspend

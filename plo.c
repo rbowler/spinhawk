@@ -4,19 +4,6 @@
 /* Interpretive Execution - (c) Copyright Jan Jaeger, 1999-2009      */
 /* z/Architecture support - (c) Copyright Jan Jaeger, 1999-2009      */
 
-// $Id$
-//
-// $Log$
-// Revision 1.24  2008/03/05 23:15:13  ptl00
-// Fix fc=3 fc=19 and qword chks
-//
-// Revision 1.23  2007/06/23 00:04:15  ivan
-// Update copyright notices to include current year (2007)
-//
-// Revision 1.22  2006/12/08 09:43:29  jj
-// Add CVS message log
-//
-
 #include "hstdinc.h"
 
 #if !defined(_HENGINE_DLL_)

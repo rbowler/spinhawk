@@ -2,8 +2,6 @@
 /*              (c) Copyright Enrico Sorichetti, 2012                */
 /*              ESA/390 Line Printer Device Handler                  */
 
-// $Id$
-
 /*-------------------------------------------------------------------*/
 /* This module contains device handling functions for emulated       */
 /* System/370 line printer devices with fcb support and more         */

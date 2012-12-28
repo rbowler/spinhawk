@@ -1,28 +1,25 @@
-////////////////////////////////////////////////////////////////////////////////////
-// SCSITAPE.C   --   Hercules SCSI tape handling module
-//
+/* SCSITAPE.C   (c) Copyright "Fish" (David B. Trout), 2005-2012     */
+/*              Hercules SCSI tape handling module                   */
+
 // (c) Copyright "Fish" (David B. Trout), 2005-2009. Released under
 // the Q Public License (http://www.hercules-390.org/herclic.html)
 // as modifications to Hercules.
-////////////////////////////////////////////////////////////////////////////////////
-//
-//  This module contains only the support for SCSI tapes. Please see
-//  the 'tapedev.c' (and possibly other) source module(s) for infor-
-//  mation regarding other supported emulated tape/media formats.
-//
-////////////////////////////////////////////////////////////////////////////////////
 
-// $Id$
+/*-------------------------------------------------------------------*/
+/* This module contains only the support for SCSI tapes. Please see  */
+/* the 'tapedev.c' (and possibly other) source module(s) for infor-  */
+/* mation regarding other supported emulated tape/media formats.     */
+/*-------------------------------------------------------------------*/
+
+/*-------------------------------------------------------------------*/
+/* Messages issued by this module are prefixed HHCTA3nn              */
+/*-------------------------------------------------------------------*/
 
 #include "hstdinc.h"
 #include "hercules.h"
 #include "scsitape.h"
 
 #if defined(OPTION_SCSI_TAPE)
-
-/*-------------------------------------------------------------------*/
-/* Messages issued by this module are prefixed HHCTA3nn              */
-/*-------------------------------------------------------------------*/
 
 //#define  ENABLE_TRACING_STMTS     // (Fish: DEBUGGING)
 

@@ -1,8 +1,6 @@
 /* SERVICE.H    (c) Copyright Jan Jaeger, 1999-2009                  */
 /*              Service Processor Architectured fields               */
 
-// $Id$
-
 #if !defined(_SERVICE_H)
 
 #define _SERVICE_H

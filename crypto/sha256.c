@@ -1,8 +1,6 @@
 /* $OpenBSD: sha2.c,v 1.6 2004/05/03 02:57:36 millert Exp $ */
 /* modified for use with dyncrypt */
 
-// $Id$
-
 /*
  * FILE: sha2.c
  * AUTHOR: Aaron D. Gifford <me@aarongifford.com>
@@ -37,10 +35,6 @@
  * $From: sha2.c,v 1.1 2001/11/08 00:01:51 adg Exp adg $
  */
 
-// $Log$
-// Revision 1.9  2006/12/08 09:43:35  jj
-// Add CVS message log
-//
 
 #include "hstdinc.h"
 

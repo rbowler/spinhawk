@@ -1,8 +1,6 @@
 /* MACHDEP.H    (c) Copyright Greg Smith, 2001-2010                  */
 /*              Hercules machine specific code                       */
 
-// $Id$
-
 /*-------------------------------------------------------------------*/
 /*                                                                   */
 /* This header file contains the following functions, defined as     */

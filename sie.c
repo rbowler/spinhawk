@@ -10,49 +10,6 @@
 
 /* z/Architecture support - (c) Copyright Jan Jaeger, 1999-2007      */
 
-// $Id$
-//
-// $Log$
-// Revision 1.109  2008/08/21 18:34:48  fish
-// Fix i/o-interrupt-queue race condition
-//
-// Revision 1.108  2008/04/10 10:28:03  bernard
-// Allign instruction executing to real instructions (12 unrolled instead of 8)
-//
-// Revision 1.107  2008/04/09 09:03:58  bernard
-// EXRL instruction implementation
-//
-// Revision 1.106  2007/12/10 23:12:02  gsmith
-// Tweaks to OPTION_MIPS_COUNTING processing
-//
-// Revision 1.105  2007/06/23 00:04:15  ivan
-// Update copyright notices to include current year (2007)
-//
-// Revision 1.104  2007/06/06 22:14:58  gsmith
-// Fix SYNCHRONIZE_CPUS when numcpu > number of host processors - Greg
-//
-// Revision 1.103  2007/02/09 23:59:58  ivan
-// Fix some PER issue (tentative)
-//
-// Revision 1.102  2007/01/13 07:25:51  bernard
-// backout ccmask
-//
-// Revision 1.101  2007/01/12 15:25:00  bernard
-// ccmask phase 1
-//
-// Revision 1.100  2007/01/04 23:12:04  gsmith
-// remove thunk calls for program_interrupt
-//
-// Revision 1.99  2006/12/21 22:39:39  gsmith
-// 21 Dec 2006 Range for s+, t+ - Greg Smith
-//
-// Revision 1.98  2006/12/20 04:26:20  gsmith
-// 19 Dec 2006 ip_all.pat - performance patch - Greg Smith
-//
-// Revision 1.97  2006/12/08 09:43:30  jj
-// Add CVS message log
-//
-
 #include "hstdinc.h"
 
 // #define SIE_DEBUG
@@ -67,9 +24,7 @@
 #endif
 
 #include "hercules.h"
-
 #include "opcode.h"
-
 #include "inline.h"
 
 #if defined(_FEATURE_SIE)

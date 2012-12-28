@@ -4,8 +4,6 @@
 /* Interpretive Execution - (c) Copyright Jan Jaeger, 1999-2009      */
 /* z/Architecture support - (c) Copyright Jan Jaeger, 1999-2009      */
 
-// $Id$
-
 /*-------------------------------------------------------------------*/
 /* This module implements service processor functions                */
 /* for the Hercules ESA/390 emulator.                                */

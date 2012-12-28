@@ -1,9 +1,5 @@
-/* PARSER.C     (c) Copyright Nobody, 1999-2001                      */
+/* PARSER.C     (c) Copyright Leland Lucius, 2001                    */
 /*              Simple parameter parser                              */
-
-// $Id$
-//
-// $Log$
 
 #include "hstdinc.h"
 
@@ -20,34 +16,34 @@
 
     NAME
             parser - parse parameter strings
-        
+
     SYNOPSIS
             #include "parser.h"
-        
+
             int parser( PARSER *pp, char *str, void *res )
-        
+
     DESCRIPTION
             The parser() function breaks the str parameter into a keyword
             and value using the "=" as a delimiter.  The pp table is then
-            scanned for the keyword.  If found and the table entry specifies 
+            scanned for the keyword.  If found and the table entry specifies
             a format string, then parser() will use sscanf() to store the
             value at the location specifed by res.
 
-            The PARSER table entries consist of a string pointer that 
+            The PARSER table entries consist of a string pointer that
             designates the keyword and a string pointer that designates the
             format of the associated value.  The format may be set to NULL
             if the keyword does not take a value.  The table must be
             terminated with an entry that specifies NULL for the keyword
             string.
-        
+
     RETURN VALUE
             If no errors are detected then the returned value will be the
             index+1 of the matching table entry.  The res argument will be
             updated only when a format string is specified.
-        
+
             If an entry couldn't be found, zero will be returned and res
             will remain untouched.
-        
+
             If an entry is found, but an error is detected while processing
             the str parameter then a negative value is returned.  This value
             will be the index-1 of the matching table entry.
@@ -55,14 +51,14 @@
     EXAMPLE
             #include "parser.h"
             #include <stdlib.h>
-            
+
             PARSER ptab[] =
             {
                 { "switchkey", NULL },
                 { "numkey", "%d" },
                 { "strkey", "%s" },
             };
-            
+
             int main( int argc, char *argv[] )
             {
                 int rc;
@@ -137,7 +133,7 @@ parser( PARSER *pp, char *str, void *res )
                 {
                     return( -ndx );
                 }
-        
+
                 if( sscanf( val, pp->fmt, res ) != 1 )
                 {
                     return( -ndx );

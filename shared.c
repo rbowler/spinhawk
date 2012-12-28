@@ -1,33 +1,5 @@
-/* SHARED.C     (c)Copyright Greg Smith, 2002-2009                   */
+/* SHARED.C     (c) Copyright Greg Smith, 2002-2009                  */
 /*              Shared Device Server                                 */
-
-// $Id$
-//
-// $Log$
-// Revision 1.41  2009/01/23 13:01:34  bernard
-// copyright notice
-//
-// Revision 1.40  2008/11/04 05:56:31  fish
-// Put ensure consistent create_thread ATTR usage change back in
-//
-// Revision 1.39  2008/11/03 15:31:53  rbowler
-// Back out consistent create_thread ATTR modification
-//
-// Revision 1.38  2008/10/18 09:32:21  fish
-// Ensure consistent create_thread ATTR usage
-//
-// Revision 1.37  2008/03/29 08:36:46  fish
-// More complete/extensive 3490/3590 tape support
-//
-// Revision 1.36  2007/06/23 00:04:15  ivan
-// Update copyright notices to include current year (2007)
-//
-// Revision 1.35  2006/12/28 20:32:54  fish
-// Fix "HHCSH043I 0.0.0.0 disconnected from ..."; save clientip in SHRD block at connect and use at disconnect.
-//
-// Revision 1.34  2006/12/08 09:43:30  jj
-// Add CVS message log
-//
 
 #include "hstdinc.h"
 

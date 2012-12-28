@@ -1,16 +1,12 @@
-/************************************************************************/
-/*                                                                      */
-/*      memrchr -- Right to Left memory scan                            */
-/*                                                                      */
-/*      Scans the memory block and reports the last occurrence of       */
-/*      the specified byte in the buffer.  Returns a pointer to         */
-/*      the byte if found, or NULL if not found.                        */
-/*                                                                      */
-/************************************************************************/
+/* MEMRCHR.H    (c) Copyright Volker Bandke, 2003                    */
+/*              Hercules Right to Left memory scan header file       */
 
-// $Id$
-//
-// $Log$
+/*-------------------------------------------------------------------*/
+/*      Scans the memory block and reports the last occurrence of    */
+/*      the specified byte in the buffer.  Returns a pointer to      */
+/*      the byte if found, or NULL if not found.                     */
+/*-------------------------------------------------------------------*/
+
 
 #ifndef MEMRCHR_H
 #define MEMRCHR_H

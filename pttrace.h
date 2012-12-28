@@ -1,8 +1,6 @@
 /* PTTRACE.H    (c) Copyright Greg Smith, 2003-2009                  */
 /*              Header file for pthreads trace debugger              */
 
-// $Id$
-
 /*-------------------------------------------------------------------*/
 /* Pthread tracing structures and prototypes                         */
 /*-------------------------------------------------------------------*/

@@ -1,12 +1,11 @@
-/************************************************************************/
-/*                                                                      */
-/*       memrchr          Right to Left memory scan                     */
-/*                                                                      */
-/************************************************************************/
+/* MEMRCHR.C    (c) Copyright Volker Bandke, 2003                    */
+/*              Hercules Right to Left memory scan                   */
 
-// $Id$
-//
-// $Log$
+/*-------------------------------------------------------------------*/
+/*      Scans the memory block and reports the last occurrence of    */
+/*      the specified byte in the buffer.  Returns a pointer to      */
+/*      the byte if found, or NULL if not found.                     */
+/*-------------------------------------------------------------------*/
 
 #include "hstdinc.h"
 

@@ -1,7 +1,5 @@
-/* QETH.C       (c) Copyright Jan Jaeger,   1999-2009                */
+/* QETH.C       (c) Copyright Jan Jaeger, 2004-2009                  */
 /*              OSA Express                                          */
-
-// $Id$
 
 /* This module contains device handling functions for the            */
 /* OSA Express emulated card                                         */
@@ -10,21 +8,8 @@
 /* hercules.cnf:                                                     */
 /* 0A00-0A02 QETH <optional parameters>                              */
 
-// $Log$
-// Revision 1.11  2007/11/21 22:54:14  fish
-// Use new BEGIN_DEVICE_CLASS_QUERY macro
-//
-// Revision 1.10  2007/06/23 00:04:15  ivan
-// Update copyright notices to include current year (2007)
-//
-// Revision 1.9  2006/12/08 09:43:29  jj
-// Add CVS message log
-//
-
 #include "hstdinc.h"
-
 #include "hercules.h"
-
 #include "devtype.h"
 
 

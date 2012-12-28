@@ -1,4 +1,5 @@
-// $Id$
+/* SLLIB.H      (c) Copyright Leland Lucius, 2000-2009               */
+/*              Header for Standard Label library                    */
 
 #if !defined( _SLLIB_H_ )
 #define _SLLIB_H_

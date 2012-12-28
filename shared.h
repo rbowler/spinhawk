@@ -1,7 +1,8 @@
+/* SHARED.H     (c) Copyright Greg Smith, 2002-2009                  */
+/*              Shared Device Server header file                     */
+
 /*-------------------------------------------------------------------
  * Shared device support           (c)Copyright Greg Smith, 2002-2009
- *
- * $Id$
  *
  * Shared device support allows multiple Hercules instances to share
  * devices.  The device will be `local' to one instance and `remote'
@@ -308,18 +309,6 @@
  *  2.  Delays observed during short transfers (redrive select ?)
  *  3.  Better server side behaviour due to disconnect
  *  3.  etc.
- *
- *
- *
- * $Log$
- * Revision 1.16  2007/06/23 00:04:15  ivan
- * Update copyright notices to include current year (2007)
- *
- * Revision 1.15  2006/12/28 20:32:54  fish
- * Fix "HHCSH043I 0.0.0.0 disconnected from ..."; save clientip in SHRD block at connect and use at disconnect.
- *
- * Revision 1.14  2006/12/08 09:43:30  jj
- * Add CVS message log
  *
  *
  *-------------------------------------------------------------------*/

@@ -1,8 +1,6 @@
 /* PANEL.C      (c) Copyright Roger Bowler, 1999-2010                */
 /*              Hercules Control Panel Commands                      */
 
-// $Id$
-
 /*              Modified for New Panel Display =NP=                  */
 /*-------------------------------------------------------------------*/
 /* This module is the control panel for the ESA/390 emulator.        */
