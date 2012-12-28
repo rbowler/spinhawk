@@ -1,13 +1,5 @@
-/*-------------------------------------------------------------------*/
-/*  HEXTERNS.H            Hercules function prototypes...            */
-/*-------------------------------------------------------------------*/
-
-//      This header auto-#included by 'hercules.h'...
-//
-//      The <config.h> header and other required headers are
-//      presumed to have already been #included ahead of it...
-
-// $Id$
+/* HEXTERNS.H   (c) Copyright Roger Bowler, 1999-2009                */
+/*              Hercules function prototypes                         */
 
 #ifndef _HEXTERNS_H
 #define _HEXTERNS_H

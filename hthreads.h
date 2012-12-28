@@ -1,10 +1,6 @@
-/*-------------------------------------------------------------------*/
-/* HTHREADS.H   --   Hercules threading macros and functions         */
-/*-------------------------------------------------------------------*/
+/* HTHREADS.H   (c) Copyright Roger Bowler, 1999-2009                */
+/*              Hercules Threading Macros and Functions              */
 
-// $Id$
-//
-// $Log$
 
 #ifndef _HTHREADS_H
 #define _HTHREADS_H

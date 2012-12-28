@@ -1,6 +1,6 @@
-// $Id$
-//
-// $Log$
+/* HCHAN.H      (c) Copyright Ivan Warren, 2004-2006                 */
+/*              Generic channel device handler header file           */
+
 
 #ifndef __HCHAN_H__
 #define __HCHAN_H__

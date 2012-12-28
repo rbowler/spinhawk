@@ -5,8 +5,6 @@
 /* Prime Maintainer: Ivan Warren                                     */
 /* Secondary Maintainer: "Fish" (David B. Trout)                     */
 
-// $Id$
-
 /*-------------------------------------------------------------------*/
 /* This module contains the HET emulated tape format support.        */
 /*                                                                   */

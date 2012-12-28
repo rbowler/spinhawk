@@ -1,60 +1,17 @@
+/* HAO.C        (c) Copyright Bernard van der Helm, 2002-2009        */
+/*             Hercules Automatic Operator Implementation            */
+
 /*---------------------------------------------------------------------------*/
 /* file: hao.c                                                               */
 /*                                                                           */
-/* Implementation of the automatic operator withing the Hercules z/Series    */
-/* emulator. This implementation couldn't be done without the advise of      */
-/* Jan Jaeger, who always has an answer to any question. Thanks for the      */
-/* regex advice!                                                             */
+/* Implementation of the automatic operator within the Hercules emulator.    */
 /*                                                                           */
 /*                            (c) Copyright Bernard van der Helm, 2002-2009  */
 /*                            Noordwijkerhout, The Netherlands.              */
 /*                                                                           */
 /*---------------------------------------------------------------------------*/
 
-// $Id$
-//
-// $Log$
-// Revision 1.15  2008/11/30 09:12:41  bernard
-// End the licensed OS experiment
-//
-// Revision 1.14  2008/11/29 12:26:19  bernard
-// PGMPRDOS implementation within hoa. Not perfect! please provide command
-// hoa clear if you want to violate the PGMPRDOS warning.
-//
-// Revision 1.13  2008/11/04 05:56:31  fish
-// Put ensure consistent create_thread ATTR usage change back in
-//
-// Revision 1.12  2008/11/03 15:31:57  rbowler
-// Back out consistent create_thread ATTR modification
-//
-// Revision 1.11  2008/10/18 09:32:21  fish
-// Ensure consistent create_thread ATTR usage
-//
-// Revision 1.10  2008/08/23 11:55:23  fish
-// Increase max #of rules from 10 to 64
-//
-// Revision 1.9  2008/07/30 15:29:04  bernard
-// Strip herc prefix before checking the message.
-//
-// Revision 1.8  2008/07/30 06:25:27  fish
-// use 'if' statement instead of 'min' macro to fix Linux build error,
-// and remove redundant buffer initialization already done by hao_initialize.
-//
-// Revision 1.7  2008/07/29 05:55:41  fish
-// Fix buffer mgmt bug in hao_thread causing garbage
-//
-// Revision 1.6  2008/07/26 14:39:42  bernard
-// Foutje, bedankt!
-//
-// Revision 1.5  2008/07/26 14:30:17  bernard
-// Reject hao automatic commands. This causes deadlocks.
-//
-// Revision 1.4  2007/06/23 00:04:10  ivan
-// Update copyright notices to include current year (2007)
-//
-// Revision 1.3  2006/12/08 09:43:21  jj
-// Add CVS message log
-//
+
 
 #include "hstdinc.h"
 

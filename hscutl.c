@@ -1,40 +1,15 @@
-/*********************************************************************/
-/* HSCUTL.C   --   Implementation of functions used in hercules that */
-/* may be missing on some platform ports, or other convenient mis-   */
-/* laneous global utility functions.                                 */
-/*********************************************************************/
+/* HSCUTL.C     (c) Copyright Ivan Warren & Others, 2003-2009        */
+/*              Hercules Platform Port & Misc Functions              */
+
+/*-------------------------------------------------------------------*/
+/* Implementation of functions used in Hercules that may             */
+/* be missing on some platform ports, or other convenient            */
+/* miscellaneous global utility functions.                           */
+/*-------------------------------------------------------------------*/
+
 /* (c) 2003-2006 Ivan Warren & Others -- Released under the Q Public */
 /* License -- This file is portion of the HERCULES S/370, S/390 and  */
 /* z/Architecture emulator                                           */
-/*********************************************************************/
-
-// $Id$
-//
-// $Log$
-// Revision 1.28  2008/07/10 18:29:02  fish
-// Fix crash in 'resolve_symbol_string' when incomplete symbol passed
-// (e.g. "$(x" for example)
-//
-// Revision 1.27  2008/02/19 11:49:19  ivan
-// - Move setting of CPU priority after spwaning timer thread
-// - Added support for Posix 1003.1e capabilities
-//
-// Revision 1.26  2007/11/11 20:38:24  rbowler
-// Suppress msg HHCUT001I if keepalive successful
-//
-// Revision 1.25  2007/01/12 14:38:47  rbowler
-// Error checking for Unix keepalive
-//
-// Revision 1.24  2007/01/10 15:12:11  rbowler
-// Console keepalive for Unix
-//
-// Revision 1.23  2007/01/10 09:32:39  fish
-// Enable connection keep-alive to try and detect 3270 clients that
-// have died (MSVC only right now; don't know how to do it on *nix)
-//
-// Revision 1.22  2006/12/08 09:43:26  jj
-// Add CVS message log
-//
 
 #include "hstdinc.h"
 

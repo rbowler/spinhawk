@@ -1,8 +1,6 @@
 /* LOGGER.C     (c) Copyright Jan Jaeger, 2003-2009                  */
 /*              System logger functions                              */
 
-// $Id$
-
 /* If standard output or standard error is redirected then the log   */
 /* is written to the redirection.                                    */
 /* If standard output and standard error are both redirected then    */
@@ -12,35 +10,6 @@
 
 /* Any thread can determine background mode by inspecting stderr     */
 /* for isatty()                                                      */
-
-// $Log$
-// Revision 1.54  2008/11/29 21:28:01  rbowler
-// Fix warnings C4267 because win64 declares send length as int not size_t
-//
-// Revision 1.53  2008/11/04 05:56:31  fish
-// Put ensure consistent create_thread ATTR usage change back in
-//
-// Revision 1.52  2008/11/03 15:31:54  rbowler
-// Back out consistent create_thread ATTR modification
-//
-// Revision 1.51  2008/10/18 09:32:21  fish
-// Ensure consistent create_thread ATTR usage
-//
-// Revision 1.50  2008/08/23 11:58:52  fish
-// Remove "<pnl...>" color string from most logfile hardcopy o/p
-//
-// Revision 1.49  2007/06/23 00:04:14  ivan
-// Update copyright notices to include current year (2007)
-//
-// Revision 1.48  2007/02/27 21:59:32  kleonard
-// PR# misc/87 startup messages fix completion
-//
-// Revision 1.47  2007/01/31 00:48:03  kleonard
-// Add logopt config statement and panel command
-//
-// Revision 1.46  2006/12/08 09:43:28  jj
-// Add CVS message log
-//
 
 #include "hstdinc.h"
 

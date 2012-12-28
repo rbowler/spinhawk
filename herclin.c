@@ -1,3 +1,6 @@
+/* HERCLIN.C    (c) Copyright Ivan Warren, 2005-2009                 */
+/*              Hercules Line Mode Console                           */
+
 /************************************************/
 /* (C) Copyright 2005-2009 Roger Bowler & Others*/
 /* Initial author : Ivan Warren                 */
@@ -8,16 +11,6 @@
 /* THE USE OF THE INITIAL HARDWARE PANEL        */
 /* INTERFACE FEATURE.                           */
 /************************************************/
-
-// $Id$
-//
-// $Log$
-// Revision 1.5  2007/06/23 00:04:10  ivan
-// Update copyright notices to include current year (2007)
-//
-// Revision 1.4  2006/12/08 09:43:25  jj
-// Add CVS message log
-//
 
 #ifdef _MSVC_
 #include <windows.h>

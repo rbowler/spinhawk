@@ -1,22 +1,11 @@
-/*********************************************************************/
-/* HSCUTL.H   --   Implementation of functions used in hercules that */
-/* may be missing on some platform ports, or other convenient mis-   */
-/* laneous global utility functions.                                 */
-/*********************************************************************/
+/* HSCUTL.H     (c) Copyright Roger Bowler, 1999-2009                */
+/*              Host-specific functions header file                  */
 
-// $Id$
-//
-// $Log$
-// Revision 1.21  2007/01/10 15:12:11  rbowler
-// Console keepalive for Unix
-//
-// Revision 1.20  2007/01/10 09:32:39  fish
-// Enable connection keep-alive to try and detect 3270 clients that
-// have died (MSVC only right now; don't know how to do it on *nix)
-//
-// Revision 1.19  2006/12/08 09:43:26  jj
-// Add CVS message log
-//
+/*-------------------------------------------------------------------*/
+/* Implementation of functions used in Hercules that may             */
+/* be missing on some platform ports, or other convenient            */
+/* miscellaneous global utility functions.                           */
+/*-------------------------------------------------------------------*/
 
 #ifndef __HSCUTL_H__
 #define __HSCUTL_H__

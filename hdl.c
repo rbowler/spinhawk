@@ -1,22 +1,6 @@
 /* HDL.C        (c) Copyright Jan Jaeger, 2003-2009                  */
 /*              Hercules Dynamic Loader                              */
 
-// $Id$
-//
-// $Log$
-// Revision 1.55  2009/01/14 15:23:20  jj
-// Move modpath logic to hsccmd.c
-//
-// Revision 1.54  2008/11/23 23:29:44  rbowler
-// Fix win64 type conversion warnings in hdl.c
-//
-// Revision 1.53  2007/06/23 00:04:10  ivan
-// Update copyright notices to include current year (2007)
-//
-// Revision 1.52  2006/12/08 09:43:25  jj
-// Add CVS message log
-//
-
 #include "hstdinc.h"
 
 #define _HDL_C_

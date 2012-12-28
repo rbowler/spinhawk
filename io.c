@@ -4,8 +4,6 @@
 /* Interpretive Execution - (c) Copyright Jan Jaeger, 1999-2009      */
 /* z/Architecture support - (c) Copyright Jan Jaeger, 1999-2009      */
 
-// $Id$
-
 /*-------------------------------------------------------------------*/
 /* This module implements all I/O instructions of the                */
 /* S/370 and ESA/390 architectures, as described in the manuals      */
@@ -31,20 +29,6 @@
 /*      I/O rate counter - Valery Pogonchenko                        */
 /*      64-bit IDAW support - Roger Bowler v209                  @IWZ*/
 /*-------------------------------------------------------------------*/
-
-// $Log$
-// Revision 1.61  2007/06/23 00:04:14  ivan
-// Update copyright notices to include current year (2007)
-//
-// Revision 1.60  2007/01/13 07:23:42  bernard
-// backout ccmask
-//
-// Revision 1.59  2007/01/12 15:24:21  bernard
-// ccmask phase 1
-//
-// Revision 1.58  2006/12/08 09:43:28  jj
-// Add CVS message log
-//
 
 #include "hstdinc.h"
 

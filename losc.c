@@ -1,8 +1,6 @@
 /* LOSC.C       (c) Copyright Jan Jaeger, 2009                       */
 /*              Hercules Licensed Operating System Check             */
 
-// $Id$
-
 #include "hstdinc.h"
 
 #if !defined(_HENGINE_DLL_)

@@ -1,12 +1,5 @@
-/* LOGMSG.C : ISW 2003 */
-/* logmsg frontend routing */
-
-// $Id$
-//
-// $Log$
-// Revision 1.18  2006/12/08 09:43:28  jj
-// Add CVS message log
-//
+/* LOGMSG.C     (c) Copyright Ivan Warren, 2003-2006                 */
+/*              logmsg frontend routing                              */
 
 #include "hstdinc.h"
 

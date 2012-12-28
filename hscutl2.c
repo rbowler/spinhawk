@@ -1,3 +1,6 @@
+/* HSCUTL2.C    (c) Copyright Mark L. Gaubatz and others, 2003-2006  */
+/*              Host-specific functions for Hercules                 */
+
 /**********************************************************************/
 /*                                                                    */
 /*  HSCUTL2.C                                                         */
@@ -20,13 +23,6 @@
 /*  z/Architecture emulator.                                          */
 /*                                                                    */
 /**********************************************************************/
-
-// $Id$
-//
-// $Log$
-// Revision 1.10  2006/12/08 09:43:26  jj
-// Add CVS message log
-//
 
 #include "hstdinc.h"
 

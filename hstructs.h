@@ -1,13 +1,6 @@
 /* HSTRUCTS.H   (c) Copyright Roger Bowler, 1999-2009                */
 /*              Hercules Structure Definitions                       */
 
-//      This header auto-#included by 'hercules.h'...
-//
-//      The <config.h> header and other required headers are
-//      presumed to have already been #included ahead of it...
-
-// $Id$
-
 #ifndef _HSTRUCTS_H
 #define _HSTRUCTS_H
 

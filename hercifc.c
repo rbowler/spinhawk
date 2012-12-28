@@ -1,10 +1,7 @@
-// ====================================================================
-// Hercules Interface Configuration Program
-// ====================================================================
-//
-// Copyright    (C) Copyright Roger Bowler, 2000-2009
-//              (C) Copyright James A. Pierson, 2002-2009
-//
+/* HERCIFC.C    (c) Copyright Roger Bowler, 2000-2012                */
+/*              (c) Copyright James A. Pierson, 2002-2009            */
+/*              Hercules Interface Configuration Program             */
+
 // Based on code originally written by Roger Bowler
 // Modified to communicate via unix sockets.
 //
@@ -18,8 +15,6 @@
 //
 // The exit status is zero if successful, non-zero if error.
 //
-
-// $Id$
 
 #include "hstdinc.h"
 

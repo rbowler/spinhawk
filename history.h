@@ -1,6 +1,5 @@
-// $Id$
-//
-// $Log$
+/* HISTORY.H    (c) Copyright Volker Bandke, 2003-2009               */
+/*              Hercules Command History header                      */
 
 #ifndef HISTORY_H
 #define HISTORY_H

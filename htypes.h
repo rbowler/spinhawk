@@ -1,8 +1,6 @@
 /* HTYPES.H     (c) Copyright Roger Bowler, 1999-2009                */
 /*              Hercules Type Definitions                            */
 
-// $Id$
-
 #ifndef _HTYPES_H_
 #define _HTYPES_H_
 /*

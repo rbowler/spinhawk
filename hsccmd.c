@@ -6,8 +6,6 @@
 /*   (http://www.hercules-390.org/herclic.html) as modifications to  */
 /*   Hercules.                                                       */
 
-// $Id$
-
 /*-------------------------------------------------------------------*/
 /* This module implements the various Hercules System Console        */
 /* (i.e. hardware console) commands that the emulator supports.      */

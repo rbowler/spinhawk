@@ -1,13 +1,5 @@
-/*-------------------------------------------------------------------*/
-/*  HMACROS.H             Hercules macros...                         */
-/*-------------------------------------------------------------------*/
-
-//      This header auto-#included by 'hercules.h'...
-//
-//      The <config.h> header and other required headers are
-//      presumed to have already been #included ahead of it...
-
-// $Id$
+/* HMACROS.H    (c) Copyright Roger Bowler, 1999-2009                */
+/*               Hercules macros                                     */
 
 #ifndef _HMACROS_H
 #define _HMACROS_H

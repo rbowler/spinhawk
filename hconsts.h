@@ -1,13 +1,5 @@
-/*-------------------------------------------------------------------*/
-/*  HCONSTS.H             Hercules #define constants...              */
-/*-------------------------------------------------------------------*/
-
-//      This header auto-#included by 'hercules.h'...
-//
-//      The <config.h> header and other required headers are
-//      presumed to have already been #included ahead of it...
-
-// $Id$
+/* HCONSTS.H    (c) Copyright "Fish" (David B. Trout), 2005-2009     */
+/*              Hercules constants                                   */
 
 #ifndef _HCONSTS_H
 #define _HCONSTS_H

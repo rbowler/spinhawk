@@ -1,8 +1,6 @@
 /* LOADPARM.C   (c) Copyright Jan Jaeger, 2004-2009                  */
 /*              SCLP / MSSF loadparm                                 */
 
-// $Id$
-
 /*-------------------------------------------------------------------*/
 /* This module contains functions which set, copy, and retrieve the  */
 /* values of the LOADPARM and various other environmental parameters */

@@ -1,6 +1,5 @@
-// $Id$
-//
-// $Log$
+/* HISTORY.C    (c) Copyright Volker Bandke, 2003-2009               */
+/*              Hercules Command History Processor                   */
 
 #include "hstdinc.h"
 

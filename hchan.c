@@ -1,9 +1,7 @@
-/* GCHAN.C       (c) Copyright Ivan Warren, 2005-2009                */
-/* Based on work (c)Roger Bowler, Jan Jaeger & Others 1999-2009      */
+/* HCHAN.C      (c) Copyright Ivan Warren, 2005-2009                 */
 /*              Generic channel device handler                       */
 
-// $Id$
-
+/* Based on work (c)Roger Bowler, Jan Jaeger & Others 1999-2009      */
 /* This code is covered by the QPL Licence                           */
 /**CAUTION*CAUTION*CAUTION*CAUTION*CAUTION*CAUTION*CAUTION*CAUTION****/
 /* THIS CODE IS CURRENTLY IN A DEVELOPMENT STAGE AND IS NOT          */
@@ -16,23 +14,10 @@
 /* communicate with external device handlers.                        */
 /*-------------------------------------------------------------------*/
 
-// $Log$
-// Revision 1.11  2007/11/21 22:54:14  fish
-// Use new BEGIN_DEVICE_CLASS_QUERY macro
-//
-// Revision 1.10  2007/06/23 00:04:10  ivan
-// Update copyright notices to include current year (2007)
-//
-// Revision 1.9  2006/12/08 09:43:21  jj
-// Add CVS message log
-//
-
 #include "hstdinc.h"
 
 #include "hercules.h"
-
 #include "devtype.h"
-
 #include "hchan.h"
 
 #if defined(OPTION_DYNAMIC_LOAD) && defined(WIN32) && !defined(HDL_USE_LIBTOOL) && !defined(_MSVC_)

@@ -1,18 +1,5 @@
-// $Id$
-//
-// $Log$
-// Revision 1.9  2008/12/24 15:42:14  jj
-// Add debug entry point for sclp event masks
-//
-// Revision 1.8  2008/12/22 13:10:22  jj
-// Add sclp debug entry points
-//
-// Revision 1.7  2008/02/12 08:42:15  fish
-// dyngui tweaks: new def devlist fmt, new debug_cd_cmd hook
-//
-// Revision 1.6  2006/12/08 09:43:28  jj
-// Add CVS message log
-//
+/* HSYS.C       (c) Copyright Roger Bowler, 1999-2012                */
+/*              Hercules hsys Header                                 */
 
 #include "hstdinc.h"
 

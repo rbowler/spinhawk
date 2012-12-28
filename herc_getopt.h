@@ -1,6 +1,5 @@
-// $Id$
-//
-// $Log$
+/* HERC_GETOPT.H (c) Copyright Ivan Warren, 2003                     */
+/*              Hercules getopt interface                            */
 
 #if !defined(__HERC_GETOPT_H__)
 #    define  __HERC_GETOPT_H__

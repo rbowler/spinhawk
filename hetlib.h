@@ -1,3 +1,6 @@
+/* HETLIB.H     (c) Copyright Leland Lucius, 2000-2009               */
+/*              Header for the Hercules Emulated Tape library        */
+
 #if !defined( _HETLIB_H_ )
 #define _HETLIB_H_
 
@@ -11,19 +14,6 @@
 ||
 || ----------------------------------------------------------------------------
 */
-
-// $Id$
-//
-// $Log$
-// Revision 1.18  2007/07/24 22:36:33  fish
-// Fix tape Synchronize CCW (x'43') to do actual commit
-//
-// Revision 1.17  2007/06/23 00:04:11  ivan
-// Update copyright notices to include current year (2007)
-//
-// Revision 1.16  2006/12/08 09:43:26  jj
-// Add CVS message log
-//
 
 #include "hercules.h"
 

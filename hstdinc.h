@@ -5,8 +5,6 @@
 /* files which are not dependent on the mainframe architectural      */
 /* features selected and thus are eligible for precompilation        */
 
-// $Id$
-
 #ifndef _HSTDINC_H
 #define _HSTDINC_H
 

@@ -1,9 +1,6 @@
 /* HOSTOPTS.H   (c) Copyright "Fish" (David B. Trout), 2005-2009     */
 /*              Host-specific features and options for Hercules      */
 
-// $Id$
-
-//    This header file #included by 'featall.h' and 'hercules.h'
 
 /*
    All HOST-operating-specific (Win32, Apple. Linux, etc) FEATures
