@@ -4,8 +4,6 @@
 /* Interpretive Execution - (c) Copyright Jan Jaeger, 1999-2009      */
 /* z/Architecture support - (c) Copyright Jan Jaeger, 1999-2009      */
 
-// $Id$
-
 /*-------------------------------------------------------------------*/
 /* This module contains various functions which store, fetch, and    */
 /* copy values to, from, or between virtual storage locations.       */

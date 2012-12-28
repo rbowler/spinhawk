@@ -1,8 +1,6 @@
 /* TRACE.C      (c) Copyright Jan Jaeger, 2000-2009                  */
 /*              Implicit tracing functions                           */
 
-// $Id$
-
 /* Interpretive Execution - (c) Copyright Jan Jaeger, 1999-2009      */
 /* z/Architecture support - (c) Copyright Jan Jaeger, 1999-2009      */
 
@@ -17,20 +15,6 @@
 /* Additional credits:                                               */
 /*      ASN-and-LX-reuse facility - Roger Bowler            July 2004*/
 /*-------------------------------------------------------------------*/
-
-// $Log$
-// Revision 1.32  2008/02/28 22:06:34  ptl00
-// Fix mode switch trace
-//
-// Revision 1.31  2007/06/23 00:04:19  ivan
-// Update copyright notices to include current year (2007)
-//
-// Revision 1.30  2006/12/20 04:26:20  gsmith
-// 19 Dec 2006 ip_all.pat - performance patch - Greg Smith
-//
-// Revision 1.29  2006/12/08 09:43:31  jj
-// Add CVS message log
-//
 
 #include "hstdinc.h"
 

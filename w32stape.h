@@ -11,19 +11,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////////////
 
-// $Id$
-//
-// $Log$
-// Revision 1.8  2007/11/30 14:54:34  jmaynard
-// Changed conmicro.cx to hercules-390.org or conmicro.com, as needed.
-//
-// Revision 1.7  2007/06/23 00:04:19  ivan
-// Update copyright notices to include current year (2007)
-//
-// Revision 1.6  2006/12/08 09:43:34  jj
-// Add CVS message log
-//
-
 #ifndef _W32STAPE_H_
 #define _W32STAPE_H_
 

@@ -5,8 +5,6 @@
 /* Prime Maintainer: Ivan Warren                                     */
 /* Secondary Maintainer: "Fish" (David B. Trout)                     */
 
-// $Id$
-
 /*-------------------------------------------------------------------*/
 /* This module contains device handling functions for emulated       */
 /* magnetic tape devices for the Hercules ESA/390 emulator.          */

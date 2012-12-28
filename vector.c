@@ -1,6 +1,5 @@
-/* vector.c     S/370 and ESA/390 Vector Operations                  */
-
-// $Id$
+/* VECTOR.C     (c) Copyright Jan Jaeger, 1999-2009                  */
+/*              S/370 and ESA/390 Vector Operations                  */
 
 /*-------------------------------------------------------------------*/
 /* This module implements the Vector Facility instruction execution  */
@@ -13,23 +12,6 @@
 /* Interpretive Execution - (c) Copyright Jan Jaeger, 1999-2009      */
 /* z/Architecture support - (c) Copyright Jan Jaeger, 1999-2009      */
 /*-------------------------------------------------------------------*/
-
-// $Log$
-// Revision 1.21  2007/06/23 00:04:19  ivan
-// Update copyright notices to include current year (2007)
-//
-// Revision 1.20  2007/01/13 07:26:30  bernard
-// backout ccmask
-//
-// Revision 1.19  2007/01/12 15:25:11  bernard
-// ccmask phase 1
-//
-// Revision 1.18  2006/12/20 04:26:20  gsmith
-// 19 Dec 2006 ip_all.pat - performance patch - Greg Smith
-//
-// Revision 1.17  2006/12/08 09:43:31  jj
-// Add CVS message log
-//
 
 #include "hstdinc.h"
 

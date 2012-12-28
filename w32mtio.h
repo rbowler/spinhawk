@@ -15,25 +15,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////////////
 
-// $Id$
-//
-// $Log$
-// Revision 1.7  2008/03/25 11:41:31  fish
-// SCSI TAPE MODS part 1: groundwork: non-functional changes:
-// rename some functions, comments, general restructuring, etc.
-// New source modules awstape.c, omatape.c, hettape.c and
-// tapeccws.c added, but not yet used (all will be used in a future
-// commit though when tapedev.c code is eventually split)
-//
-// Revision 1.6  2007/11/30 14:54:33  jmaynard
-// Changed conmicro.cx to hercules-390.org or conmicro.com, as needed.
-//
-// Revision 1.5  2007/06/23 00:04:19  ivan
-// Update copyright notices to include current year (2007)
-//
-// Revision 1.4  2006/12/08 09:43:33  jj
-// Add CVS message log
-//
 
 #ifndef _W32MTIO_H_
 #define _W32MTIO_H_

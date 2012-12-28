@@ -6,8 +6,6 @@
 
 /* MVPG moved from cpu.c to xstore.c   05/07/00 Jan Jaeger */
 
-// $Id$
-
 /*-------------------------------------------------------------------*/
 /* This module implements the expanded storage instructions          */
 /* for the Hercules ESA/390 emulator.                                */

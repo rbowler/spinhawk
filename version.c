@@ -1,29 +1,10 @@
 /* VERSION.C    (c) Copyright Roger Bowler, 1999-2009                */
 /*              Hercules Version Display Module                      */
 
-// $Id$
-
 /*-------------------------------------------------------------------*/
-/* This module displays the Hercules program name, version, build    */
-/* date and time, and copyright notice to the indicated file.        */
+/* This module displays the Hercules program name and version,       */
+/* copyright notice, build date and time, and build information.     */
 /*-------------------------------------------------------------------*/
-
-// $Log$
-// Revision 1.52  2009/01/23 13:12:19  bernard
-// copyright notice
-//
-// Revision 1.51  2009/01/14 15:23:20  jj
-// Move modpath logic to hsccmd.c
-//
-// Revision 1.50  2007/12/07 12:50:22  rbowler
-// Show multi_byte assist status at startup
-//
-// Revision 1.49  2007/06/23 00:04:19  ivan
-// Update copyright notices to include current year (2007)
-//
-// Revision 1.48  2006/12/08 09:43:31  jj
-// Add CVS message log
-//
 
 #include "hstdinc.h"
 

@@ -5,8 +5,6 @@
 /* Prime Maintainer: Ivan Warren                                     */
 /* Secondary Maintainer: "Fish" (David B. Trout)                     */
 
-// $Id$
-
 /*-------------------------------------------------------------------*/
 /* This module contains the CCW handling functions for tape devices. */
 /*                                                                   */

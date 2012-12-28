@@ -3,8 +3,6 @@
 
 /* Interpretive Execution - (c) Copyright Jan Jaeger, 1999-2009      */
 
-// $Id$
-
 /*-------------------------------------------------------------------*/
 /* This module implements miscellaneous diagnose functions           */
 /* described in SC24-5670 VM/ESA CP Programming Services             */

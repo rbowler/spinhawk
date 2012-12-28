@@ -1,8 +1,6 @@
 /* TAPECOPY.C   (c) Copyright Roger Bowler, 1999-2010                */
 /*              Convert SCSI tape into AWSTAPE format                */
 
-// $Id$
-
 /*              Read from AWSTAPE and write to SCSI tape mods        */
 /*              Copyright 2005-2009 James R. Maynard III             */
 

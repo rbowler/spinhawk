@@ -1,20 +1,6 @@
-// ====================================================================
-// Hercules - TUN/TAP Abstraction Layer
-// ====================================================================
-//
-// Copyright (C) 2002-2009 by James A. Pierson
-//           (C) 2002-2009 by "Fish" (David B. Trout)
-//
-
-// $Id$
-//
-// $Log$
-// Revision 1.12  2007/06/23 00:04:19  ivan
-// Update copyright notices to include current year (2007)
-//
-// Revision 1.11  2006/12/08 09:43:31  jj
-// Add CVS message log
-//
+/* TUNTAP.H     (c) Copyright James A. Pierson, 2002-2009            */
+/*              (c) Copyright "Fish" (David B. Trout), 2002-2009     */
+/*              Hercules - TUN/TAP Abstraction Layer                 */
 
 #ifndef __TUNTAP_H_
 #define __TUNTAP_H_
