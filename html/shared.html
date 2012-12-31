@@ -40,9 +40,7 @@ To use a device on a remote system, instead of specifying a file
 name on the device config statement, you specify
 
 <p>
-<blockquote>
     <code>ip_address_or_name:port:devnum</code>
-</blockquote>
 <p>
 
 For example:
@@ -168,7 +166,6 @@ The client sends an 8 byte request header and maybe some data:
 
 <p>
 
-<blockquote>
     <dl>
     <dt>0xe0 &nbsp; CONNECT<p><dd>
 
@@ -281,15 +278,13 @@ The client sends an 8 byte request header and maybe some data:
         NOTE: This action should actually be SETOPT or
         some such; it was just easier to code a COMPRESS
         specific SETOPT (less code).
-        
+
     </dl>
-</blockquote>
 
 <p><br>
 
 'flag' qualifies the client request and varies by the request.
 
-<blockquote>
     <dl>
     <dt>0x80 &nbsp; NOWAIT<p><dd>
 
@@ -309,7 +304,7 @@ The client sends an 8 byte request header and maybe some data:
     <dt>0x42 &nbsp; DEVID<p><dd>
 
         Device identifier data
-        
+
     <p>
     <dt>0x43 &nbsp; DEVUSED<p><dd>
 
@@ -349,10 +344,10 @@ The client sends an 8 byte request header and maybe some data:
     <dt>0x1x &nbsp; LIBZ<p><dd>
 
         using zlib
-        
+
     <p>
     <dt>0xxy<p><dd>
-    
+
         For COMPRESS, identifies the compression
         algorithms supported by the client (0x2y for bzip2,
         0x1y for zlib, 0x3y for both) and the zlib compression
@@ -361,7 +356,6 @@ The client sends an 8 byte request header and maybe some data:
         uncompressed data is compressed between client & server.
 
     </dl>
-</blockquote>
 
 <p><br>
 
@@ -405,7 +399,6 @@ The server sends an 8 byte response header and maybe some data:
                     success however other codes also indicate success
                     but qualified in some manner:
 
-<blockquote>
     <dl>
     <dt>0x80 &nbsp; ERROR<p><dd>
 
@@ -451,7 +444,6 @@ The server sends an 8 byte response header and maybe some data:
         purge all locally cached records for the device.
 
     </dl>
-</blockquote>
 
 <p>
 

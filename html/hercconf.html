@@ -307,7 +307,6 @@ and how they are used.
     Other supported codepage mappings are:
     <p>
 
-    <blockquote>
     <table border=1 cellpadding=3>
         <tr>
           <th rowspan=2>Mapping</th>
@@ -397,7 +396,6 @@ and how they are used.
             <td>1140 United States/Canada with Euro</td>
         </tr>
     </table>
-    </blockquote>
     <p>
 
     Iconv single byte codepages may also be used (e.g. <code>UTF8/EBCDIC-CP-NL</code>)
@@ -1222,7 +1220,6 @@ and how they are used.
     <h5>Device group symbols</h5>
     <p>
         When multiple devices are defined with a single device definition statement, then the symbols<P>
-        <blockquote>
             <TABLE BORDER=0>
                 <ul compact>
                     <TR><TD><LI>&nbsp; CUU  &nbsp; </TD><TD> &nbsp; (3 digits device number, upper case hexadecimal digits)</TD></TR>
@@ -1231,7 +1228,6 @@ and how they are used.
                     <TR><TD><LI>&nbsp; ccuu &nbsp; </TD><TD> &nbsp; (4 digits device number, lower case hexadecimal digits)</TD></TR>
                 </ul>
             </TABLE>
-        </blockquote>
         <p>
         are defined to contain for each device the relevant device address. For example:
         <p>
@@ -1460,7 +1456,6 @@ and how they are used.
 </TABLE>
 
 <p><br>
-<blockquote>
     <p>
     <i>
     <b>Caution:</b> &nbsp; On Windows, the value you choose for your
@@ -1470,7 +1465,6 @@ and how they are used.
     You should never modify one without understanding what impact your doing so
     might have on the other!
     </i>
-</blockquote>
 
 <p><br>
 
@@ -1596,7 +1590,6 @@ and how they are used.
 </TABLE>
 
 <p><br>
-<blockquote>
     <p>
     <i>
     <b>Caution:</b> &nbsp; On Windows, your Thread Priority is interpreted
@@ -1604,7 +1597,6 @@ and how they are used.
     You should never modify your Thread Priority settings without first reviewing your
     chosen <a href="#HERCPRIO">Process Priority</a> setting!
     </i>
-</blockquote>
 
 <p>
 
@@ -1619,16 +1611,13 @@ and how they are used.
     identical I/O devices. The format of the device statement is:
     <p>
 
-    <blockquote>
     <code><em>devnum(s) &nbsp; devtype</em> &nbsp; [ <em>arguments</em> ] &nbsp; [ <em># comments...</em> ] </code>
-    </blockquote>
     <p>
 
     where the generic syntax for device numbers is &nbsp;
     <code>[n:]CCUU[,CCUU][-CCUU][.nn][...]</code> &nbsp;
     as explained below:
 
-<blockquote>
 
 <dl> <!-- begin Device statements -->
 <a name="devnums"></a>
@@ -1699,7 +1688,6 @@ and how they are used.
 
 </dl> <!-- end Device statements -->
 
-</blockquote>
 
 <p><br>
 
@@ -1831,7 +1819,7 @@ and how they are used.
                 <td><a href="#remtty">Remote Teletype</a></td>
                 <td>TCP Socket</td>
             </tr>
-           
+
             </table>
 
         </td>
@@ -2614,7 +2602,6 @@ and how they are used.
     The following parameters apply to <b>AWS</b>, <b>HET</b> and <b>FakeTape</b> emulation files:
     <p>
 
-    <blockquote>
         <dl>
         <dt><code>MAXSIZE</code>=<i>n</i> &nbsp;&#124;&nbsp; <code>MAXSIZEK</code>=<i>n</i>
              &nbsp;&#124;&nbsp; <code>MAXSIZEM</code>=<i>n</i>
@@ -2745,7 +2732,6 @@ and how they are used.
             the DOS/VSE operating system is provided in the
             <code>util</code> subdirectory of the distributed source code.
         </dl>
-    </blockquote>
 
 <hr width="50%"><p>
 
@@ -3337,7 +3323,7 @@ ROUTE  00  172.021.003.032  255.255.255.224
         to be indicated in the data returned by SENSE ID and similar CCW's.
         <p>
         The default value depends on the device type:
-        <blockquote>
+        <p>
             <table border=1 cellpadding=3>
             <tr align="center"><th>Device type</th><th>Default CU type</dev></th></tr>
             <tr align="center"><td>2311</td><td>2841</td></tr>
@@ -3346,7 +3332,6 @@ ROUTE  00  172.021.003.032  255.255.255.224
             <tr align="center"><td>3390</td><td>3990</td></tr>
             <tr align="center"><td>9345</td><td>9343</td></tr>
             </table>
-        </blockquote>
         <p>
         Other values which may be specified are:
         3990-3 and 3990-6.
@@ -3555,7 +3540,7 @@ ROUTE  00  172.021.003.032  255.255.255.224
     Describes a 2703 Telegraph Terminal Control Type II (TTY 33/35) stop/start line, providing access to the Host OS via a standard TELNET client.
 
     <p>
-    To the host OS the line emulates an asynchronous TELE2 connection.  The communication is emulated over a TELNET connection. 
+    To the host OS the line emulates an asynchronous TELE2 connection.  The communication is emulated over a TELNET connection.
     <p>
 
     The following options define the line emulation behaviour:

@@ -21,15 +21,12 @@ contributed by Malcolm Beattie.
 <p>
 Socket readers are defined in the Hercules configuration file like this:
 <p>
-<blockquote>
     <code>
         <i>devnum</i> <i>devtype</i> <i>sockspec</i> sockdev [<i>option ...</i>]
     </code>
-</blockquote>
 <p>
 The socket specification <i>sockspec</i> can take any of the following
 formats:
-<blockquote>
 <dl>
     <dt><code><em>ipaddr</em>:<em>port</em></code>
         <dd><p>The reader listens on the specified IP address and port number.
@@ -53,7 +50,6 @@ formats:
         Example: <code>/tmp/hercrdr.00C</code>.
         <p>
 </dl>
-</blockquote>
 <h3>Examples</h3>
 <pre><code>
     000A   2501   127.0.0.1:2501    sockdev  ascii  trunc  eof
@@ -154,11 +150,9 @@ submit jobs using either TCP/IP or Unix Domain Sockets.
 <p>
 The script is invoked using one of the following command formats:
 <p>
-<blockquote>
     <pre>
     hercsub  192.168.1.102:3505  dummy.jcl
     hercsub  /tmp/hercrdr.00C  dummy jcl</pre>
-</blockquote>
 Here is the sample script:
 <pre><code>
     #!/usr/bin/perl
@@ -196,9 +190,7 @@ reader via TCP/IP.
 Install netcat (which is useful for innumerable other things as well)
 and use:
 <p>
-<blockquote>
     <code>nc -w1 localhost 1234 &lt; dummy.jcl</code>
-</blockquote>
 <p>
 For more information, type &nbsp;<code>man nc</code>.
 
