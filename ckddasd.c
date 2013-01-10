@@ -4697,8 +4697,9 @@ BYTE            trk_ovfl;               /* == 1 if track ovfl write  */
     /* LOCATE RECORD EXTENDED                                        */
     /*---------------------------------------------------------------*/
 
-    /* LRE only valid for 3990-6 */
-    if (dev->ckdcu->devt != 0x3990 || dev->ckdcu->model != 0xe9)
+    /* LRE only valid for 3990-3 or 3990-6 */
+    if (dev->ckdcu->devt != 0x3990 ||
+        (dev->ckdcu->model != 0xec && dev->ckdcu->model != 0xe9))
     {
         /* Set command reject sense byte, and unit check status */
         ckd_build_sense (dev, SENSE_CR, 0, 0, FORMAT_0, MESSAGE_1);
