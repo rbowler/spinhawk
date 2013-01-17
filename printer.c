@@ -658,7 +658,7 @@ static void printer_query_device (DEVBLK *dev, char **class,
 {
     BEGIN_DEVICE_CLASS_QUERY( "PRT", dev, class, buflen, buffer );
 
-    snprintf (buffer, buflen, "*printer.c* %s%s%s%s%s%s%s",
+    snprintf (buffer, buflen, "%s%s%s%s%s%s%s",
                  dev->filename,
                 (dev->bs         ? " sockdev"      : ""),
                 (dev->crlf       ? " crlf"         : ""),
