@@ -5243,8 +5243,8 @@ int     page_offset;                    /* Low order bits of R2      */
 
     PRIV_CHECK(regs);
 
-    if((regs->GR_L(r1) & (PFMF_RESERVED|PFMF_FMFI_FSC_RESV))
-      || (regs->GR_L(r1) & PFMF_FMFI_NQ))
+    if ((regs->GR_L(r1) & (PFMF_RESERVED|PFMF_FSC_RESV))
+      || (regs->GR_L(r1) & PFMF_NQ))
         regs->program_interrupt (regs, PGM_SPECIAL_OPERATION_EXCEPTION);
 
     /* Wrap address according to addressing mode */
@@ -5253,15 +5253,15 @@ int     page_offset;                    /* Low order bits of R2      */
 
     /* Convert real address to absolute address */
 
-    switch (PFMF_FMFI_FSC & regs->GR_L(r1)) {
-    case PFMF_FMFI_FSC_1M:
+    switch (PFMF_FSC & regs->GR_L(r1)) {
+    case PFMF_FSC_1M:
         /* Prefixing is not applied in multipage mode */
         fc = 0x100 - ((regs->GR_L(r2) & 0xFF000) >> 12);
         break;
     /* Code for 2G pages goes here */
     default:
         break;
-    case PFMF_FMFI_FSC_4K:
+    case PFMF_FSC_4K:
         /* Prefixing is applied in single frame operation */
         aaddr = addr = APPLY_PREFIXING (addr, regs->PX);
         fc = 1;
@@ -5284,16 +5284,16 @@ int     page_offset;                    /* Low order bits of R2      */
         /* Set Key Control */
         if(regs->GR_L(r1) & PFMF_FMFI_SK)
         {
-        BYTE sk = regs->GR_L(r1) & PFMF_FMFI_KEY;
+        BYTE sk = regs->GR_L(r1) & PFMF_KEY;
         RADR n = addr;
         BYTE rck = 0;
 
             /* Ref Bit must be updated */
-            if(!(regs->GR_L(r1) & PFMF_FMFI_MR))
+            if (!(regs->GR_L(r1) & PFMF_MR))
                 rck |= STORKEY_REF;
 
             /* Change Bit must be updated */
-            if((regs->GR_L(r1) & PFMF_FMFI_MC))
+            if ((regs->GR_L(r1) & PFMF_MC))
                 rck |= STORKEY_CHANGE;
 
             /* Mask out R/C bits to be bypassed */
@@ -5495,7 +5495,7 @@ int     page_offset;                    /* Low order bits of R2      */
             }
 
             /* Quiesce */
-            if(!(regs->GR_L(r1) & PFMF_FMFI_NQ))
+            if (!(regs->GR_L(r1) & PFMF_NQ))
             {
                 /* Perform serialization and checkpoint-synchronization */
                 PERFORM_SERIALIZATION (regs);
@@ -5513,22 +5513,22 @@ int     page_offset;                    /* Low order bits of R2      */
             memset(regs->mainstor + aaddr, 0, PAGEFRAME_PAGESIZE);
 
         /* Update r2 - point to the next frame */
-        switch (PFMF_FMFI_FSC & regs->GR_L(r1)) {
-        case PFMF_FMFI_FSC_1M:
+        switch (PFMF_FSC & regs->GR_L(r1)) {
+        case PFMF_FSC_1M:
             aaddr = addr += 0x1000;
             SET_GR_A(r2, regs, (addr & ADDRESS_MAXWRAP(regs)) + page_offset);
             break;
         /* Code for 2G pages goes here */
         default:
             break;
-        case PFMF_FMFI_FSC_4K:
+        case PFMF_FSC_4K:
             /* Leave R2 unchanged */
             break;
         }
 
 #if 0
         /* Usage Indication */
-        if(regs->GR_L(r1) & PFMF_FMFI_UI)
+        if (regs->GR_L(r1) & PFMF_UI)
             { }
 #endif
 
