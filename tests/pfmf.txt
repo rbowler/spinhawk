@@ -1,0 +1,15 @@
+* PFMF test $Id$
+sysclear
+archmode esame
+r 1a0=00000001800000000000000000000200 # z/Arch restart PSW
+r 1d0=0002000180000000000000000000DEAD # z/Arch pgm new PSW
+r 200=C01100002000 # LGFI R1,X'2000'   R1=Start address 8K
+r 206=C02100100000 # LGFI R2,X'100000' R2=End address 1MB
+r 20C=C00100021000 # LGFI R0,X'21000'  SK=1,FSC=1MB,Key=00
+r 212=B9AF0001     # PFMF R0,R1        Set storage keys
+r 216=B9210012     # CLGR R1,R2        Reached end address?
+r 21A=A744FFF9     # BRC 4,*-14        No, branch back
+r 21E=B2B20300     # LPSWE WAITPSW     Load enabled wait PSW
+r 300=07020001800000000000000000FED0D0 # WAITPSW Enabled wait state PSW
+s+
+restart
