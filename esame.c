@@ -1,4 +1,4 @@
-/* ESAME.C      (c) Copyright Jan Jaeger, 2000-2010                  */
+/* ESAME.C      (c) Copyright Jan Jaeger, 2000-2013                  */
 /*              ESAME (z/Architecture) instructions                  */
 
 /*-------------------------------------------------------------------*/
@@ -31,16 +31,13 @@ BYTE * get_stfl_data(int, int *);
 #endif
 
 #include "hercules.h"
-
 #include "opcode.h"
-
 #include "inline.h"
 
 #define CRYPTO_EXTERN extern
 #include "crypto.h"
 
 #include "clock.h"
-
 
 
 #if defined(FEATURE_BINARY_FLOATING_POINT)
@@ -5008,7 +5005,7 @@ U64     bitmap;                         /* Bitmap to be ret in r1    */
         if(SIE_MODE(regs))
         {
             SIE_TRANSLATE(&n, ACCTYPE_SIE, regs);
- 
+
             if(regs->sie_pref)
             {
 #if defined(_FEATURE_STORAGE_KEY_ASSIST)
@@ -5051,10 +5048,10 @@ U64     bitmap;                         /* Bitmap to be ret in r1    */
                         if (SIE_TRANSLATE_ADDR (regs->sie_mso + n, USE_PRIMARY_SPACE,
                                                 regs->hostregs, ACCTYPE_PTE))
                             longjmp(regs->progjmp, SIE_INTERCEPT_INST);
-    
+
                         /* Convert real address to absolute address */
                         rcpa = APPLY_PREFIXING (regs->hostregs->dat.raddr, regs->hostregs->PX);
-    
+
                         /* For ESA/390 the RCP byte entry is at offset 1 in a
                            four byte entry directly beyond the page table,
                            for ESAME mode, this entry is eight bytes long */
@@ -5722,7 +5719,7 @@ BYTE *stfl_data;    /* -> STFL data being modified. Depends upon     */
                     /* ESA/390 features.                             */
 
     if (sysblk.arch_z900)
-    {   
+    {
         /* 'ARCHMODE z/Arch' in configuration (or console configured) */
 
         /* Locate the STFL data for a z/Architecture system */
@@ -5730,7 +5727,7 @@ BYTE *stfl_data;    /* -> STFL data being modified. Depends upon     */
 
         /* A little overkill, but deals with the possible corner case */
         if (!stfl_data)
-        {   
+        {
             stfl_len=sizeof(ARCH_DEP(stfl_data));
             stfl_data=&ARCH_DEP(stfl_data)[0];
         }
@@ -5746,17 +5743,17 @@ BYTE *stfl_data;    /* -> STFL data being modified. Depends upon     */
     else
     {
         /* 'ARCHMODE ESA/390' in configuration (or console configured) */
-        
+
         /* Locate the STFL data for an ESA/390 system */
         stfl_data=get_stfl_data(ARCH_390, &stfl_len);
-        
+
         /* Same overkill, but just in case */
         if (!stfl_data)
-        {   
+        {
             stfl_len=sizeof(ARCH_DEP(stfl_data));
             stfl_data=&ARCH_DEP(stfl_data)[0];
         }
-        
+
         stfl_data[0] &= ~STFL_0_ESAME_INSTALLED;
         stfl_data[0] &= ~STFL_0_ESAME_ACTIVE;
     }
@@ -8734,7 +8731,7 @@ U64     effective_addr2;                /* Effective address         */
     sysblk.program_parameter = ARCH_DEP(vfetch8) (effective_addr2, b2, regs);
 
 } /* end DEF_INST(load_program_parameter) */
-#endif /*defined(FEATURE_LOAD_PROGRAM_PARAMETER_FACILITY)*/     /*810*/ 
+#endif /*defined(FEATURE_LOAD_PROGRAM_PARAMETER_FACILITY)*/     /*810*/
 
 #if !defined(_GEN_ARCH)
 
@@ -8759,7 +8756,7 @@ U64     effective_addr2;                /* Effective address         */
 
 BYTE* get_stfl_data(int mode, int *data_len)
 {
-    switch(mode) 
+    switch(mode)
     {
 #if defined(_390)
         case ARCH_390:

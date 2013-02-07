@@ -201,7 +201,7 @@ typedef struct _DAT {
       } DAT;
 
 /* Bit definitions for control register 0 */
-#define CR0_MCX_AUTH    0x0001000000000000 /* Measurement Counter 
+#define CR0_MCX_AUTH    0x0001000000000000 /* Measurement Counter
                                            Extraction Authority      */
 #define CR0_BMPX        0x80000000      /* Block multiplex ctl  S/370*/
 #define CR0_SSM_SUPP    0x40000000      /* SSM suppression control   */
@@ -2206,11 +2206,11 @@ typedef struct _PTFFQSI {               /* Query Steering Information*/
 #define MAEIP_ISDBTE      0x80000000   /* Incorrect sample-data-block-
                                           table entry                */
 #define MAEIP_PRA         0x20000000   /* Program request alert      */
-#define MAEIP_SACA        0x00800000   /* Sampling authorisation 
+#define MAEIP_SACA        0x00800000   /* Sampling authorisation
                                           change alert               */
 #define MAEIP_LSDA        0x00400000   /* Loss of sample data alert  */
-#define MAEIP_CACA        0x00000080   /* Counter Authorisation 
+#define MAEIP_CACA        0x00000080   /* Counter Authorisation
                                           change alert               */
 #define MAEIP_LCDA        0x00000040   /* Loss of counter data alert */
-                                          
+
 #endif // _ESA390_H
