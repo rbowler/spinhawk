@@ -2055,7 +2055,7 @@ int  ParseArgs( DEVBLK* pDEVBLK, PLCSBLK pLCSBLK,
     memset( &addr, 0, sizeof( struct in_addr ) );
 
     // Set some initial defaults
-#if defined( WIN32 )
+#if defined(OPTION_W32_CTCI)
     pLCSBLK->pszTUNDevice   = strdup( tt32_get_default_iface() );
 #else
     pLCSBLK->pszTUNDevice   = strdup( HERCTUN_DEV );
@@ -2679,7 +2679,7 @@ HDL_REGISTER_SECTION;       // ("Register" our entry-points)
 //             entry-point       entry-point
 //             name              value
 
-#if defined( WIN32 )
+#if defined(OPTION_W32_CTCI)
   HDL_REGISTER ( debug_tt32_stats,   display_tt32_stats        );
   HDL_REGISTER ( debug_tt32_tracing, enable_tt32_debug_tracing );
 #endif

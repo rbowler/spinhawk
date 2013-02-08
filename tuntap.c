@@ -31,7 +31,7 @@
 // Declarations
 // ====================================================================
 
-#ifndef OPTION_W32_CTCI
+#if !defined(WIN32)
 
 static int IFC_IOCtl( int fd, unsigned long int iRequest, char* argp );
 static int ifc_fd[2] = { -1, -1 };
@@ -45,7 +45,7 @@ static void tuntap_term(void)
     kill(ifc_pid, SIGINT);
 }
 
-#endif
+#endif /*!defined(WIN32)*/
 
 // ====================================================================
 // Primary Module Entry Points
@@ -58,7 +58,7 @@ static int TUNTAP_SetMode (int fd, struct ifreq *ifr)
     /* Try TUNTAP_ioctl first */
     rc = TUNTAP_IOCtl (fd, TUNSETIFF, (char *) ifr);
 
-#if !defined(OPTION_W32_CTCI)
+#if !defined(WIN32)
     /* If invalid value, try with the pre-2.4.5 value */
     if (rc != 0 && errno == EINVAL)
         rc = TUNTAP_IOCtl (fd, ('T' << 8) | 202, (char *) ifr);
@@ -133,7 +133,7 @@ static int TUNTAP_SetMode (int fd, struct ifreq *ifr)
         waitpid (pid, &status, 0);
         errno = sv_err;
     }
-#endif /* if !defined(OPTION_W32_CTCI) */
+#endif /*!defined(WIN32)*/
 
     return rc;
 }
@@ -197,15 +197,9 @@ int             TUNTAP_CreateInterface( char* pszTUNDevice,
 {
     int            fd;                  // File descriptor
 #if !defined( OPTION_W32_CTCI )
-    struct utsname utsbuf;
+    HOST_INFO utsbuf;
 
-    if( uname( &utsbuf ) != 0 )
-    {
-        logmsg( _("HHCTU001E Unable to determine operating system type: %s\n"),
-                strerror( errno ) );
-
-        return -1;
-    }
+    init_hostinfo(&utsbuf);
 #endif
 
     // Open TUN device
@@ -273,10 +267,10 @@ int             TUNTAP_CreateInterface( char* pszTUNDevice,
 // This forces all 'ioctl' calls to go to 'hercifc'.
 //
 
-#if !defined( OPTION_W32_CTCI )
+#if !defined(WIN32)
   #undef  TUNTAP_IOCtl
   #define TUNTAP_IOCtl    IFC_IOCtl
-#endif
+#endif /*!defined(WIN32)*/
 
 #ifdef   OPTION_TUNTAP_CLRIPADDR
 //
@@ -719,7 +713,7 @@ int           TUNTAP_DelRoute( char*   pszNetDevName,
 }
 #endif // OPTION_TUNTAP_DELADD_ROUTES
 
-#if !defined( OPTION_W32_CTCI )
+#if !defined(WIN32)
 // ====================================================================
 // HercIFC Helper Functions
 // ====================================================================
@@ -888,7 +882,7 @@ static int      IFC_IOCtl( int fd, unsigned long int iRequest, char* argp )
     return 0;
 }
 
-#endif // !defined( OPTION_W32_CTCI )
+#endif /*!defined(WIN32)*/
 
 // The following function used by Win32 *and* NON-Win32 platforms...
 

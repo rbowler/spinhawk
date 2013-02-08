@@ -40,7 +40,7 @@
 #endif
 
 #if ( !defined(WIN32) && !defined(HAVE_LINUX_IF_TUN_H) ) || \
-    (  defined(OPTION_W32_CTCI)                        )
+    (defined(WIN32) && !defined(HAVE_NET_IF_H)) 
 
   /* Ioctl defines */
   #define TUNSETNOCSUM    _IOW('T', 200, int)
@@ -85,7 +85,9 @@ typedef struct _CTLREQ
   {
     struct ifreq     ifreq;
 #if !defined(__APPLE__) && !defined(__FreeBSD__) && !defined(__SOLARIS__)
+#if defined(OPTION_TUNTAP_DELADD_ROUTES)
     struct rtentry   rtentry;
+#endif /*defined(OPTION_TUNTAP_DELADD_ROUTES)*/
 #endif
   }
   iru;
