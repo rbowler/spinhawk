@@ -115,16 +115,6 @@
     not copy any portion of the source code for use in any other program.
 </p>
 <P>
-    Hercules is <EM>not</EM>, repeat, <EM>not</EM> GPL software! The GNU
-    General Public License is a Unix/Linux software licensing agreement,
-    which we, the authors, will not participate in. We believe that the
-    QPL, which has been certified as compliant with the
-<a href="http://www.opensource.org">Open Source Definition</a>,
-    provides the benefits and protections of open source for both users and
-    developers, without the political baggage that has come to be associated
-    with the GPL.
-</P>
-<P>
 <HR>
 </P>
 <H4><A NAME="2.01">2.01</A>
@@ -135,7 +125,7 @@
     it is capable of running z/OS, z/VM, and z/VSE.  Hercules also
     implements ESA/390 (including SIE) and so it can run OS/390, VM/ESA,
     and VSE/ESA, as well as older versions of these operating systems
-    such as MVS/ESA, MVS/XA, VM/SP, VSE/SP, etc.
+    such as MVS/ESA, MVS/XA, MVS/SP, MVS/SE, VM/SP, VSE/SP, and DOS/VSE.
     <p>
     <b>But</b> (and this is a big but), these operating systems are all
     IBM Licensed Program Products, whose conditions of use generally
@@ -146,61 +136,43 @@
     What operating systems can I run legally?
 </H4>
 <P>
-    Most 3rd party operating systems like Linux/390, z/Linux and TELPAR
-    are covered under their own <em>free</em> license and can therefore
-    run under Hercules without any legal problems.
+    Operating systems which may legally be run on Hercules include:
+    <UL>
+    <LI>
+    Older IBM operating systems including OS/360, DOS/360, DOS/VS,
+    MVS 3.8, VM/370, and TSS/370 which are either public domain or
+    "copyrighted software provided without charge."
+    </LI>
+    <LI>
+    The open source operating system "Linux on System z".
+    Several distributors provide 64-bit z/Architecture versions of
+    Linux, and some also provide ESA/390-compatible versions.
+    Mainframe Linux distributions include SUSE Linux Enterprise
+    Server, Red Hat Enterprise Linux, Fedora, and Debian.
+    Many developers use Hercules to help port their software to
+    the mainframe with Linux on System z.
+    </LI>
+    <LI>
+    The open source operating system "OpenSolaris for System z".
+    Sine Nomine Associates brought OpenSolaris to System z, relying on
+    features provided by z/VM. Emulation of those specific z/VM
+    features for OpenSolaris is included in Hercules starting with
+    version 3.07.
+    </LI>
+    <LI>
+    The Michigan Terminal System (MTS) version D6.0A, which is a
+    pre-built version of MTS for use with Hercules
+    (see <a href="http://archive.michigan-terminal-system.org">
+    http://archive.michigan-terminal-system.org</a>).
+    </LI>
+    <LI>
+    The MUSIC/SP operating system may be available for educational and
+    demonstration purposes upon request to its copyright holder,
+    McGill University. Some of MUSIC/SP's features, notably
+    networking, require z/VM (and thus an IBM license).
+    </LI>
+    </UL>
 </P>
-<P>
-    <em>OS/360</em> (PCP, MFT and MVT) is in the public domain, as far
-    as we know. The status of OSes for which IBM did not charge a license
-    fee is somewhat murky; these include <em>MVS</em> 3.8, <em>VM/370</em>
-    release 6, and <em>DOS/VS</em> release 34.
-</P>
-<P>
-    The legal status outside the USA, where something like public domain or
-    software without copyright doesn't exist, is "copyrighted software
-    provided at no charge". It is a known fact that vendors like
-    <em>Amdahl</em>, <em>Hitachi</em>, <em>Nixdorf</em> and others
-    modified those operating systems, and distributed them as their own
-    OS for their own hardware, without asking IBM for permission. But
-    law had been changed over that time, so its not clear if the same
-    legal status applies in <b>your</b> country right now.
-</P>
-<P>
-    Rick Fochtman managed to obtain a letter from IBM that he is allowed
-    to distribute OS/360. Try to ask your salesdroid for a similar letter
-    for VM/370, MVS 3.8j or DOS/VS next time he wants to sell you a major
-    upgrade.
-</P>
-<P>
-    OS/390, z/OS, and other ESA or z/Architecture operating systems are
-    definitely licensed to a
-    particular machine. Therefore, in practice you cannot run any classic
-    ESA or z/Architecture operating system
-    on your PC unless you can obtain a license from
-    IBM allowing you to do so. It is believed that there are, however,
-    four ways you could run z/OS, z/VM, z/VSE,
-    OS/390, VM/ESA, or VSE/ESA under
-    Hercules using currently available licenses:
-</P>
-<OL>
-<LI>
-    Running under Linux on the Pentium processor of a P/390 which is
-    licensed to run the OS.
-</LI>
-<LI>
-    Running under Linux/390 on a mainframe which is licensed to run the OS.
-</LI>
-<LI>
-    Running under the terms of a disaster recovery provision of the OS
-    license (but I really don't recommend depending on Hercules to be your
-    disaster recovery solution!).
-</LI>
-<LI>
-    Using the IBM OS/390 or z/OS DemoPkg, which is available only to
-    IBM employees and IBM Business Partners.
-</LI>
-</OL>
 <H4><A NAME="2.03">2.03</A>
     What other programs will run under Hercules?
 </H4>
