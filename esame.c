@@ -5664,6 +5664,24 @@ BYTE ARCH_DEP(stfl_data)[] = {
 #endif /*defined(FEATURE_FAST_BCR_SERIALIZATION_FACILITY)*/     /*810*/
                  ,
                  0
+#if defined(FEATURE_DFP_ZONED_CONVERSION_FACILITY)              /*912*/
+                 | STFL_6_DFP_ZONED_CONV                        /*912*/
+#endif /*defined(FEATURE_DFP_ZONED_CONVERSION_FACILITY)*/       /*912*/
+#if defined(FEATURE_EXECUTION_HINT_FACILITY)                    /*912*/ \
+    && defined(FEATURE_LOAD_AND_TRAP_FACILITY)                  /*912*/ \
+    && defined(FEATURE_MISC_INSTRUCTION_EXTENSIONS_FACILITY)    /*912*/ \
+    && defined(FEATURE_PROCESSOR_ASSIST_FACILITY)               /*912*/
+                 | STFL_6_MISC_INST_EXT                         /*912*/
+#endif                                                          /*912*/
+#if defined(FEATURE_TRANSACTIONAL_EXECUTION_FACILITY)           /*912*/
+                 | STFL_6_CONSTRAINED_TEF                       /*912*/
+#endif /*defined(FEATURE_TRANSACTIONAL_EXECUTION_FACILITY)*/    /*912*/
+#if defined(FEATURE_LOCAL_TLB_CLEARING_FACILITY)                /*912*/
+                 | STFL_6_LOCAL_TLB_CLEAR                       /*912*/
+#endif /*defined(FEATURE_LOCAL_TLB_CLEARING_FACILITY)*/         /*912*/
+#if defined(FEATURE_INTERLOCKED_ACCESS_FACILITY_2)              /*912*/
+                 | STFL_6_INTERLOCK_ACC_2                       /*912*/
+#endif /*defined(FEATURE_INTERLOCKED_ACCESS_FACILITY_2)*/       /*912*/
                  ,
                  0
                  ,
@@ -5679,6 +5697,9 @@ BYTE ARCH_DEP(stfl_data)[] = {
 #endif /*defined(FEATURE_CPU_MEASUREMENT_SAMPLING_FACILITY)*/
                  ,
                  0
+#if defined(FEATURE_TRANSACTIONAL_EXECUTION_FACILITY)           /*912*/
+                 | STFL_9_TRANSACT_EXEC                         /*912*/
+#endif /*defined(FEATURE_TRANSACTIONAL_EXECUTION_FACILITY)*/    /*912*/
 #if defined(FEATURE_ACCESS_EXCEPTION_FETCH_STORE_INDICATION)    /*810*/
                  | STFL_9_ACC_EX_FS_INDIC                       /*810*/
 #endif /*defined(FEATURE_ACCESS_EXCEPTION_FETCH_STORE_INDICATION)*/
@@ -5688,6 +5709,9 @@ BYTE ARCH_DEP(stfl_data)[] = {
 #if defined(FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_4)        /*810*/
                  | STFL_9_MSA_EXTENSION_4                       /*810*/
 #endif /*defined(FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_4)*/ /*810*/
+#if defined(FEATURE_ENHANCED_DAT_FACILITY_2)                    /*912*/
+                 | STFL_9_ENHANCED_DAT_2                        /*912*/
+#endif /*defined(FEATURE_ENHANCED_DAT_FACILITY_2)*/             /*912*/
                  ,
                  0
                  ,

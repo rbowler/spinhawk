@@ -37,16 +37,19 @@
 #define FEATURE_DAT_ENHANCEMENT
 #define FEATURE_DAT_ENHANCEMENT_FACILITY_2                      /*@Z9*/
 #define FEATURE_DECIMAL_FLOATING_POINT                          /*DFP*/
+//#define FEATURE_DFP_ZONED_CONVERSION_FACILITY                   /*912*/
 #define FEATURE_DISTINCT_OPERANDS_FACILITY                      /*810*/
 #define FEATURE_DUAL_ADDRESS_SPACE
 #define FEATURE_EMULATE_VM
 #define FEATURE_ENHANCED_DAT_FACILITY                           /*208*/
+//#define FEATURE_ENHANCED_DAT_FACILITY_2                         /*912*/
 #define FEATURE_ENHANCED_MONITOR_FACILITY                       /*810*/
 #define FEATURE_ENHANCED_SUPPRESSION_ON_PROTECTION              /*208*/
 #define FEATURE_ESAME
 #define FEATURE_ETF2_ENHANCEMENT                                /*@Z9*/
 #define FEATURE_ETF3_ENHANCEMENT                                /*@Z9*/
 #define FEATURE_EXECUTE_EXTENSIONS_FACILITY                     /*208*/
+//#define FEATURE_EXECUTION_HINT_FACILITY                         /*912*/
 #define FEATURE_EXPANDED_STORAGE
 #define FEATURE_EXPEDITED_SIE_SUBSET
 #define FEATURE_EXTENDED_DIAG204
@@ -77,13 +80,16 @@
 #define FEATURE_INTEGRATED_3270_CONSOLE
 //#define FEATURE_INTEGRATED_ASCII_CONSOLE
 #define FEATURE_INTERLOCKED_ACCESS_FACILITY                     /*810*/
+//#define FEATURE_INTERLOCKED_ACCESS_FACILITY_2                   /*912*/
 #define FEATURE_INTERPRETIVE_EXECUTION
 #define FEATURE_IO_ASSIST
 #define FEATURE_IPTE_RANGE_FACILITY                             /*810*/
 #define FEATURE_LINKAGE_STACK
+//#define FEATURE_LOAD_AND_TRAP_FACILITY                          /*912*/
 #define FEATURE_LOAD_PROGRAM_PARAMETER_FACILITY                 /*810*/
 #define FEATURE_LOAD_REVERSED
 #define FEATURE_LOAD_STORE_ON_CONDITION_FACILITY                /*810*/
+//#define FEATURE_LOCAL_TLB_CLEARING_FACILITY                     /*912*/
 #define FEATURE_LOCK_PAGE
 #define FEATURE_LONG_DISPLACEMENT
 #define FEATURE_MESSAGE_SECURITY_ASSIST
@@ -92,6 +98,7 @@
 #define FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_3             /*810*/
 #define FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_4             /*810*/
 #define FEATURE_MIDAW                                           /*@Z9*/
+//#define FEATURE_MISC_INSTRUCTION_EXTENSIONS_FACILITY            /*912*/
 #define FEATURE_MOVE_PAGE_FACILITY_2
 #define FEATURE_MOVE_WITH_OPTIONAL_SPECIFICATIONS               /*208*/
 #define FEATURE_MPF_INFO
@@ -103,9 +110,11 @@
 #define FEATURE_PER
 #define FEATURE_PER2
 #define FEATURE_PER3                                            /*@Z9*/
+//#define FEATURE_PER_ZERO_ADDRESS_DETECTION_FACILITY             /*912*/
 #define FEATURE_PFPO                                            /*407*/
 #define FEATURE_POPULATION_COUNT_FACILITY                       /*810*/
 #define FEATURE_PRIVATE_SPACE
+//#define FEATURE_PROCESSOR_ASSIST_FACILITY                       /*912*/
 //#define FEATURE_PROGRAM_DIRECTED_REIPL /*DIAG308 incomplete*/  /*@Z9*/
 #define FEATURE_PROTECTION_INTERCEPTION_CONTROL
 #define FEATURE_QUEUED_DIRECT_IO
@@ -131,8 +140,10 @@
 #define FEATURE_TEST_BLOCK
 #define FEATURE_TOD_CLOCK_STEERING                              /*@Z9*/
 #define FEATURE_TRACING
+//#define FEATURE_TRANSACTIONAL_EXECUTION_FACILITY                /*912*/
 #define FEATURE_WAITSTATE_ASSIST
 #define FEATURE_VM_BLOCKIO
+//#define FEATURE_WARNING_TRACK_INTERRUPTION_FACILITY             /*912*/
 
 #endif /*defined(OPTION_900_MODE)*/
 /* end of FEAT900.H */
