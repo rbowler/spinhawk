@@ -420,6 +420,14 @@
  UNDEF_INST(reset_reference_bits_multiple)                      /*810*/
 #endif /*!defined(FEATURE_RESET_REFERENCE_BITS_MULTIPLE_FACILITY)*/
 
+#if !defined(FEATURE_LOAD_AND_TRAP_FACILITY)                    /*912*/
+ UNDEF_INST(load_and_trap)                                      /*912*/
+ UNDEF_INST(load_long_and_trap)                                 /*912*/
+ UNDEF_INST(load_fullword_high_and_trap)                        /*912*/
+ UNDEF_INST(load_logical_long_fullword_and_trap)                /*912*/
+ UNDEF_INST(load_logical_long_thirtyone_and_trap)               /*912*/
+#endif /*!defined(FEATURE_LOAD_AND_TRAP_FACILITY)*/             /*912*/
+
 #if !defined(FEATURE_VECTOR_FACILITY)
  UNDEF_INST(execute_a4xx)
  #if !defined(FEATURE_ESAME) && !defined(FEATURE_ESAME_N3_ESA390)
@@ -4233,7 +4241,7 @@ DLL_EXPORT zz_func opcode_e3xx[256][GEN_MAXARCH] = {
  /*E382*/ GENx___x___x900 (exclusive_or_long,RXY,"XG"),
  /*E383*/ GENx___x___x___ ,
  /*E384*/ GENx___x___x___ ,
- /*E385*/ GENx___x___x___ ,
+ /*E385*/ GENx___x___x900 (load_long_and_trap,RXY,"LGAT"),                         /*912*/
  /*E386*/ GENx___x___x900 (multiply_logical_long,RXY,"MLG"),
  /*E387*/ GENx___x___x900 (divide_logical_long,RXY,"DLG"),
  /*E388*/ GENx___x___x900 (add_logical_carry_long,RXY,"ALCG"),
@@ -4256,10 +4264,10 @@ DLL_EXPORT zz_func opcode_e3xx[256][GEN_MAXARCH] = {
  /*E399*/ GENx37Xx390x900 (subtract_logical_borrow,RXY,"SLB"),
  /*E39A*/ GENx___x___x___ ,
  /*E39B*/ GENx___x___x___ ,
- /*E39C*/ GENx___x___x___ ,
- /*E39D*/ GENx___x___x___ ,
+ /*E39C*/ GENx___x___x900 (load_logical_long_thirtyone_and_trap,RXY,"LLGTAT"),     /*912*/
+ /*E39D*/ GENx___x___x900 (load_logical_long_fullword_and_trap,RXY,"LLGFAT"),      /*912*/
  /*E39E*/ GENx___x___x___ ,
- /*E39F*/ GENx___x___x___ ,
+ /*E39F*/ GENx___x___x900 (load_and_trap,RXY,"LAT"),                               /*912*/
  /*E3A0*/ GENx___x___x___ ,
  /*E3A1*/ GENx___x___x___ ,
  /*E3A2*/ GENx___x___x___ ,
@@ -4300,7 +4308,7 @@ DLL_EXPORT zz_func opcode_e3xx[256][GEN_MAXARCH] = {
  /*E3C5*/ GENx___x___x___ ,
  /*E3C6*/ GENx___x___x900 (load_logical_halfword_high,RXY,"LLHH"),                 /*810*/
  /*E3C7*/ GENx___x___x900 (store_halfword_high,RXY,"STHH"),                        /*810*/
- /*E3C8*/ GENx___x___x___ ,
+ /*E3C8*/ GENx___x___x900 (load_fullword_high_and_trap,RXY,"LFHAT"),               /*912*/
  /*E3C9*/ GENx___x___x___ ,
  /*E3CA*/ GENx___x___x900 (load_fullword_high,RXY,"LFH"),                          /*810*/
  /*E3CB*/ GENx___x___x900 (store_fullword_high,RXY,"STFH"),                        /*810*/

@@ -537,7 +537,7 @@ do { \
     if( PROBSTATE(&(_regs)->psw) ) \
         (_regs)->program_interrupt( (_regs), PGM_PRIVILEGED_OPERATION_EXCEPTION)
 
-    /* Program check if r is not 0,1,4,5,8,9,12, or 13 (designating 
+    /* Program check if r is not 0,1,4,5,8,9,12, or 13 (designating
        the lower-numbered register of a floating-point register pair) */
 #define BFPREGPAIR_CHECK(_r, _regs) \
     if( ((_r) & 2) ) \
@@ -549,7 +549,7 @@ do { \
     if( ((_r1) & 2) || ((_r2) & 2) ) \
         (_regs)->program_interrupt( (_regs), PGM_SPECIFICATION_EXCEPTION)
 
-    /* Program check if r is not 0,1,4,5,8,9,12, or 13 (designating 
+    /* Program check if r is not 0,1,4,5,8,9,12, or 13 (designating
        the lower-numbered register of a floating-point register pair) */
 #define DFPREGPAIR_CHECK(_r, _regs) \
     if( ((_r) & 2) ) \
@@ -945,7 +945,7 @@ do { \
  * (like most general instructions when no storage access is needed)
  * therefore needing simpler prologue code.
  * The "_B" versions for some of the decoders are intended for
- * "branch" type operations where updating the PSW IA to IA+ILC 
+ * "branch" type operations where updating the PSW IA to IA+ILC
  * should only be done after the branch is deemed impossible.
  */
 
@@ -3430,6 +3430,12 @@ DEF_INST(subtract_logical_distinct_register);                   /*810*/
 DEF_INST(subtract_logical_distinct_long_register);              /*810*/
 
 DEF_INST(population_count);                                     /*810*/
+
+DEF_INST(load_and_trap);                                        /*912*/
+DEF_INST(load_long_and_trap);                                   /*912*/
+DEF_INST(load_fullword_high_and_trap);                          /*912*/
+DEF_INST(load_logical_long_fullword_and_trap);                  /*912*/
+DEF_INST(load_logical_long_thirtyone_and_trap);                 /*912*/
 
 
 /* Instructions in io.c */
