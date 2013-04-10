@@ -1826,11 +1826,13 @@ VADR    addr2;                          /* Relative operand address  */
 #endif /*defined(FEATURE_GENERAL_INSTRUCTIONS_EXTENSION_FACILITY)*/
 
 #if defined(FEATURE_GENERAL_INSTRUCTIONS_EXTENSION_FACILITY) \
+ || defined(FEATURE_MISC_INSTRUCTION_EXTENSIONS_FACILITY)       /*912*/ \
  || defined(FEATURE_HIGH_WORD_FACILITY)                         /*810*/
 /*-------------------------------------------------------------------*/
 /* Rotate Then Perform Operation On Selected Bits Long Register      */
 /* Subroutine is called by RNSBG,RISBG,ROSBG,RXSBG instructions      */
 /* and also by the RISBHG,RISBLG instructions */                /*810*/
+/* and by the RISBGN instruction */                             /*912*/
 /*-------------------------------------------------------------------*/
 DEF_INST(rotate_then_xxx_selected_bits_long_reg)
 {
@@ -1929,9 +1931,11 @@ BYTE    opcode;                         /* 2nd byte of opcode        */
                 (S64)regs->GR_G(r1) > 0 ? 2 : 0;
 
     /* For RISBHG,RISBLG the condition code remains unchanged*/ /*810*/
+    /* For RISBGN the condition code remains unchanged */       /*912*/
 
 } /* end DEF_INST(rotate_then_xxx_selected_bits_long_reg) */
 #endif /*defined(FEATURE_GENERAL_INSTRUCTIONS_EXTENSION_FACILITY)*/
+       /*|| defined(FEATURE_MISC_INSTRUCTION_EXTENSIONS_FACILITY)*/ /*912*/
        /*|| defined(FEATURE_HIGH_WORD_FACILITY)*/               /*810*/
 
 #if defined(FEATURE_GENERAL_INSTRUCTIONS_EXTENSION_FACILITY)
@@ -3713,7 +3717,7 @@ int     cc;                             /* Comparison result         */
 
     /* Load second operand from operand address */
     n = ARCH_DEP(vfetch4) ( effective_addr2, b2, regs );
-     
+
     /* Compare unsigned operands and set comparison result */
     cc = regs->GR_L(r1) < n ? 1 :
          regs->GR_L(r1) > n ? 2 : 0;
@@ -3759,6 +3763,17 @@ int     cc;                             /* Comparison result         */
 
 } /* end DEF_INST(compare_logical_and_trap_long) */
 #endif /*defined(FEATURE_ESAME)*/
+
+#if defined(FEATURE_ESAME)
+/*-------------------------------------------------------------------*/
+/* EC59 RISBGN - Rotate Then Insert Selected Bits No CC        [RIE] */
+/*-------------------------------------------------------------------*/
+DEF_INST(rotate_then_insert_selected_bits_long_reg_n)
+{
+    ARCH_DEP(rotate_then_xxx_selected_bits_long_reg) (inst, regs);
+} /* end DEF_INST(rotate_then_insert_selected_bits_long_reg_n) */
+#endif /*defined(FEATURE_ESAME)*/
+
 
 #endif /*defined(FEATURE_MISC_INSTRUCTION_EXTENSIONS_FACILITY)*/
 
