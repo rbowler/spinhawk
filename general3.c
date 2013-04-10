@@ -3695,6 +3695,74 @@ VADR    effective_addr2;                /* Effective address         */
 #endif /*defined(FEATURE_LOAD_AND_TRAP_FACILITY)*/              /*912*/
 
 
+#if defined(FEATURE_MISC_INSTRUCTION_EXTENSIONS_FACILITY)       /*912*/
+
+/*-------------------------------------------------------------------*/
+/* EB23 CLT   - Compare Logical and Trap                       [RSY] */
+/*-------------------------------------------------------------------*/
+DEF_INST(compare_logical_and_trap)                              /*912*/
+{
+int     r1;                             /* Register number           */
+int     b2;                             /* Base of effective addr    */
+VADR    effective_addr2;                /* Effective address         */
+U32     n;                              /* 32-bit operand value      */
+int     m3;                             /* Mask bits                 */
+int     cc;                             /* Comparison result         */
+
+    RSY(inst, regs, r1, m3, b2, effective_addr2);
+
+    /* Load second operand from operand address */
+    n = ARCH_DEP(vfetch4) ( effective_addr2, b2, regs );
+     
+    /* Compare unsigned operands and set comparison result */
+    cc = regs->GR_L(r1) < n ? 1 :
+         regs->GR_L(r1) > n ? 2 : 0;
+
+    /* Raise data exception if m3 mask bit is set */
+    if ((0x8 >> cc) & m3)
+    {
+        regs->dxc = DXC_COMPARE_AND_TRAP;
+        ARCH_DEP(program_interrupt) (regs, PGM_DATA_EXCEPTION);
+    }
+
+} /* end DEF_INST(compare_logical_and_trap) */
+
+
+#if defined(FEATURE_ESAME)
+/*-------------------------------------------------------------------*/
+/* EB2B CLGT  - Compare Logical and Trap Long                  [RSY] */
+/*-------------------------------------------------------------------*/
+DEF_INST(compare_logical_and_trap_long)                         /*912*/
+{
+int     r1;                             /* Register number           */
+int     b2;                             /* Base of effective addr    */
+VADR    effective_addr2;                /* Effective address         */
+U64     n;                              /* 64-bit operand value      */
+int     m3;                             /* Mask bits                 */
+int     cc;                             /* Comparison result         */
+
+    RSY(inst, regs, r1, m3, b2, effective_addr2);
+
+    /* Load second operand from operand address */
+    n = ARCH_DEP(vfetch8) ( effective_addr2, b2, regs );
+
+    /* Compare unsigned operands and set comparison result */
+    cc = regs->GR_G(r1) < n ? 1 :
+         regs->GR_G(r1) > n ? 2 : 0;
+
+    /* Raise data exception if m3 mask bit is set */
+    if ((0x8 >> cc) & m3)
+    {
+        regs->dxc = DXC_COMPARE_AND_TRAP;
+        ARCH_DEP(program_interrupt) (regs, PGM_DATA_EXCEPTION);
+    }
+
+} /* end DEF_INST(compare_logical_and_trap_long) */
+#endif /*defined(FEATURE_ESAME)*/
+
+#endif /*defined(FEATURE_MISC_INSTRUCTION_EXTENSIONS_FACILITY)*/
+
+
 #if !defined(_GEN_ARCH)
 
 #if defined(_ARCHMODE2)
