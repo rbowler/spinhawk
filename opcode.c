@@ -428,6 +428,12 @@
  UNDEF_INST(load_logical_long_thirtyone_and_trap)               /*912*/
 #endif /*!defined(FEATURE_LOAD_AND_TRAP_FACILITY)*/             /*912*/
 
+#if !defined(FEATURE_MISC_INSTRUCTION_EXTENSIONS_FACILITY)      /*912*/
+ UNDEF_INST(compare_logical_and_trap)                           /*912*/
+ UNDEF_INST(compare_logical_and_trap_long)                      /*912*/
+ UNDEF_INST(rotate_then_insert_selected_bits_long_reg_n)        /*912*/
+#endif /*!defined(FEATURE_MISC_INSTRUCTION_EXTENSIONS_FACILITY)*/
+
 #if !defined(FEATURE_VECTOR_FACILITY)
  UNDEF_INST(execute_a4xx)
  #if !defined(FEATURE_ESAME) && !defined(FEATURE_ESAME_N3_ESA390)
@@ -4924,7 +4930,7 @@ DLL_EXPORT zz_func opcode_ebxx[256][GEN_MAXARCH] = {
  /*EB20*/ GENx___x___x900 (compare_logical_characters_under_mask_high,RSY,"CLMH"),
  /*EB21*/ GENx___x___x900 (compare_logical_characters_under_mask_y,RSY,"CLMY"),
  /*EB22*/ GENx___x___x___ ,
- /*EB23*/ GENx___x___x___ ,
+ /*EB23*/ GENx___x___x900 (compare_logical_and_trap,RSY,"CLT"),                    /*912*/
  /*EB24*/ GENx___x___x900 (store_multiple_long,RSY,"STMG"),
  /*EB25*/ GENx___x___x900 (store_control_long,RSY,"STCTG"),
  /*EB26*/ GENx___x___x900 (store_multiple_high,RSY,"STMH"),
@@ -4932,7 +4938,7 @@ DLL_EXPORT zz_func opcode_ebxx[256][GEN_MAXARCH] = {
  /*EB28*/ GENx___x___x___ ,
  /*EB29*/ GENx___x___x___ ,
  /*EB2A*/ GENx___x___x___ ,
- /*EB2B*/ GENx___x___x___ ,
+ /*EB2B*/ GENx___x___x900 (compare_logical_and_trap_long,RSY,"CLGT"),              /*912*/
  /*EB2C*/ GENx___x___x900 (store_characters_under_mask_high,RSY,"STCMH"),
  /*EB2D*/ GENx___x___x900 (store_characters_under_mask_y,RSY,"STCMY"),
  /*EB2E*/ GENx___x___x___ ,
@@ -5240,7 +5246,7 @@ DLL_EXPORT zz_func opcode_ecxx[256][GEN_MAXARCH] = {
  /*EC56*/ GENx___x___x900 (rotate_then_or_selected_bits_long_reg,RIE_RRIII,"ROSBG"),           /*208*/
  /*EC57*/ GENx___x___x900 (rotate_then_exclusive_or_selected_bits_long_reg,RIE_RRIII,"RXSBG"), /*208*/
  /*EC58*/ GENx___x___x___ ,
- /*EC59*/ GENx___x___x___ ,
+ /*EC59*/ GENx___x___x900 (rotate_then_insert_selected_bits_long_reg_n,RIE_RRIII,"RISBGN"),    /*912*/
  /*EC5A*/ GENx___x___x___ ,
  /*EC5B*/ GENx___x___x___ ,
  /*EC5C*/ GENx___x___x___ ,

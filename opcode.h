@@ -3437,6 +3437,10 @@ DEF_INST(load_fullword_high_and_trap);                          /*912*/
 DEF_INST(load_logical_long_fullword_and_trap);                  /*912*/
 DEF_INST(load_logical_long_thirtyone_and_trap);                 /*912*/
 
+DEF_INST(compare_logical_and_trap);                             /*912*/
+DEF_INST(compare_logical_and_trap_long);                        /*912*/
+DEF_INST(rotate_then_insert_selected_bits_long_reg_n);          /*912*/
+
 
 /* Instructions in io.c */
 DEF_INST(clear_subchannel);
