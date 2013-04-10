@@ -3562,6 +3562,139 @@ U64     mask = 0x0101010101010101ULL;   /* Bit mask                  */
 #endif /*defined(FEATURE_POPULATION_COUNT_FACILITY)*/           /*810*/
 
 
+#if defined(FEATURE_LOAD_AND_TRAP_FACILITY)                     /*912*/
+
+/*-------------------------------------------------------------------*/
+/* E39F LAT   - Load and Trap                                  [RXY] */
+/*-------------------------------------------------------------------*/
+DEF_INST(load_and_trap)
+{
+int     r1;                             /* Value of R field          */
+int     b2;                             /* Base of effective addr    */
+VADR    effective_addr2;                /* Effective address         */
+
+    RXY(inst, regs, r1, b2, effective_addr2);
+
+    /* Load R1 register from second operand */
+    regs->GR_L(r1) = ARCH_DEP(vfetch4) ( effective_addr2, b2, regs );
+
+    /* Raise data exception if result is zero */
+    if (regs->GR_L(r1) == 0)
+    {
+        regs->dxc = DXC_COMPARE_AND_TRAP;
+        ARCH_DEP(program_interrupt) (regs, PGM_DATA_EXCEPTION);
+    }
+
+} /* end DEF_INST(load_and_trap) */
+
+
+#if defined(FEATURE_ESAME)
+/*-------------------------------------------------------------------*/
+/* E385 LGAT  - Load Long and Trap                             [RXY] */
+/*-------------------------------------------------------------------*/
+DEF_INST(load_long_and_trap)                                    /*912*/
+{
+int     r1;                             /* Value of R field          */
+int     b2;                             /* Base of effective addr    */
+VADR    effective_addr2;                /* Effective address         */
+
+    RXY(inst, regs, r1, b2, effective_addr2);
+
+    /* Load R1 register from second operand */
+    regs->GR_G(r1) = ARCH_DEP(vfetch8) ( effective_addr2, b2, regs );
+
+    /* Raise data exception if result is zero */
+    if (regs->GR_G(r1) == 0)
+    {
+        regs->dxc = DXC_COMPARE_AND_TRAP;
+        ARCH_DEP(program_interrupt) (regs, PGM_DATA_EXCEPTION);
+    }
+
+} /* end DEF_INST(load_long_and_trap) */
+#endif /*defined(FEATURE_ESAME)*/
+
+
+#if defined(FEATURE_ESAME)
+/*-------------------------------------------------------------------*/
+/* E3C8 LFHAT - Load Fullword High and Trap                    [RXY] */
+/*-------------------------------------------------------------------*/
+DEF_INST(load_fullword_high_and_trap)                           /*912*/
+{
+int     r1;                             /* Value of R field          */
+int     b2;                             /* Base of effective addr    */
+VADR    effective_addr2;                /* Effective address         */
+
+    RXY(inst, regs, r1, b2, effective_addr2);
+
+    /* Load R1 register bits 0-31 from second operand */
+    regs->GR_H(r1) = ARCH_DEP(vfetch4) ( effective_addr2, b2, regs );
+
+    /* Raise data exception if result is zero */
+    if (regs->GR_H(r1) == 0)
+    {
+        regs->dxc = DXC_COMPARE_AND_TRAP;
+        ARCH_DEP(program_interrupt) (regs, PGM_DATA_EXCEPTION);
+    }
+
+} /* end DEF_INST(load_fullword_high_and_trap) */
+#endif /*defined(FEATURE_ESAME)*/
+
+
+#if defined(FEATURE_ESAME)
+/*-------------------------------------------------------------------*/
+/* E39D LLGFAT - Load Logical Long Fullword and Trap           [RXY] */
+/*-------------------------------------------------------------------*/
+DEF_INST(load_logical_long_fullword_and_trap)                   /*912*/
+{
+int     r1;                             /* Value of R field          */
+int     b2;                             /* Base of effective addr    */
+VADR    effective_addr2;                /* Effective address         */
+
+    RXY(inst, regs, r1, b2, effective_addr2);
+
+    /* Load R1 register from second operand */
+    regs->GR_G(r1) = ARCH_DEP(vfetch4) ( effective_addr2, b2, regs );
+
+    /* Raise data exception if result is zero */
+    if (regs->GR_G(r1) == 0)
+    {
+        regs->dxc = DXC_COMPARE_AND_TRAP;
+        ARCH_DEP(program_interrupt) (regs, PGM_DATA_EXCEPTION);
+    }
+
+} /* end DEF_INST(load_logical_long_fullword_and_trap) */
+#endif /*defined(FEATURE_ESAME)*/
+
+
+#if defined(FEATURE_ESAME)
+/*-------------------------------------------------------------------*/
+/* E39C LLGTAT - Load Logical Long Thirtyone and Trap          [RXY] */
+/*-------------------------------------------------------------------*/
+DEF_INST(load_logical_long_thirtyone_and_trap)                  /*912*/
+{
+int     r1;                             /* Value of R field          */
+int     b2;                             /* Base of effective addr    */
+VADR    effective_addr2;                /* Effective address         */
+
+    RXY(inst, regs, r1, b2, effective_addr2);
+
+    /* Load R1 register from second operand */
+    regs->GR_G(r1) = ARCH_DEP(vfetch4) ( effective_addr2, b2, regs )
+                                                        & 0x7FFFFFFF;
+
+    /* Raise data exception if result is zero */
+    if (regs->GR_G(r1) == 0)
+    {
+        regs->dxc = DXC_COMPARE_AND_TRAP;
+        ARCH_DEP(program_interrupt) (regs, PGM_DATA_EXCEPTION);
+    }
+
+} /* end DEF_INST(load_logical_long_thirtyone_and_trap) */
+#endif /*defined(FEATURE_ESAME)*/
+
+#endif /*defined(FEATURE_LOAD_AND_TRAP_FACILITY)*/              /*912*/
+
+
 #if !defined(_GEN_ARCH)
 
 #if defined(_ARCHMODE2)
