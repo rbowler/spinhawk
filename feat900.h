@@ -85,7 +85,7 @@
 #define FEATURE_IO_ASSIST
 #define FEATURE_IPTE_RANGE_FACILITY                             /*810*/
 #define FEATURE_LINKAGE_STACK
-//#define FEATURE_LOAD_AND_TRAP_FACILITY                          /*912*/
+#define FEATURE_LOAD_AND_TRAP_FACILITY                          /*912*/
 #define FEATURE_LOAD_PROGRAM_PARAMETER_FACILITY                 /*810*/
 #define FEATURE_LOAD_REVERSED
 #define FEATURE_LOAD_STORE_ON_CONDITION_FACILITY                /*810*/
