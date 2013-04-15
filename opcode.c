@@ -1702,6 +1702,21 @@ int l1,b1,d1;
     DISASM_LOGMSG;
 }
 
+int disasm_RSL_RM (BYTE inst[], char mnemonic[], char *p)
+{
+DISASM_COMMON_VARS;
+int r1,l2,b2,d2,m3;
+    l2 = inst[1];
+    b2 = inst[2] >> 4;
+    d2 = (inst[2] & 0x0F) << 8 | inst[3];
+    r1 = inst[4] >> 4;
+    m3 = inst[4] & 0x0F;
+    DISASM_SET_NAME;
+    DISASM_PRINT_OPERANDS
+        "%d,%d(%d,%d),%d",r1,d2,l2+1,b2,m3);
+    DISASM_LOGMSG;
+}
+
 int disasm_RSI (BYTE inst[], char mnemonic[], char *p)
 {
 DISASM_COMMON_VARS;

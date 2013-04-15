@@ -1728,6 +1728,26 @@ do { \
             INST_UPDATE_PSW((_regs), (_len), (_ilc)); \
         }
 
+/* RSL register and storage with extended op code, 8-bit L field, and mask */
+#undef RSL_RM
+
+#define RSL_RM(_inst, _regs, _r1, _l2, _b2, _effective_addr2, _m3) \
+        RSL_RM_DECODER(_inst, _regs, _r1, _l2, _b2, _effective_addr2, _m3, 6, 6)
+
+#define RSL_RM_DECODER(_inst, _regs, _r1, _l2, _b2, _effective_addr2, _m3, _len, _ilc) \
+    {   U32 temp = fetch_fw(&(_inst)[1]); \
+            (_m3) = temp & 0xf; \
+            (_r1) = (temp >> 4) & 0xf; \
+            (_effective_addr2) = (temp >> 8) & 0xfff; \
+            (_b2) = (temp >> 20) & 0xf; \
+            (_l2) = (temp >> 24) & 0xff; \
+            if((_b2)) { \
+                (_effective_addr2) += (_regs)->GR((_b2)); \
+                (_effective_addr2) &= ADDRESS_MAXWRAP((_regs)); \
+            } \
+            INST_UPDATE_PSW((_regs), (_len), (_ilc)); \
+    }
+
 /* RSI register and immediate with additional R3 field */
 #undef RSI
 #undef RSI0
