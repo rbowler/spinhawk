@@ -3948,6 +3948,8 @@ DEF_INST(convert_sbcd128_to_dfp_ext_reg);
 DEF_INST(convert_sbcd64_to_dfp_long_reg);
 DEF_INST(convert_ubcd128_to_dfp_ext_reg);
 DEF_INST(convert_ubcd64_to_dfp_long_reg);
+DEF_INST(convert_zoned_to_dfp_ext);                             /*912*/
+DEF_INST(convert_zoned_to_dfp_long);                            /*912*/
 DEF_INST(convert_dfp_ext_to_fix32_reg);                         /*810*/
 DEF_INST(convert_dfp_long_to_fix32_reg);                        /*810*/
 DEF_INST(convert_dfp_ext_to_u32_reg);                           /*810*/
@@ -3960,6 +3962,8 @@ DEF_INST(convert_dfp_ext_to_sbcd128_reg);
 DEF_INST(convert_dfp_long_to_sbcd64_reg);
 DEF_INST(convert_dfp_ext_to_ubcd128_reg);
 DEF_INST(convert_dfp_long_to_ubcd64_reg);
+DEF_INST(convert_dfp_ext_to_zoned);                             /*912*/
+DEF_INST(convert_dfp_long_to_zoned);                            /*912*/
 DEF_INST(divide_dfp_ext_reg);
 DEF_INST(divide_dfp_long_reg);
 DEF_INST(extract_biased_exponent_dfp_ext_to_fix64_reg);

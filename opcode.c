@@ -791,6 +791,14 @@
 #endif /*!defined(FEATURE_DECIMAL_FLOATING_POINT)*/
 
 
+#if !defined(FEATURE_DFP_ZONED_CONVERSION_FACILITY)             /*912*/
+ UNDEF_INST(convert_zoned_to_dfp_long)                          /*912*/
+ UNDEF_INST(convert_zoned_to_dfp_ext)                           /*912*/
+ UNDEF_INST(convert_dfp_long_to_zoned)                          /*912*/
+ UNDEF_INST(convert_dfp_ext_to_zoned)                           /*912*/
+#endif /*!defined(FEATURE_DFP_ZONED_CONVERSION_FACILITY)*/      /*912*/
+
+
 #if !defined(FEATURE_FLOATING_POINT_EXTENSION_FACILITY)         /*810*/
  UNDEF_INST(convert_bfp_short_to_u32_reg)                       /*810*/
  UNDEF_INST(convert_bfp_long_to_u32_reg)                        /*810*/
@@ -5602,10 +5610,10 @@ DLL_EXPORT zz_func opcode_edxx[256][GEN_MAXARCH] = {
  /*EDA5*/ GENx___x___x___ ,
  /*EDA6*/ GENx___x___x___ ,
  /*EDA7*/ GENx___x___x___ ,
- /*EDA8*/ GENx___x___x___ ,
- /*EDA9*/ GENx___x___x___ ,
- /*EDAA*/ GENx___x___x___ ,
- /*EDAB*/ GENx___x___x___ ,
+ /*EDA8*/ GENx___x___x900 (convert_dfp_long_to_zoned,RSL_RM,"CZDT"),                /*912*/
+ /*EDA9*/ GENx___x___x900 (convert_dfp_ext_to_zoned,RSL_RM,"CZXT"),                 /*912*/
+ /*EDAA*/ GENx___x___x900 (convert_zoned_to_dfp_long,RSL_RM,"CDZT"),                /*912*/
+ /*EDAB*/ GENx___x___x900 (convert_zoned_to_dfp_ext,RSL_RM,"CXZT"),                 /*912*/
  /*EDAC*/ GENx___x___x___ ,
  /*EDAD*/ GENx___x___x___ ,
  /*EDAE*/ GENx___x___x___ ,
