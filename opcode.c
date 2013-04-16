@@ -250,6 +250,12 @@
  UNDEF_INST(execute_relative_long)                              /*208*/
 #endif /*!defined(FEATURE_EXECUTE_EXTENSIONS_FACILITY)*/        /*208*/
 
+#if !defined(FEATURE_EXECUTION_HINT_FACILITY)                   /*912*/
+ UNDEF_INST(branch_prediction_preload)                          /*912*/
+ UNDEF_INST(branch_prediction_relative_preload)                 /*912*/
+ UNDEF_INST(next_instruction_access_intent)                     /*912*/
+#endif /*!defined(FEATURE_EXECUTION_HINT_FACILITY)*/            /*912*/
+
 #if !defined(FEATURE_GENERAL_INSTRUCTIONS_EXTENSION_FACILITY)   /*208*/
  UNDEF_INST(add_immediate_long_storage)
  UNDEF_INST(add_immediate_storage)
@@ -2658,9 +2664,9 @@ DLL_EXPORT zz_func opcode_table[256][GEN_MAXARCH] = {
  /*C2*/   GENx37Xx390x900 (execute_c2xx,c2xx,""),               /*@Z9*/
  /*C3*/   GENx___x___x___ ,
  /*C4*/   GENx37Xx390x900 (execute_c4xx,c4xx,""),               /*208*/
- /*C5*/   GENx___x___x___ ,
+ /*C5*/   GENx___x___x900 (branch_prediction_relative_preload,MII_A,"BPRP"),       /*912*/
  /*C6*/   GENx37Xx390x900 (execute_c6xx,c6xx,""),               /*208*/
- /*C7*/   GENx___x___x___ ,
+ /*C7*/   GENx___x___x900 (branch_prediction_preload,SMI_A,"BPP"),                 /*912*/
  /*C8*/   GENx___x___x900 (execute_c8xx,c8xx,""),
  /*C9*/   GENx___x___x___ ,
  /*CA*/   GENx___x___x___ ,
@@ -3532,7 +3538,7 @@ DLL_EXPORT zz_func opcode_b2xx[256][GEN_MAXARCH] = {
  /*B2F7*/ GENx___x___x___ ,
  /*B2F8*/ GENx___x___x___ ,
  /*B2F9*/ GENx___x___x___ ,
- /*B2FA*/ GENx___x___x___ ,
+ /*B2FA*/ GENx___x___x900 (next_instruction_access_intent,IE,"NIAI"),              /*912*/
  /*B2FB*/ GENx___x___x___ ,
  /*B2FC*/ GENx___x___x___ ,
  /*B2FD*/ GENx___x___x___ ,

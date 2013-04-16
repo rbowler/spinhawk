@@ -3536,6 +3536,10 @@ DEF_INST(compare_logical_and_trap);                             /*912*/
 DEF_INST(compare_logical_and_trap_long);                        /*912*/
 DEF_INST(rotate_then_insert_selected_bits_long_reg_n);          /*912*/
 
+DEF_INST(branch_prediction_preload);                            /*912*/
+DEF_INST(branch_prediction_relative_preload);                   /*912*/
+DEF_INST(next_instruction_access_intent);                       /*912*/
+
 
 /* Instructions in io.c */
 DEF_INST(clear_subchannel);
