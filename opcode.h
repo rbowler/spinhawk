@@ -987,6 +987,51 @@ do { \
             INST_UPDATE_PSW((_regs), (_len), (_ilc)); \
         }
 
+/* IE extended op code with two 4-bit immediate fields */       /*912*/
+#undef IE
+#undef IE0
+
+#define IE(_inst, _regs, _i1, _i2)  \
+        IE_DECODER(_inst, _regs, _i1, _i2, 4, 4)
+#define IE0(_inst, _regs, _i1, _i2) \
+        IE_DECODER(_inst, _regs, _i1, _i2, 4, 0)
+
+#define IE_DECODER(_inst, _regs, _i1, _i2, _len, _ilc) \
+        { \
+            int i = (_inst)[3]; \
+            (_i1) = i >> 4; \
+            (_i2) = i & 0x0F; \
+            INST_UPDATE_PSW((_regs), (_len), (_ilc)); \
+        }
+
+/* MII mask with 12-bit and 24-bit relative address fields */   /*912*/
+#undef MII_A
+#undef MII_A0
+
+#define MII_A(_inst, _regs, _m1, _addr2, _addr3) \
+        MII_A_DECODER(_inst, _regs, _m1, _addr2, _addr3, 6, 6)
+#define MII_A0(_inst, _regs, _m1, _addr2, _addr3) \
+        MII_A_DECODER(_inst, _regs, _m1, _addr2, _addr3, 6, 0)
+
+#define MII_A_DECODER(_inst, _regs, _m1, _addr2, _addr3, _len, _ilc) \
+        { \
+            U32 ri2, ri3; S64 offset; \
+            U32 temp = fetch_fw(&(_inst)[2]); \
+            int i = (_inst)[1]; \
+            (_m1) = (i >> 4) & 0x0F; \
+            ri2 = (i << 4) | (temp >> 24); \
+            ri3 = temp & 0xFFFFFF; \
+            offset = 2LL*(S32)ri2; \
+            (_addr2) = (likely(!(_regs)->execflag)) ? \
+                    PSW_IA((_regs), offset) : \
+                    ((_regs)->ET + offset) & ADDRESS_MAXWRAP((_regs)); \
+            offset = 2LL*(S32)ri3; \
+            (_addr3) = (likely(!(_regs)->execflag)) ? \
+                    PSW_IA((_regs), offset) : \
+                    ((_regs)->ET + offset) & ADDRESS_MAXWRAP((_regs)); \
+            INST_UPDATE_PSW((_regs), (_len), (_ilc)); \
+        }
+
 /* RR register to register */
 #undef RR
 #undef RR0
@@ -2197,6 +2242,36 @@ do { \
                 (_effective_addr1) += (_regs)->GR((_b1)); \
                 (_effective_addr1) &= ADDRESS_MAXWRAP((_regs)); \
             } \
+            INST_UPDATE_PSW((_regs), (_len), (_ilc)); \
+    }
+
+/* SMI storage with mask and 16-bit relative address */         /*912*/
+#undef SMI_A
+#undef SMI_A0
+
+#define SMI_A(_inst, _regs, _m1, _addr2, _addr3) \
+        SMI_A_DECODER(_inst, _regs, _m1, _addr2, _addr3, 6, 6)
+#define SMI_A0(_inst, _regs, _m1, _addr2, _addr3) \
+        SMI_A_DECODER(_inst, _regs, _m1, _addr2, _addr3, 6, 0)
+
+#define SMI_A_DECODER(_inst, _regs, _m1, _addr2, _addr3, _len, _ilc) \
+    { \
+            U32 ri2; S64 offset; \
+            U32 temp = fetch_fw(&(_inst)[2]); \
+            int i = (_inst)[1]; \
+            (_m1) = (i >> 4) & 0x0F; \
+            ri2 = temp & 0xFFFF; \
+            (_addr3) = (temp >> 16) & 0xFFF; \
+            (_b3) = (temp >> 28) & 0x0F; \
+            if((_b3)) \
+            { \
+                (_addr3) += (_regs)->GR((_b3)); \
+                (_addr3) &= ADDRESS_MAXWRAP((_regs)); \
+            } \
+            offset = 2LL*(S32)ri2; \
+            (_addr2) = (likely(!(_regs)->execflag)) ? \
+                    PSW_IA((_regs), offset) : \
+                    ((_regs)->ET + offset) & ADDRESS_MAXWRAP((_regs)); \
             INST_UPDATE_PSW((_regs), (_len), (_ilc)); \
     }
 

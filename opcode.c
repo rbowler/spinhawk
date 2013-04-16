@@ -1420,6 +1420,33 @@ DISASM_COMMON_VARS;
     DISASM_LOGMSG;
 }
 
+int disasm_IE (BYTE inst[], char mnemonic[], char *p)                   /*912*/
+{
+DISASM_COMMON_VARS;
+int i1, i2;
+    i1 = inst[3] >> 4;
+    i2 = inst[3] & 0x0F;
+    DISASM_SET_NAME;
+    DISASM_PRINT_OPERANDS
+        "%d,%d",i1,i2);
+    DISASM_LOGMSG;
+}
+
+int disasm_MII_A (BYTE inst[], char mnemonic[], char *p)                /*912*/
+{
+DISASM_COMMON_VARS;
+int m1,i2,i3;
+    const S64 Two_S64=2;
+    m1 = inst[1] >> 4;
+    i2 = (S32)(((U32)inst[1] << 8) | (U32)inst[2]);
+    i3 = (S32)(((U32)inst[3] << 16) | ((U32)inst[4] << 8)
+               | (U32)inst[5]);
+    DISASM_SET_NAME;
+    DISASM_PRINT_OPERANDS
+        "%d,*%+"I64_FMT"d,*%+"I64_FMT"d",m1,i2*Two_S64,i3*Two_S64);
+    DISASM_LOGMSG;
+}
+
 int disasm_RR (BYTE inst[], char mnemonic[], char *p)
 {
 DISASM_COMMON_VARS;
@@ -1937,6 +1964,21 @@ int b1,d1,i2;
     DISASM_SET_NAME;
     DISASM_PRINT_OPERANDS
         "%d(%d),%d",d1,b1,i2);
+    DISASM_LOGMSG;
+}
+
+int disasm_SMI_A (BYTE inst[], char mnemonic[], char *p)                /*912*/
+{
+DISASM_COMMON_VARS;
+int m1,i2,b3,d3;
+    const S64 Two_S64=2;
+    m1 = inst[1] >> 4;
+    b3 = inst[2] >> 4;
+    d3 = (inst[2] & 0x0F) << 8 | inst[3];
+    i2 = (S32)(((U32)inst[4] << 8) | (U32)inst[5]);
+    DISASM_SET_NAME;
+    DISASM_PRINT_OPERANDS
+        "%d,*%+"I64_FMT"d,%d(%d)",m1,i2*Two_S64,d3,b3);
     DISASM_LOGMSG;
 }
 
