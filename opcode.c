@@ -897,6 +897,16 @@
 #endif /*!defined(FEATURE_PROCESSOR_ASSIST_FACILITY)*/          /*912*/
 
 
+#if !defined(FEATURE_TRANSACTIONAL_EXECUTION_FACILITY)          /*912*/
+ UNDEF_INST(extract_transaction_nesting_depth)                  /*912*/
+ UNDEF_INST(nontransactional_store_long)                        /*912*/
+ UNDEF_INST(transaction_abort)                                  /*912*/
+ UNDEF_INST(transaction_begin)                                  /*912*/
+ UNDEF_INST(transaction_begin_constrained)                      /*912*/
+ UNDEF_INST(transaction_end)                                    /*912*/
+#endif /*!defined(FEATURE_TRANSACTIONAL_EXECUTION_FACILITY)*/   /*912*/
+
+
 #if !defined(FEATURE_LOAD_PROGRAM_PARAMETER_FACILITY)
  UNDEF_INST(load_program_parameter)
 #endif /*!defined(FEATURE_LOAD_PROGRAM_PARAMETER_FACILITY)*/
@@ -3531,7 +3541,7 @@ DLL_EXPORT zz_func opcode_b2xx[256][GEN_MAXARCH] = {
  /*B2E9*/ GENx___x___x___ ,
  /*B2EA*/ GENx___x___x___ ,
  /*B2EB*/ GENx___x___x___ ,
- /*B2EC*/ GENx___x___x___ ,
+ /*B2EC*/ GENx___x___x900 (extract_transaction_nesting_depth,RRE_R1,"ETND"),       /*912*/
  /*B2ED*/ GENx___x___x900 (extract_coprocessor_group_address,RRE,"ECPGA"), /*  CMCF */
  /*B2EE*/ GENx___x___x___ ,
  /*B2EF*/ GENx___x___x___ ,
@@ -3543,11 +3553,11 @@ DLL_EXPORT zz_func opcode_b2xx[256][GEN_MAXARCH] = {
  /*B2F5*/ GENx___x___x___ ,
  /*B2F6*/ GENx___x___x___ ,                                     /* Sysplex   */
  /*B2F7*/ GENx___x___x___ ,
- /*B2F8*/ GENx___x___x___ ,
+ /*B2F8*/ GENx___x___x900 (transaction_end,none,"TEND"),                           /*912*/
  /*B2F9*/ GENx___x___x___ ,
  /*B2FA*/ GENx___x___x900 (next_instruction_access_intent,IE,"NIAI"),              /*912*/
  /*B2FB*/ GENx___x___x___ ,
- /*B2FC*/ GENx___x___x___ ,
+ /*B2FC*/ GENx___x___x900 (transaction_abort,S,"TABORT"),                          /*912*/
  /*B2FD*/ GENx___x___x___ ,
  /*B2FE*/ GENx___x___x___ ,
  /*B2FF*/ GENx___x390x900 (trap4,S,"TRAP4") };
@@ -4229,7 +4239,7 @@ DLL_EXPORT zz_func opcode_e3xx[256][GEN_MAXARCH] = {
  /*E322*/ GENx___x___x___ ,
  /*E323*/ GENx___x___x___ ,
  /*E324*/ GENx___x___x900 (store_long,RXY,"STG"),
- /*E325*/ GENx___x___x___ ,
+ /*E325*/ GENx___x___x900 (nontransactional_store_long,RXY,"NTSTG"),               /*912*/
  /*E326*/ GENx___x___x900 (convert_to_decimal_y,RXY,"CVDY"),
  /*E327*/ GENx___x___x___ ,
  /*E328*/ GENx___x___x___ ,
@@ -4550,8 +4560,8 @@ DLL_EXPORT zz_func opcode_e5xx[256][GEN_MAXARCH] = {
  /*E55D*/ GENx37Xx390x900 (compare_logical_immediate_fullword_storage,SIL,"CLFHSI"), /*208*/
  /*E55E*/ GENx___x___x___ ,
  /*E55F*/ GENx___x___x___ ,
- /*E560*/ GENx___x___x___ ,
- /*E561*/ GENx___x___x___ ,
+ /*E560*/ GENx___x___x900 (transaction_begin,SIL,"TBEGIN"),                        /*912*/
+ /*E561*/ GENx___x___x900 (transaction_begin_constrained,SIL,"TBEGINC"),           /*912*/
  /*E562*/ GENx___x___x___ ,
  /*E563*/ GENx___x___x___ ,
  /*E564*/ GENx___x___x___ ,

@@ -4085,5 +4085,11 @@ DEF_INST(perform_floating_point_operation);
 
 /* Instructions in transact.c */
 DEF_INST(perform_processor_assist);                             /*912*/
+DEF_INST(extract_transaction_nesting_depth);                    /*912*/
+DEF_INST(nontransactional_store_long);                          /*912*/
+DEF_INST(transaction_abort);                                    /*912*/
+DEF_INST(transaction_begin);                                    /*912*/
+DEF_INST(transaction_begin_constrained);                        /*912*/
+DEF_INST(transaction_end);                                      /*912*/
 
 /* end of OPCODE.H */
