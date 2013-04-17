@@ -2249,12 +2249,12 @@ do { \
 #undef SMI_A
 #undef SMI_A0
 
-#define SMI_A(_inst, _regs, _m1, _addr2, _addr3) \
-        SMI_A_DECODER(_inst, _regs, _m1, _addr2, _addr3, 6, 6)
-#define SMI_A0(_inst, _regs, _m1, _addr2, _addr3) \
-        SMI_A_DECODER(_inst, _regs, _m1, _addr2, _addr3, 6, 0)
+#define SMI_A(_inst, _regs, _m1, _addr2, _b3, _addr3) \
+        SMI_A_DECODER(_inst, _regs, _m1, _addr2, _b3, _addr3, 6, 6)
+#define SMI_A0(_inst, _regs, _m1, _addr2, _b3, _addr3) \
+        SMI_A_DECODER(_inst, _regs, _m1, _addr2, _b3, _addr3, 6, 0)
 
-#define SMI_A_DECODER(_inst, _regs, _m1, _addr2, _addr3, _len, _ilc) \
+#define SMI_A_DECODER(_inst, _regs, _m1, _addr2, _b3, _addr3, _len, _ilc) \
     { \
             U32 ri2; S64 offset; \
             U32 temp = fetch_fw(&(_inst)[2]); \
