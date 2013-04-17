@@ -49,7 +49,7 @@
 #define FEATURE_ETF2_ENHANCEMENT                                /*@Z9*/
 #define FEATURE_ETF3_ENHANCEMENT                                /*@Z9*/
 #define FEATURE_EXECUTE_EXTENSIONS_FACILITY                     /*208*/
-//#define FEATURE_EXECUTION_HINT_FACILITY                         /*912*/
+#define FEATURE_EXECUTION_HINT_FACILITY                         /*912*/
 #define FEATURE_EXPANDED_STORAGE
 #define FEATURE_EXPEDITED_SIE_SUBSET
 #define FEATURE_EXTENDED_DIAG204
