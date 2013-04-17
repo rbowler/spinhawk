@@ -3764,6 +3764,7 @@ int     cc;                             /* Comparison result         */
 } /* end DEF_INST(compare_logical_and_trap_long) */
 #endif /*defined(FEATURE_ESAME)*/
 
+
 #if defined(FEATURE_ESAME)
 /*-------------------------------------------------------------------*/
 /* EC59 RISBGN - Rotate Then Insert Selected Bits No CC        [RIE] */
@@ -3776,6 +3777,62 @@ DEF_INST(rotate_then_insert_selected_bits_long_reg_n)
 
 
 #endif /*defined(FEATURE_MISC_INSTRUCTION_EXTENSIONS_FACILITY)*/
+
+#if defined(FEATURE_EXECUTION_HINT_FACILITY)                    /*912*/
+
+/*-------------------------------------------------------------------*/
+/* C7   BPP   - Branch Prediction Preload                      [SMI] */
+/*-------------------------------------------------------------------*/
+DEF_INST(branch_prediction_preload)                             /*912*/
+{
+VADR    addr2, addr3;                   /* Effective addresses       */
+int     b3;                             /* Base of effective address */
+int     m1;                             /* Mask value                */
+
+    SMI_A0(inst, regs, m1, addr2, b3, addr3);
+
+    /* Depending on the model, the CPU may not implement
+       all of the branch-attribute codes. For codes that
+       are not recognized by the CPU, and for reserved
+       codes, the BPP instruction acts as a no-operation */
+
+} /* end DEF_INST(branch_prediction_preload) */
+
+ 
+/*-------------------------------------------------------------------*/
+/* C5   BPRP  - Branch Prediction Relative Preload             [MII] */
+/*-------------------------------------------------------------------*/
+DEF_INST(branch_prediction_relative_preload)                    /*912*/
+{
+VADR    addr2, addr3;                   /* Effective addresses       */
+int     m1;                             /* Mask value                */
+
+    MII_A0(inst, regs, m1, addr2, addr3);
+
+    /* Depending on the model, the CPU may not implement
+       all of the branch-attribute codes. For codes that
+       are not recognized by the CPU, and for reserved
+       codes, the BPRP instruction acts as a no-operation */
+        
+} /* end DEF_INST(branch_prediction_relative_preload) */
+ 
+ 
+/*-------------------------------------------------------------------*/
+/* B2FA NIAI  - Next Instruction Access Intent                  [IE] */
+/*-------------------------------------------------------------------*/
+DEF_INST(next_instruction_access_intent)                        /*912*/
+{
+BYTE    i1, i2;                         /* Immediate fields          */
+
+    IE0(inst, regs, i1, i2);
+
+    /* Depending on the model, the CPU may not recognize all of the
+       access intents. For access intents that are not recognized by
+       the CPU, the NIAI instruction acts as a no-operation */
+
+} /* end DEF_INST(next_instruction_access_intent) */
+
+#endif /*defined(FEATURE_EXECUTION_HINT_FACILITY)*/             /*912*/
 
 
 #if !defined(_GEN_ARCH)
