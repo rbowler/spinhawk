@@ -4078,7 +4078,12 @@ DEF_INST(test_data_group_dfp_ext);
 DEF_INST(test_data_group_dfp_long);
 DEF_INST(test_data_group_dfp_short);
 
+
 /* Instructions in pfpo.c */
 DEF_INST(perform_floating_point_operation);
+
+
+/* Instructions in transact.c */
+DEF_INST(perform_processor_assist);                             /*912*/
 
 /* end of OPCODE.H */

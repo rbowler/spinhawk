@@ -891,9 +891,16 @@
  UNDEF_INST(disconnect_channel_set)
 #endif /*!defined(FEATURE_CHANNEL_SWITCHING)*/
 
+
+#if !defined(FEATURE_PROCESSOR_ASSIST_FACILITY)                 /*912*/
+ UNDEF_INST(perform_processor_assist)                           /*912*/
+#endif /*!defined(FEATURE_PROCESSOR_ASSIST_FACILITY)*/          /*912*/
+
+
 #if !defined(FEATURE_LOAD_PROGRAM_PARAMETER_FACILITY)
  UNDEF_INST(load_program_parameter)
 #endif /*!defined(FEATURE_LOAD_PROGRAM_PARAMETER_FACILITY)*/
+
 
 #if !defined(FEATURE_CPU_MEASUREMENT_COUNTER_FACILITY)
  UNDEF_INST(extract_coprocessor_group_address)
@@ -3520,7 +3527,7 @@ DLL_EXPORT zz_func opcode_b2xx[256][GEN_MAXARCH] = {
  /*B2E5*/ GENx___x___x900 (extract_peripheral_counter,RRE,"EPCTR"),     /*  CMCF */
  /*B2E6*/ GENx___x___x___ ,
  /*B2E7*/ GENx___x___x___ ,
- /*B2E8*/ GENx___x___x___ ,
+ /*B2E8*/ GENx___x___x900 (perform_processor_assist,RRF_M3,"PPA"),                 /*912*/
  /*B2E9*/ GENx___x___x___ ,
  /*B2EA*/ GENx___x___x___ ,
  /*B2EB*/ GENx___x___x___ ,
