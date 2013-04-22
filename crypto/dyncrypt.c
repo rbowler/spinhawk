@@ -4666,18 +4666,14 @@ DEF_INST(perform_cryptographic_computation_d)
   
 #ifdef OPTION_PCC_DEBUG
   logmsg("PCC: perform cryptographic computation\n");
-  logmsg("  r1        : GR%02d\n", r1);
-  logmsg("    address : " F_VADR "\n", regs->GR(r1));
-  logmsg("  r2        : GR%02d\n", r2);
-  logmsg("    address : " F_VADR "\n", regs->GR(r2));
-  logmsg("    length  : " F_GREG "\n", regs->GR(r2 + 1));
   logmsg("  GR00      : " F_GREG "\n", regs->GR(0));
+  logmsg("    bit 56  : %s\n", TRUEFALSE(GR0_m(regs)));
   logmsg("    fc      : %d\n", GR0_fc(regs));
   logmsg("  GR01      : " F_GREG "\n", regs->GR(1));
 #endif /* #ifdef OPTION_PCC_DEBUG */
 
   /* Check special conditions */
-  if(unlikely(!r1 || r1 & 0x01 || !r2 || r2 & 0x01))
+  if(unlikely(GR0_m(regs)))
     ARCH_DEP(program_interrupt)(regs, PGM_SPECIFICATION_EXCEPTION);
 
   switch(GR0_fc(regs))
