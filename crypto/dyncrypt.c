@@ -213,7 +213,6 @@
         logmsg("."); \
     } \
     logmsg(" |\n"); \
-    buf[0] = 0; \
   } \
 }
 
@@ -1094,8 +1093,8 @@ static void ARCH_DEP(kimd_ghash)(int r1, int r2, REGS *regs)
     SET_GR_A(r2 + 1, regs, GR_A(r2 + 1, regs) - 16);
 
 #ifdef OPTION_KIMD_DEBUG
-    WRMSG(HHC90108, "D", r2, (regs)->GR(r2));
-    WRMSG(HHC90108, "D", r2 + 1, (regs)->GR(r2 + 1));
+    logmsg("  GR%02d  : " F_GREG "\n", r2, (regs)->GR(r2));
+    logmsg("  GR%02d  : " F_GREG "\n", r2 + 1, (regs)->GR(r2 + 1));
 #endif /* #ifdef OPTION_KIMD_DEBUG */
 
     /* check for end of data */
@@ -1410,7 +1409,7 @@ static void ARCH_DEP(km_dea)(int r1, int r2, REGS *regs)
   {
 
 #ifdef OPTION_KM_DEBUG
-    WRMSG(HHC90111, "D");
+    logmsg("Wrapping Verification Pattern does not match, return with cc1\n");
 #endif /* #ifdef OPTION_KM_DEBUG */
 
     regs->psw.cc = 1;
@@ -1554,7 +1553,7 @@ static void ARCH_DEP(km_aes)(int r1, int r2, REGS *regs)
   {
 
 #ifdef OPTION_KM_DEBUG
-    WRMSG(HHC90111, "D");
+    logmsg("Wrapping Verification Pattern does not match, return with cc1\n");
 #endif /* #ifdef OPTION_KM_DEBUG */
 
     regs->psw.cc = 1;
@@ -1673,7 +1672,7 @@ static void ARCH_DEP(km_xts_aes)(int r1, int r2, REGS *regs)
   {
 
 #ifdef OPTION_KM_DEBUG
-    WRMSG(HHC90111, "D");
+    logmsg("Wrapping Verification Pattern does not match, return with cc1\n");
 #endif /* #ifdef OPTION_KM_DEBUG */
 
     regs->psw.cc = 1;
@@ -1724,9 +1723,9 @@ static void ARCH_DEP(km_xts_aes)(int r1, int r2, REGS *regs)
     SET_GR_A(r2 + 1, regs, GR_A(r2 + 1, regs) - 16);
 
 #ifdef OPTION_KM_DEBUG
-    WRMSG(HHC90108, "D", r1, (regs)->GR(r1));
-    WRMSG(HHC90108, "D", r2, (regs)->GR(r2));
-    WRMSG(HHC90108, "D", r2 + 1, (regs)->GR(r2 + 1));
+    logmsg("  GR%02d  : " F_GREG "\n", r1, (regs)->GR(r1));
+    logmsg("  GR%02d  : " F_GREG "\n", r2, (regs)->GR(r2));
+    logmsg("  GR%02d  : " F_GREG "\n", r2 + 1, (regs)->GR(r2 + 1));
 #endif /* #ifdef OPTION_KM_DEBUG */
 
     /* check for end of data */
@@ -1819,7 +1818,7 @@ static void ARCH_DEP(kmac_dea)(int r1, int r2, REGS *regs)
   {
 
 #ifdef OPTION_KM_DEBUG
-    WRMSG(HHC90111, "D");
+    logmsg("Wrapping Verification Pattern does not match, return with cc1\n");
 #endif /* #ifdef OPTION_KM_DEBUG */
 
     regs->psw.cc = 1;
@@ -1971,7 +1970,7 @@ static void ARCH_DEP(kmac_aes)(int r1, int r2, REGS *regs)
   {
 
 #ifdef OPTION_KMAC_DEBUG
-    WRMSG(HHC90111, "D");
+    logmsg("Wrapping Verification Pattern does not match, return with cc1\n");
 #endif /* #ifdef OPTION_KMAC_DEBUG */
 
     regs->psw.cc = 1;
@@ -2105,7 +2104,7 @@ static void ARCH_DEP(kmc_dea)(int r1, int r2, REGS *regs)
   {
 
 #ifdef OPTION_KMC_DEBUG
-    WRMSG(HHC90111, "D");
+    logmsg("Wrapping Verification Pattern does not match, return with cc1\n");
 #endif /* #ifdef OPTION_KMC_DEBUG */
 
     regs->psw.cc = 1;
@@ -2319,7 +2318,7 @@ static void ARCH_DEP(kmc_aes)(int r1, int r2, REGS *regs)
   {
 
 #ifdef OPTION_KM_DEBUG
-    WRMSG(HHC90111, "D");
+    logmsg("Wrapping Verification Pattern does not match, return with cc1\n");
 #endif /* #ifdef OPTION_KMC_DEBUG */
 
     regs->psw.cc = 1;
@@ -2604,7 +2603,7 @@ static void ARCH_DEP(kmctr_dea)(int r1, int r2, int r3, REGS *regs)
   {
 
 #ifdef OPTION_KMCTR_DEBUG
-    WRMSG(HHC90111, "D");
+    logmsg("Wrapping Verification Pattern does not match, return with cc1\n");
 #endif /* #ifdef OPTION_KMCTR_DEBUG */
 
     regs->psw.cc = 1;
@@ -2763,7 +2762,7 @@ static void ARCH_DEP(kmctr_aes)(int r1, int r2, int r3, REGS *regs)
   {
 
 #ifdef OPTION_KMCTR_DEBUG
-    WRMSG(HHC90111, "D");
+    logmsg("Wrapping Verification Pattern does not match, return with cc1\n");
 #endif /* #ifdef OPTION_KMCTR_DEBUG */
 
     regs->psw.cc = 1;
@@ -2909,7 +2908,7 @@ static void ARCH_DEP(kmf_dea)(int r1, int r2, REGS *regs)
   {
 
 #ifdef OPTION_KMF_DEBUG
-    WRMSG(HHC90111, "D");
+    logmsg("Wrapping Verification Pattern does not match, return with cc1\n");
 #endif /* #ifdef OPTION_KMF_DEBUG */
 
     regs->psw.cc = 1;
@@ -3087,7 +3086,7 @@ static void ARCH_DEP(kmf_aes)(int r1, int r2, REGS *regs)
   {
 
 #ifdef OPTION_KMF_DEBUG
-    WRMSG(HHC90111, "D");
+    logmsg("Wrapping Verification Pattern does not match, return with cc1\n");
 #endif /* #ifdef OPTION_KMF_DEBUG */
 
     regs->psw.cc = 1;
@@ -3239,7 +3238,7 @@ static void ARCH_DEP(kmo_dea)(int r1, int r2, REGS *regs)
   {
 
 #ifdef OPTION_KMO_DEBUG
-    WRMSG(HHC90111, "D");
+    logmsg("Wrapping Verification Pattern does not match, return with cc1\n");
 #endif /* #ifdef OPTION_KMO_DEBUG */
 
     regs->psw.cc = 1;
@@ -3396,7 +3395,7 @@ static void ARCH_DEP(kmo_aes)(int r1, int r2, REGS *regs)
   {
 
 #ifdef OPTION_KMO_DEBUG
-    WRMSG(HHC90111, "D");
+    logmsg("Wrapping Verification Pattern does not match, return with cc1\n");
 #endif /* #ifdef OPTION_KMO_DEBUG */
 
     regs->psw.cc = 1;
@@ -3528,7 +3527,7 @@ static void ARCH_DEP(pcc_cmac_dea)(REGS *regs)
   {
 
 #ifdef OPTION_PCC_DEBUG
-    WRMSG(HHC90111, "D");
+    logmsg("Wrapping Verification Pattern does not match, return with cc1\n");
 #endif /* #ifdef OPTION_PCC_DEBUG */
 
     regs->psw.cc = 1;
@@ -3715,7 +3714,7 @@ static void ARCH_DEP(pcc_cmac_aes)(REGS *regs)
   {
 
 #ifdef OPTION_PCC_DEBUG
-    WRMSG(HHC90111, "D");
+    logmsg("Wrapping Verification Pattern does not match, return with cc1\n");
 #endif /* #ifdef OPTION_PCC_DEBUG */
 
     regs->psw.cc = 1;
@@ -3847,7 +3846,7 @@ static void ARCH_DEP(pcc_xts_aes)(REGS *regs)
   {
 
 #ifdef OPTION_PCC_DEBUG
-    WRMSG(HHC90111, "D");
+    logmsg("Wrapping Verification Pattern does not match, return with cc1\n");
 #endif /* #ifdef OPTION_PCC_DEBUG */
 
     regs->psw.cc = 1;
