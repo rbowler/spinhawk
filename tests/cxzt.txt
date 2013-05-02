@@ -1,0 +1,39 @@
+* CXZT,CDZT test $Id$
+sysclear
+archmode esame
+r 1a0=00000001800000000000000000000200 # z/Arch restart PSW
+r 1d0=0002000180000000000000000000DEAD # z/Arch pgm new PSW
+r 200=B7000310     # LCTL R0,R0,CTLR0  Set CR0 bit 45
+r 204=B2BD0314     # LFAS FPCREG       Load value into FPC register
+r 208=ED02034038AA # CDZT F3,TEST1(3),8  Convert '123' to DFP long
+r 20E=60300400     # STD F3,RES1       Store result
+r 212=ED0F034038AA # CDZT F3,TEST1(16),8  Convert '123...432' to DFP long
+r 218=60300408     # STD F3,RES2       Store result
+r 21C=ED07035038AA # CDZT F3,TEST3(8),8  Convert '-12345678' to DFP long
+r 222=60300410     # STD F3,RES3       Store result
+r 226=ED07035030AA # CDZT F3,TEST3(8),0  Convert '12345678' to DFP long
+r 22C=60300418     # STD F3,RES4       Store result
+r 230=ED07035830AA # CDZT F3,TEST4(8),0  Convert CA'12345678' to DFP long
+r 236=60300420     # STD F3,RES5       Store result
+r 23A=ED00036158AA # CDZT F5,TEST5+1(1),8  Convert '+2' to DFP long
+r 240=60300428     # STD F3,RES6       Store result
+r 244=ED02034058AB # CXZT F5,TEST1(3),8  Convert '123' to DFP ext
+r 24A=60500430     # STD F5,RES7       Store result
+r 24E=60700438     # STD F7,RES8       Store result
+r 252=ED07035040AB # CXZT F4,TEST3(8),0  Convert '12345678' to DFP ext
+r 258=60400440     # STD F4,RES9       Store result
+r 25C=60600448     # STD F6,RES10      Store result
+r 260=ED21034098AB # CXZT F9,TEST1(34),8  Convert '+123...892' to DFP ext
+r 266=60900450     # STD F9,RES11      Store result
+r 26A=60B00458     # STD F11,RES12     Store result
+r 26E=B2B20300     # LPSWE WAITPSW     Load enabled wait PSW
+r 300=07020001800000000000000000FED0D0 # WAITPSW Enabled wait state PSW
+r 310=00040000     # CTLR0             Control register 0 (bit45 AFP control)
+r 314=00000000     # FPCREG            Floating point control register
+r 340=F1F2F3F4F5F6F7F8 # TEST1 DC C'12345678'
+r 348=F9F8F7F6F5F4F3F2 # TEST2 DC C'98765432'
+r 350=F1F2F3F4F5F6F7D8 # TEST3 DC Z'-12345678'
+r 358=3132333435363738 # TEST4 DC CA'12345678'
+r 360=F9C2FFFFFFFFFFFF # TEST5 DC Z'+92',6X'FF'
+s+
+restart
