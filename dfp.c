@@ -1233,6 +1233,75 @@ decContext      setmax;                 /* Working context           */
 #endif /*!defined(_DFP_FPE_ARCH_INDEPENDENT_)*/
 #endif /*defined(FEATURE_FLOATING_POINT_EXTENSION_FACILITY)*/   /*810*/
 
+#if defined(FEATURE_DFP_ZONED_CONVERSION_FACILITY)              /*912*/
+#if !defined(_DFP_ZONED_ARCH_INDEPENDENT_)
+#define CDZT_MAXLEN 16                  /* CDZT maximum operand len  */
+#define CXZT_MAXLEN 34                  /* CXZT maximum operand len  */
+/*-------------------------------------------------------------------*/
+/* Convert zoned decimal to decimal number                           */
+/*                                                                   */
+/* This subroutine is called by the CDZT and CXZT instructions.      */
+/* It converts a zoned decimal value into a decimal number           */
+/* structure. The length of the zoned decimal value should not       */
+/* exceed the maximum number of digits specified in the context.     */
+/*                                                                   */
+/* Input:                                                            */
+/*      dn      Pointer to decimal number structure                  */
+/*      zoned   zoned decimal input area                             */
+/*      len     length-1 of zoned decimal input                      */
+/*      mask    mask field: 0x8=signed                               */
+/*      pset    Pointer to decimal number context structure          */
+/* Output:                                                           */
+/*      The decimal number structure is updated.                     */
+/*      Return value: 0=success, 1=data exception                    */
+/*-------------------------------------------------------------------*/
+static int
+dfp_number_from_zoned(decNumber *dn, char *zoned, int len,
+                int mask, decContext *pset)
+{
+int             i;                      /* Array subscript           */
+int             signflag;               /* 1=signed decimal operand  */
+char            zwork[1+CXZT_MAXLEN+1]; /* Sign + digits + null      */
+char            *pzw = zwork;           /* Addr next byte in zwork   */
+char            c;                      /* Character work area       */
+
+    /* Set the signed flag if indicated by the mask */
+    signflag = (mask & 0x8) ? 1 : 0;
+
+    /* Set the sign according to the operand sign code */
+    if (signflag) {
+        switch ((zoned[len] & 0xF0) >> 4) {
+        case 0xB: case 0xD:
+            *pzw++ = '-'; break;
+        case 0xA: case 0xC: case 0xE: case 0xF:
+            break;
+        default:
+            /* Data exception if invalid sign code */
+            return 1;
+        }
+    } 
+
+    /* Convert zoned number to a decimal string */
+    for (i=0; i <= len; i++)
+    {
+        c = zoned[i] & 0x0F;
+        /* Data exception if invalid digit */
+        if (c > 0x09) return 1;
+        *pzw++ = c + '0';
+    }
+    *pzw = '\0';
+
+    /* Convert decimal string to decimal number structure */
+    decNumberFromString(dn, zwork, pset);
+
+    return 0;
+
+} /* end function dfp_number_from_zoned */
+
+#define _DFP_ZONED_ARCH_INDEPENDENT_
+#endif /*!defined(_DFP_ZONED_ARCH_INDEPENDENT_)*/
+#endif /*defined(FEATURE_DFP_ZONED_CONVERSION_FACILITY)*/       /*912*/
+
 /*-------------------------------------------------------------------*/
 /* Set rounding mode in decimal context structure                    */
 /*                                                                   */
@@ -2360,6 +2429,107 @@ int32_t         scale = 0;              /* Scaling factor            */
     ARCH_DEP(dfp_reg_from_decimal64)(r1, &x1, regs);
 
 } /* end DEF_INST(convert_ubcd64_to_dfp_long_reg) */
+
+
+#if defined(FEATURE_DFP_ZONED_CONVERSION_FACILITY)              /*912*/
+/*-------------------------------------------------------------------*/
+/* EDAB CXZT  - Convert from zoned to DFP Extended             [RSL] */
+/*-------------------------------------------------------------------*/
+DEF_INST(convert_zoned_to_dfp_ext)                              /*912*/
+{
+int             rc;                     /* Return code               */
+int             r1, m3;                 /* Values of R and M fields  */
+int             l2;                     /* Operand length minus 1    */
+int             b2;                     /* Base of effective addr    */
+VADR            effective_addr2;        /* Effective address         */
+decimal128      x1;                     /* Extended DFP value        */
+decNumber       d;                      /* Working decimal number    */
+decContext      set;                    /* Working context           */
+char            zoned[CXZT_MAXLEN];     /* Zoned decimal operand     */
+
+    RSL_RM(inst, regs, r1, l2, b2, effective_addr2, m3);
+    DFPINST_CHECK(regs);
+    DFPREGPAIR_CHECK(r1, regs);
+
+    /* Program check if operand length exceeds maximum */
+    if (l2 > CXZT_MAXLEN-1)
+    {
+        ARCH_DEP(program_interrupt) (regs, PGM_SPECIFICATION_EXCEPTION);
+    }
+
+    /* Initialise the context for extended DFP */
+    decContextDefault(&set, DEC_INIT_DECIMAL128);
+
+    /* Fetch the zoned decimal operand into the work area */
+    ARCH_DEP(vfetchc) (zoned, l2, effective_addr2, b2, regs);
+
+    /* Convert zoned decimal to decimal number structure */
+    rc = dfp_number_from_zoned(&d, zoned, l2, m3, &set);
+
+    /* Program check if data exception is indicated */
+    if (rc != 0)
+    {
+        regs->dxc = DXC_DECIMAL;
+        ARCH_DEP(program_interrupt) (regs, PGM_DATA_EXCEPTION);
+    }
+
+    /* Convert decimal number to extended DFP format */
+    decimal128FromNumber(&x1, &d, &set);
+
+    /* Load result into FP register r1 */
+    ARCH_DEP(dfp_reg_from_decimal128)(r1, &x1, regs);
+
+} /* end DEF_INST(convert_zoned_to_dfp_ext) */
+
+
+/*-------------------------------------------------------------------*/
+/* EDAA CDZT  - Convert from zoned to DFP Long                 [RSL] */
+/*-------------------------------------------------------------------*/
+DEF_INST(convert_zoned_to_dfp_long)                             /*912*/
+{
+int             rc;                     /* Return code               */
+int             r1, m3;                 /* Values of R and M fields  */
+int             l2;                     /* Operand length minus 1    */
+int             b2;                     /* Base of effective addr    */
+VADR            effective_addr2;        /* Effective address         */
+decimal64       x1;                     /* Long DFP value            */
+decNumber       d;                      /* Working decimal number    */
+decContext      set;                    /* Working context           */
+char            zoned[CDZT_MAXLEN];     /* Zoned decimal operand     */
+
+    RSL_RM(inst, regs, r1, l2, b2, effective_addr2, m3);
+    DFPINST_CHECK(regs);
+
+    /* Program check if operand length exceeds maximum */
+    if (l2 > CDZT_MAXLEN-1)
+    {
+        ARCH_DEP(program_interrupt) (regs, PGM_SPECIFICATION_EXCEPTION);
+    }
+
+    /* Initialise the context for long DFP */
+    decContextDefault(&set, DEC_INIT_DECIMAL64);
+
+    /* Fetch the zoned decimal operand into the work area */
+    ARCH_DEP(vfetchc) (zoned, l2, effective_addr2, b2, regs);
+
+    /* Convert zoned decimal to decimal number structure */
+    rc = dfp_number_from_zoned(&d, zoned, l2, m3, &set);
+
+    /* Program check if data exception is indicated */
+    if (rc != 0)
+    {
+        regs->dxc = DXC_DECIMAL;
+        ARCH_DEP(program_interrupt) (regs, PGM_DATA_EXCEPTION);
+    }
+
+    /* Convert decimal number to long DFP format */
+    decimal64FromNumber(&x1, &d, &set);
+
+    /* Load result into FP register r1 */
+    ARCH_DEP(dfp_reg_from_decimal64)(r1, &x1, regs);
+
+} /* end DEF_INST(convert_zoned_to_dfp_long) */
+#endif /*defined(FEATURE_DFP_ZONED_CONVERSION_FACILITY)*/       /*912*/
 
 
 #if defined(FEATURE_FLOATING_POINT_EXTENSION_FACILITY)          /*810*/
