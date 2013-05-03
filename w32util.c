@@ -2918,10 +2918,13 @@ DLL_EXPORT void w32_set_thread_name( TID tid, char* name )
 // w32_hopen is called instead of hopen in MSVC environment (see hercwind.h)
 // Its purpose is to prevent a file from being opened for output by two
 // Hercules instances at the same time.
+// _SH_DENYRW prevents all access to the file from other processes;
+// _SH_DENYWR permits other processes to read the file but not to write;
 // _SH_SECURE opens the file in _SH_DENYRW mode if oflag specifies write
 // access, or _SH_DENYWR mode if oflag specifies read-only.
 DLL_EXPORT int w32_hopen( const char* path, int oflag, ... )
 {
+    int shflag = (oflag & _O_RDWR) ? _SH_DENYRW : _SH_DENYWR;
     int pmode = 0;
     if (oflag & _O_CREAT)
     {
@@ -2929,7 +2932,7 @@ DLL_EXPORT int w32_hopen( const char* path, int oflag, ... )
         va_start( vargs, oflag );
         pmode = va_arg( vargs, int );
     }
-    return _sopen( path, oflag, _SH_SECURE, pmode );
+    return _sopen( path, oflag, shflag, pmode );
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
