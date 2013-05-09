@@ -1298,6 +1298,100 @@ char            c;                      /* Character work area       */
 
 } /* end function dfp_number_from_zoned */
 
+#define CZDT_MAXLEN 16                  /* CZDT maximum operand len  */
+#define CZXT_MAXLEN 34                  /* CZXT maximum operand len  */
+/*-------------------------------------------------------------------*/
+/* Convert decimal number to zoned decimal                           */
+/*                                                                   */
+/* This subroutine is called by the CZDT and CZXT instructions.      */
+/* It converts a decimal number to a zoned decimal string.           */
+/*                                                                   */
+/* Input:                                                            */
+/*      dn      Pointer to decimal number structure                  */
+/*              representing original DFP value                      */
+/*      dc      Pointer to decimal number structure                  */
+/*              containing only coeffecient of DFP value             */
+/*      zoned   zoned decimal output area                            */
+/*      len     length-1 of zoned decimal output area                */
+/*      mask    mask field: 0x8=signed, 0x4=ASCII,                   */
+/*              0x2=plus sign is F, 0x1=zero is always positive      */
+/*      pset    Pointer to decimal number context structure          */
+/* Output:                                                           */
+/*      The zoned decimal area is updated.                           */
+/*      Return value is the condition code:                          */
+/*      0=zero; 1=negative; 2=positive; 3=Inf, NaN, or overflow      */
+/*-------------------------------------------------------------------*/
+static int
+dfp_number_to_zoned(decNumber *dn, decNumber *dc, char *zoned, int len,
+                int mask, decContext *pset)
+{
+int             i;                      /* Array subscript           */
+int             pad;                    /* Number of padding bytes   */
+int             cc;                     /* Condition code            */
+int             sign;                   /* 1=negative number         */
+char            zwork[MAXDECSTRLEN+64]; /* Decimal string work area  */
+int             zwlen;                  /* Length of zwork string    */
+int             zwind;                  /* Index into zwork string   */
+
+    /* Determine if the number is negative or positive */
+    sign = (decNumberIsNegative(dn)) ? 1 : 0;
+
+    /* Force plus zero if mask bit 3 is set */
+    if ((mask & 0x1) && decNumberIsZero(dn)) sign = 0;
+
+    /* Convert decimal number to string */
+    if (decNumberIsNaN(dn) || (decNumberIsInfinite(dn)))
+    {
+        /* For NaN or Inf set cc=3 and use coefficient only */
+        cc = 3;
+        dc->exponent = 0;
+        dc->bits &= ~(DECNEG);
+        decNumberToString(dc, zwork);
+    } else {
+        /* For finite numbers set cc=0, 1, or 2 and convert digits */
+        cc = (decNumberIsZero(dn)) ? 0 :
+            (decNumberIsNegative(dn)) ? 1 : 2;
+        dn->exponent = 0;
+        dn->bits &= ~(DECNEG);
+        decNumberToString(dn, zwork);
+    }
+
+    /* Calculate the number of padding bytes needed, and set
+       condition code 3 if significant digits will be lost */
+    zwlen = (int)(strlen(zwork));
+    if (zwlen <= len + 1)
+    {
+        zwind = 0;
+        pad = len + 1 - zwlen;
+    } else {
+        zwind = zwlen - len - 1;
+        pad = 0;
+        cc = 3;
+    }
+
+    /* Copy digits to zoned decimal result area */
+    for (i = 0; i <= len; i++)
+    {
+        /* Pad with zero or copy digit from work string */
+        zoned[i] = (pad > 0) ? 0x00 : zwork[zwind++] - '0';
+        if (pad > 0) pad--;
+        /* Set ASCII or EBCDIC zone according to mask bit 1 */
+        zoned[i] |= (mask & 0x4) ? 0x30 : 0xF0;
+    }
+
+    /* Replace final zone by EBCDIC sign if mask bit 0 is one */
+    if (mask & 0x8)
+    {
+        /* -ve sign is D, +ve sign is F or C depending on mask bit 2 */
+        zoned[i-1] &= 0x0F;
+        zoned[i-1] |= (sign) ? 0xD0 : (mask & 0x2) ? 0xF0 : 0xC0;
+    }
+
+    /* Return the condition code */
+    return cc;
+
+} /* end function dfp_number_to_zoned */
+
 #define _DFP_ZONED_ARCH_INDEPENDENT_
 #endif /*!defined(_DFP_ZONED_ARCH_INDEPENDENT_)*/
 #endif /*defined(FEATURE_DFP_ZONED_CONVERSION_FACILITY)*/       /*912*/
@@ -3104,6 +3198,109 @@ BYTE            pwork[9];               /* 17-digit packed work area */
     FETCH_DW(regs->GR_G(r1), pwork+sizeof(pwork)-8);
 
 } /* end DEF_INST(convert_dfp_long_to_ubcd64_reg) */
+
+
+#if defined(FEATURE_DFP_ZONED_CONVERSION_FACILITY)              /*912*/
+/*-------------------------------------------------------------------*/
+/* EDA9 CZXT  - Convert to zoned from DFP Extended             [RSL] */
+/*-------------------------------------------------------------------*/
+DEF_INST(convert_dfp_ext_to_zoned)                              /*912*/
+{
+int             r1, m3;                 /* Values of R and M fields  */
+int             l2;                     /* Operand length minus 1    */
+int             b2;                     /* Base of effective addr    */
+VADR            effective_addr2;        /* Effective address         */
+decimal128      x1;                     /* Extended DFP value        */
+decNumber       dwork, dcoeff;          /* Working decimal numbers   */
+decContext      set;                    /* Working context           */
+int             cc;                     /* Condition code            */
+char            zoned[CZXT_MAXLEN];     /* Zoned decimal result      */
+
+    RSL_RM(inst, regs, r1, l2, b2, effective_addr2, m3);
+    DFPINST_CHECK(regs);
+    DFPREGPAIR_CHECK(r1, regs);
+
+    /* Program check if operand length exceeds 34 */
+    if (l2 > CZXT_MAXLEN-1)
+    {
+        ARCH_DEP(program_interrupt) (regs, PGM_SPECIFICATION_EXCEPTION);
+    }
+
+    /* Initialise the context for extended DFP */
+    decContextDefault(&set, DEC_INIT_DECIMAL128);
+
+    /* Load DFP extended number from FP register r1 */
+    ARCH_DEP(dfp_reg_to_decimal128)(r1, &x1, regs);
+    decimal128ToNumber(&x1, &dwork);
+
+    /* Extract coefficient only for Inf and NaN */
+    if (decNumberIsNaN(&dwork) || (decNumberIsInfinite(&dwork)))
+    {
+        dfp128_clear_cf_and_bxcf(&x1);
+        decimal128ToNumber(&x1, &dcoeff);
+    }
+
+    /* Convert number to zoned decimal and set condition code */
+    cc = dfp_number_to_zoned(&dwork, &dcoeff, zoned, l2, m3, &set);
+
+    /* Store the zoned decimal result at the operand location */
+    ARCH_DEP(vstorec) (zoned, l2, effective_addr2, b2, regs);
+
+    /* Set the condition code in the PSW */
+    regs->psw.cc = cc;
+
+} /* end DEF_INST(convert_dfp_ext_to_zoned) */
+
+
+/*-------------------------------------------------------------------*/
+/* EDA8 CZDT  - Convert to zoned from DFP Long                 [RSL] */
+/*-------------------------------------------------------------------*/
+DEF_INST(convert_dfp_long_to_zoned)                             /*912*/
+{
+int             r1, m3;                 /* Values of R and M fields  */
+int             l2;                     /* Operand length minus 1    */
+int             b2;                     /* Base of effective addr    */
+VADR            effective_addr2;        /* Effective address         */
+decimal64       x1;                     /* Long DFP value            */
+decNumber       dwork, dcoeff;          /* Working decimal numbers   */
+decContext      set;                    /* Working context           */
+int             cc;                     /* Condition code            */
+char            zoned[CZDT_MAXLEN];     /* Zoned decimal result      */
+
+    RSL_RM(inst, regs, r1, l2, b2, effective_addr2, m3);
+    DFPINST_CHECK(regs);
+
+    /* Program check if operand length exceeds 16 */
+    if (l2 > CZDT_MAXLEN-1)
+    {
+        ARCH_DEP(program_interrupt) (regs, PGM_SPECIFICATION_EXCEPTION);
+    }
+
+    /* Initialise the context for long DFP */
+    decContextDefault(&set, DEC_INIT_DECIMAL64);
+
+    /* Load DFP long number from FP register r1 */
+    ARCH_DEP(dfp_reg_to_decimal64)(r1, &x1, regs);
+    decimal64ToNumber(&x1, &dwork);
+
+    /* Extract coefficient only for Inf and NaN */
+    if (decNumberIsNaN(&dwork) || (decNumberIsInfinite(&dwork)))
+    {
+        dfp64_clear_cf_and_bxcf(&x1);
+        decimal64ToNumber(&x1, &dcoeff);
+    }
+
+    /* Convert number to zoned decimal and set condition code */
+    cc = dfp_number_to_zoned(&dwork, &dcoeff, zoned, l2, m3, &set);
+
+    /* Store the zoned decimal result at the operand location */
+    ARCH_DEP(vstorec) (zoned, l2, effective_addr2, b2, regs);
+
+    /* Set the condition code in the PSW */
+    regs->psw.cc = cc;
+
+} /* end DEF_INST(convert_dfp_long_to_zoned) */
+#endif /*defined(FEATURE_DFP_ZONED_CONVERSION_FACILITY)*/       /*912*/
 
 
 /*-------------------------------------------------------------------*/
