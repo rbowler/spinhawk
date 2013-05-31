@@ -1,0 +1,74 @@
+.TH HERCULES 1 "May 2013" "Hercules Version 3.08.2" "User Commands"
+.SH NAME
+\fBHercules\fR \- IBM System/370, ESA/390, and z/Architecture Emulator
+.SH SYNOPSIS
+.B hercules
+[\fB\-f\fR \fIconfig\-filename\fR]
+[\fB\-d\fR]
+[\fB\-b\fR \fIlogo\-filename\fR]
+[\fB\-p\fR \fIdyn\-load\-dir\fR] [[\fB\-l\fR \fIdynmod\-to\-load\fR]...]
+[> \fIlogfile\fR]
+.SH DESCRIPTION
+\fBHercules\fR is a software implementation of the System/370, ESA/390 and
+z/Architecture mainframe architectures.
+
+It means that your PC can emulate an IBM mainframe processor. The mainframe
+can range from a System/360 to a z10 - running in "S/370" mode, "ESA/390"
+mode, or "z/Architecture" mode.
+
+\fBHercules\fR executes S/370, ESA/390, and z/Architecture instructions and channel
+programs. It emulates mainframe I/O devices by using PC devices. For example,
+3390 DASD devices are emulated by large files on your hard disk, and local 3270
+screens are emulated by tn3270 sessions. (Note: Not all 370 and 390 features
+have been implemented in \fBHercules\fR. Also, certain non-standard models, 360/20s,
+and the 360/67 virtual memory mode are not emulated.)
+
+\fBHercules\fR implements only the raw S/370, ESA/390, and z/Architecture instruction
+set; it does not provide any operating system facilities. This means that you
+need to provide an operating system or standalone program which \fBHercules\fR can
+load from an emulated disk or tape device. You will have to write the operating
+system or standalone program yourself, unless you can manage to obtain
+a license from IBM to run one of their operating systems on your PC, or use
+IBM programs and operating systems which have been placed in the public domain.
+.SH OPTIONS
+.TP
+\fB\-f\fR \fIconfig\-filename\fR
+Sets the name of the configuration file. The default, if none is specified, is
+\fBhercules.cnf\fR. The default may be overridden via the \fBHERCULES_CNF\fR
+environment variable.
+.TP
+\fB\-d\fR
+Specifies that Hercules is to be run in 'daemon' mode, wherein it runs invisibly
+with no attached console. 
+.TP
+\fB\-b\fR \fIlogo\-filename\fR
+Sets the name of the file containg the screen logo that's presented when a 3270
+terminal connects. When not specified the default \fBherclogo.txt\fR file is
+looked for and when not found the built-in logo is used.
+.TP
+\fB\-p\fR \fIdyn\-load\-dir\fR
+Sets the directory from which dynamic modules are to be loaded. The default depends
+on the host platform on which Hercules is being run. This option overrides the default.
+.TP
+\fB\-l\fR \fIdynmod\-to\-load\fR
+Sets the name of an additional dynamic module to be loaded at startup. More than one
+additional module may be specified, although each must be preceded with the \fB-l\fR
+option specifier.
+.TP
+\fIlogfile\fR
+Sets an optional log file which will receive a copy of all messages displayed
+on the control panel 
+.SH FILES
+.B hercules.cnf
+.SH ENVIRONMENT
+.B HERCULES_CNF
+.SH AUTHORS
+\fBHercules\fR was created by Roger Bowler. Jay Maynard (“the Tron Guy”) was the maintainer
+from 2000 to 2012. Jan Jaeger designed and implemented many of the advanced features
+of \fBHercules\fR, including dynamic reconfiguration, integrated console, interpretive
+execution and z/Architecture support. A dedicated crew of programmers is constantly
+at work implementing new features and fixing bugs.
+
+This manual page was written by Dan Horák using text snippets from the \fBHercules\fR web site.
+.SH SEE ALSO
+\fBHercules\fR Homepage: \fBhttp://www.hercules-s390.eu\fR
