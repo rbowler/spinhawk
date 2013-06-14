@@ -566,7 +566,6 @@ EXTRA_DIST = autoconf/config.rpath \
              README.SVN            \
              README.DYNMOD         \
              README.ECPSVM         \
-             README.HAO            \
              README.HDL            \
              README.NETWORKING     \
              README.OSX            \
