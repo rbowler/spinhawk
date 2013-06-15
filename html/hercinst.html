@@ -928,7 +928,7 @@ As an example, the rule below issues the command 'i 001F' in response to
 the message HHCTE014I 3270 device 001F client 127.0.0.1 connection reset:
 <pre>
    hao tgt HHCTE014I 3270 device ([0-9A-F]{3,4})
-   hao cmd i
+   hao cmd i $1
 </pre>
 <p>
 Another example, shown below, illustrates how the dot matrix display of a
