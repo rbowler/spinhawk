@@ -2838,27 +2838,27 @@ void store_status (REGS *ssreg, U64 aaddr);
 
 
 /* Functions in module ipl.c */
-int          load_ipl           (U16 lcss, U16  devnum, int cpu, int clear);
-int ARCH_DEP(load_ipl)          (U16 lcss, U16  devnum, int cpu, int clear);
-int          system_reset       (             int cpu, int clear);
-int ARCH_DEP(system_reset)      (             int cpu, int clear);
-int          cpu_reset          (REGS *regs);
-int ARCH_DEP(cpu_reset)         (REGS *regs);
-int          initial_cpu_reset  (REGS *regs);
+int load_ipl (U16 lcss, U16 devnum, int cpu, int clear);
+int ARCH_DEP(load_ipl) (U16 lcss, U16 devnum, int cpu, int clear);
+int system_reset (int cpu, int clear);
+int ARCH_DEP(system_reset) (int cpu, int clear);
+int cpu_reset (REGS *regs);
+int ARCH_DEP(cpu_reset) (REGS *regs);
+int initial_cpu_reset (REGS *regs);
 int ARCH_DEP(initial_cpu_reset) (REGS *regs);
-int ARCH_DEP(common_load_begin)  (int cpu, int clear);
+int ARCH_DEP(common_load_begin) (int cpu, int clear);
 int ARCH_DEP(common_load_finish) (REGS *regs);
 void storage_clear(void);
 void xstorage_clear(void);
 
 
 /* Functions in module scedasd.c */
-void         set_sce_dir        (char *path);
-char        *get_sce_dir        ();
-int          load_main          (char *fname, RADR startloc);
-int ARCH_DEP(load_main)         (char *fname, RADR startloc);
-int          load_hmc           (char *fname, int cpu, int clear);
-int ARCH_DEP(load_hmc)          (char *fname, int cpu, int clear);
+void set_sce_dir (char *path);
+char *get_sce_dir ();
+int load_main (char *fname, RADR startloc);
+int ARCH_DEP(load_main) (char *fname, RADR startloc);
+int load_hmc (char *fname, int cpu, int clear);
+int ARCH_DEP(load_hmc) (char *fname, int cpu, int clear);
 void ARCH_DEP(sclp_scedio_request) (SCCB_HEADER *);
 void ARCH_DEP(sclp_scedio_event) (SCCB_HEADER *);
 
