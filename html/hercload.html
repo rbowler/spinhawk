@@ -521,16 +521,60 @@ by means of commands issued at the Unix shell prompt.
 
 <h3>DASDLS - List datasets on volume</h3>
 <p>
-DASDLS, written by Malcolm Beattie, is a command to let you list the
-names of the datasets contained in disk images.
+DASDLS, written by Malcolm Beattie with subsequent enhancements by Chris Cheney,
+is a command to let you list the names and attributes of the datasets
+contained in a disk image.
 <p>
 The command format is:
 <br><code>
-dasdls <em>ckdfile [sf=shadow-file-name] ...</em>
+dasdls <em>[options] ckdfile [sf=shadow-file-name]</em>
 </code></br>
 where <em>ckdfile</em> is the name of a Unix file containing a CKD volume
 and <em>shadow-file-name</em> (optional) is the name of the associated
 shadow file.
+<p>
+The options are:
+<dl>
+<dt>
+<dt><code>-info</code>
+<dd>Show Format 1 DSCB information; this option is implied if any of the
+other options are set.
+<dt><code>-caldt</code>
+<dd>Display dates as YYYYMMMDD; if this option is not supplied dates are
+displayed as YYDDD.
+<dt><code>-refdt</code>
+<dd>Display the last-referenced date (not applicable to MVT); otherwise it
+is omitted.
+<dt><code>-expdt</code>
+<dd>Display the expiry date; otherwise it is omitted.
+<dt><code>-hdr</code>
+<dd>Display column headers; otherwise they are omitted.
+<dt><code>-dsnl[=n]</code>
+<dd>Reserve space on the output line for dataset names up to 'n'
+characters; if '=n' is not supplied, space for 26 characters is reserved;
+if the -dsnl option is omitted, space for 44 characters is reserved.
+<dt><code>-yroffs[=n]</code>
+<dd>Add the year offset 'n' (which may be negative) to dates before
+displaying them; if '=n' is omitted, 28 is used. No checking is done
+that the value of 'n' is sensible.
+</dl>
+<h5>Examples</h5>
+<p>
+List all the datasets currently on the volume <b><i>/mnt/sdb1/dasd/mvtres.cckd</i></b>:</p>
+<pre><code>dasdls /mnt/sdb1/dasd/mvtres.cckd
+</code></pre>
+<p>
+List all the datasets currently on the volume <b><i>/mnt/sdb1/dasd/mvtres.cckd</i></b>, showing
+information from the Format 1 DSCB, with column headers and reserving only 20
+characters for the dsname:</p>
+<pre><code>dasdls -dsnl=20 -hdr /mnt/sdb1/dasd/mvtres.cckd
+</code></pre>
+<p>
+List all the datasets currently on the volume <b><i>/mnt/sdb1/dasd/mvtres.cckd</i></b>, showing
+information from the Format 1 DSCB, with calendar date format and reserving only 20
+characters for the dsname:</p>
+<pre><code>dasdls -dsnl=20 -caldt /mnt/sdb1/dasd/mvtres.cckd
+</code></pre>
 
 <h3>DASDCAT - Display PDS members</h3>
 <p>
