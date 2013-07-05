@@ -477,7 +477,7 @@ AC_CHECK_HEADERS( sys/ioctl.h,    [hc_cv_have_sys_ioctl_h=yes],    [hc_cv_have_s
 AC_CHECK_HEADERS( sys/mman.h,     [hc_cv_have_sys_mman_h=yes],     [hc_cv_have_sys_mman_h=no]     )
 
 #------------------------------------------------------------------------------
-#  PROGRAMMING NOTE: on *BSD systems sys/param.h must be #included before 
+#  PROGRAMMING NOTE: on *BSD systems sys/param.h must be #included before
 #  sys/mount.h as it contains the #define of NGROUPS.
 
 AC_CHECK_HEADERS( sys/param.h,    [hc_cv_have_sys_param_h=yes],    [hc_cv_have_sys_param_h=no]    )
@@ -1090,7 +1090,7 @@ fi
 #     ... the -traditional-cpp option has changed.
 #    In Apple GCC 3.1 and earlier Apple GCC compilers,
 #    -traditional-cpp was used to toggle between the
-#    standard GNU GCC preprocessor and Apple's own 
+#    standard GNU GCC preprocessor and Apple's own
 #    preprocessor, "cpp-precomp". The GNU GCC compiler
 #    interpreted -traditional-cpp differently on all
 #    other platforms. Since cpp-precomp has been removed
@@ -1534,7 +1534,7 @@ if test "$hc_cv_build_hercifc" = "yes"; then
    if test "$hc_cv_have_linux_if_tun_h" != "yes"; then
 
       if test "$hc_cv_have_net_if_h" != "yes"; then
-      
+
          AC_MSG_RESULT( [ERROR: Required headers 'linux/if_tun.h' or 'net/if.h' not found] )
          hc_error=yes
       fi
