@@ -66,19 +66,15 @@
     So what exactly does that mean?
 </H4>
 <P>
-    It means that your PC can emulate an IBM mainframe processor. The
-    mainframe can range from a System/360 to a z10 - running in "S/370"
-    mode, "ESA/390" mode, or "z/Architecture" mode.
+    It means that your PC can execute programs designed to run on an IBM
+    mainframe.
 </P>
 <P>
     Hercules executes S/370, ESA/390, and z/Architecture instructions
     and channel programs.  It emulates mainframe I/O devices by using
     PC devices.  For example, 3390 DASD devices are emulated by large
     files on your hard disk, and local 3270 screens are emulated by tn3270
-    sessions. (Note: Not all 370 and 390 features have been implemented
-    in Hercules. See the list of particulars later in this document.
-    Also, certain non-standard models, 360/20s, and the 360/67 virtual
-    memory mode are not emulated.)
+    sessions. 
 </P>
 <P>
     Hercules implements only the raw S/370, ESA/390, and z/Architecture
@@ -88,7 +84,7 @@
     You will have to write the operating system or standalone program
     yourself, unless you can manage to obtain a license from IBM to run
     one of their operating systems on your PC, or use IBM programs and
-    operating systems which have been placed in the public domain.
+    operating systems which are effectively in the public domain.
 </P>
 <H4><A NAME="1.03">1.03</A>
     Is it functional enough to run production work?
@@ -130,7 +126,9 @@
     <b>But</b> (and this is a big but), these operating systems are all
     IBM Licensed Program Products, whose conditions of use generally
     restrict their usage to specific IBM machine serial numbers. So you
-    cannot just copy these systems from work and run them on your PC.
+    cannot just copy these systems from work and run them on your PC, as
+    this would almost certainly be a violation of your company's licensing
+    agreement with IBM.
 </P>
 <H4><A NAME="2.02">2.02</A>
     What operating systems can I run legally?
@@ -140,7 +138,8 @@
     <UL>
     <LI>
     Older IBM operating systems including OS/360, DOS/360, DOS/VS,
-    MVS 3.8, VM/370, and TSS/370 which are either public domain or
+    MVS 3.8, VM/370, and TSS/370 which are widely believed to be
+    either public domain or
     "copyrighted software provided without charge."
     </LI>
     <LI>
@@ -179,12 +178,12 @@
 <P>
     Any program which uses the S/370, ESA/390, or z/Architecture instruction
     set, as implemented in Hercules. Some special utilities in the form of
-    standalone programs are known to run well. I can particularly recommend
+    standalone programs are known to run well. A good example is 
     Jan Jaeger's excellent standalone editor (ZZSA) which is included in the
     Hercules distribution, or it can be downloaded from
 <A HREF="http://www.cbttape.org/~jjaeger">http://www.cbttape.org/~jjaeger</A>;
-    I use it regularly to look at DASD while debugging an OS installation,
-    which is just what it's designed to do. Note: ZZSA runs in ESA/390 mode.
+    ZZSA allows you to examine and edit MVS datasets without the need to load
+    an operating system. Note: ZZSA runs in ESA/390 mode.
     See Jan Jaeger's website for more information and special logon procedures.
 </P>
 <H4><A NAME="2.04">2.04</A>
@@ -240,6 +239,20 @@ subscribe to the H390-MVS forum at
 <A HREF="http://tech.groups.yahoo.com/group/H390-MVS/">
 http://tech.groups.yahoo.com/group/H390-MVS/</A>
 </P>
+<P>
+Phil Roberts has made available an updated MVS Turnkey System
+which can be downloaded from
+<a href="http://www.4shared.com/file/RfClJ57w/tk3upd.html">
+http://www.4shared.com/file/RfClJ57w/tk3upd.html</a>
+</P>
+<P>
+Paul Edwards created a distribution consisting of a modified version
+of Hercules together with operating system modifications which allow
+applications to break the 24-bit addressing barrier inherent in S/370.
+The distribution is called MVS/380 and it can be downloaded from
+<a href="http://mvs380.sourceforge.net/">
+http://mvs380.sourceforge.net/</a>
+</P>
 
 <!-- Following links no longer exist
 <P>
@@ -275,13 +288,6 @@ http://tech.groups.yahoo.com/group/H390-MVS/</A>
 <UL><LI>
 <A HREF="http://www.archaelogic.com/vm370/">http://www.archaelogic.com/vm370</A>
 </LI></UL>
-<P>
-    Right now it's in an embryonic state. If anyone has material that
-    they'd like to contribute, please send it to me. I'm looking for
-    FAQ material, command summaries, how-to's, personal experiences and
-    anecdotes, machine room photos, and just about anything else you
-    think might be of interest.
-</P>
      end of non-existent link -->
 <P>
 The VM/370 page at <a href="http://www.cbttape.org/vm6.htm">
@@ -419,8 +425,8 @@ http://web.archive.org/web/20120202010657/http://www.conmicro.com/hercos360/</A>
     Anything more up-to-date, such as Linux/390 or OS/390, requires much more
     processing power. Hercules is CPU intensive, so you will want to use the
     fastest processor you can get. A 2GHz Pentium, preferably with hyperthreading,
-    will probably provide acceptable performance for a light workload.
-    If you can afford a multiprocessor system, so much the better. Hercules
+    will probably provide acceptable performance for a light workload. Recent
+    64-bit multiprocessor systems will provide better performance. Hercules
     makes extensive use of multi-threading to overlap I/O with CPU activity,
     and to dispatch multiple emulated CPU's in parallel.
 </P>
@@ -434,10 +440,10 @@ http://web.archive.org/web/20120202010657/http://www.conmicro.com/hercos360/</A>
     or PPC (Power Mac G5) with OS X.
 </P>
 <P>
-    Hercules does not depend on the Pentium architecture. I've built and run
-    it successfully on a 500 MHz Alpha 21164, and others have run it on SPARC
-    and S/390 (!) Linux systems. One guy has even run OS/360 under Hercules
-    under Linux/390 under Hercules under Linux/390 under VM/ESA!
+    Hercules does not depend on the x86 architecture. It has been built and
+    run successfully on 500 MHz Alpha 21164, SPARC, and S/390 Linux.
+    One guy has even run OS/360 under Hercules under Linux/390 under Hercules
+    under Linux/390 under VM/ESA!
     The prize for the world's smallest mainframe probably goes to Ivan Warren,
     who claims to have run VM/370 under Hercules on an iPAQ 5450 handheld PDA.
 </P>
@@ -597,19 +603,10 @@ http://web.archive.org/web/20120202010657/http://www.conmicro.com/hercos360/</A>
     guarantee that it will run on every operating system platform out there.
 </P>
 <P>
-    If you want to make Hercules run on AS/400, OS/2, or
-    whatever, then by all means go ahead. I welcome reports of any bugs or
-    problems you find, but I probably won't fix problems if it means introducing
-    platform-specific code, and I will not be able to test new releases against
-    other platforms. Folks who have gotten it compiled on the BSDs report that
-    the hardest part is removing the Linux-specific tape support.
-</P>
-<P>
     The Hercules code is not intended to be specific to Intel hardware, so if
     you find any issues or faults related to running on other hardware (SPARC,
-    Alpha, PPC, ...) under Linux, then I'm likely to be receptive to fixing
-    that sort of problem. Issues related to Unix variants are less likely
-    to be fixed however.
+    Alpha, PPC, ...) under Linux, feel free to report it to the Hercules forum
+    (see the <a href="hercsupp.html">Hercules Technical Support</a> page).
 </P>
 <P>
 <HR>
