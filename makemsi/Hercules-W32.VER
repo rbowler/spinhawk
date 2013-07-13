@@ -1,0 +1,30 @@
+;----------------------------------------------------------------------------
+;
+;    MODULE NAME:   TRYME.VER
+;
+;        $Author:   USER "Dennis"  $
+;      $Revision:   1.5  $
+;          $Date:   10 Oct 2007 17:25:32  $
+;       $Logfile:   C:/DBAREIS/Projects.PVCS/Win32/MakeMsi/TryMe.ver.pvcs  $
+;
+;    DESCRIPTION:   Simple sample/test MSI.
+;
+;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+; ProductName = Hercules-390 (32-bit)
+; DESCRIPTION = Hercules-390 Mainframe Emulator
+; Installed   = WINDOWS_ALL
+; MsiName     = Hercules-3.08-W32
+; Licence     = hercules.licence.rtf
+;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+;############################################################################
+VERSION : 3.08.00
+DATE    : 13 July 2013
+CHANGES : Feature Release
+
+
+;############################################################################
+VERSION : 3.08.00
+DATE    : 07 Dec 2012
+CHANGES : Maintenance Release
+ 
