@@ -155,6 +155,7 @@
 
 # /makemsi
 /makemsi/out
+/vc-redist
 
 # /man/
 /man/Makefile

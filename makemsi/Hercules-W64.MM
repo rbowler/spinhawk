@@ -48,40 +48,41 @@
 ;----------------------------------------------------------------------------
 ;--- Create Shortcut to "open" "setherc.bat" ---------------
 ;----------------------------------------------------------------------------
-<$Component "HercCMDPrompt" Create="Y" Directory_="INSTALLDIR" CU="Y">
-   <$MsiValFilter "Component HercCMDPrompt has non-advertised shortcuts. It's KeyPath registry key should fall under HKCU.">
-   <$MsiValFilter "Component 'LogShortcuts' has both per-user and per-machine data with a per-machine KeyPath.">
+<$Component "HercShortcuts" Create="Y"  Directory_="INSTALLDIR" LM="Y">
 
-    ;--- Add the shortcut (advertise the "complete" feature) ----------------
+
+   <$DirectoryTree Key="MENUDIR" Dir="[ProgramMenuFolder]\Hercules" Make="Y" Remove="y">
+    
+   <$DirectoryTree Key="XMENUDIRX" Dir="[ProgramMenuFolder]\Hercules\Hercules <$ProductVersion.MAJ>.<$ProductVersion.MIN> (64 Bit)" Make="Y" Remove="y">
+
+
+    ;--- Add the shortcuts ----
     #(
-        ;--- Advertised shortcut in "Start->programs" -----------------------
+        ;--- Shortcut in "Start->programs" -----------------------
         <$Shortcut
            Target="[INSTALLDIR]\herchere.bat"
            Arguments=^"[INSTALLDIR]"^
-	   Dir="[ProgramMenuFolder]\Hercules\Hercules <$ProductVersion.MAJ>.<$ProductVersion.MIN> (64 Bit)"          ;;Add to "Start->Programs
-           Feature="."
+	   Dir="[XMENUDIRX]"  ;;Add to "Start->Programs
            Title="Hercules CMD Prompt (64 bit)"
            Description=^Open a Command Prompt with the Hercules Directory added to the path^
            Icon="@.\hercules.ico"
            WorkDir="INSTALLDIR"
+	   Feature="."
         >
     #)
-<$/Component>
-<$Component "HercDocPrompt" Create="Y" Directory_="INSTALLDIR" CU="Y">
-   <$MsiValFilter "Component HercDocPrompt has non-advertised shortcuts. It's KeyPath registry key should fall under HKCU.">
-   <$MsiValFilter "Component 'HercDocrompt' has both per-user and per-machine data with a per-machine KeyPath.">
 
-    ;--- Add the shortcut (advertise the "complete" feature) ----------------
+
+    ;--- Add the shortcut ----------------
     #(
-        ;--- Advertised shortcut in "Start->programs" -----------------------
+        ;--- Shortcut in "Start->programs" -----------------------
         <$Shortcut
            Target="[INSTALLDIR]\html\index.html"
-           Dir="[ProgramMenuFolder]\Hercules\Hercules <$ProductVersion.MAJ>.<$ProductVersion.MIN> (64 Bit)"          ;;Add to "Start->Programs
-           Feature="."
+           Dir="[XMENUDIRX]"          ;;Add to "Start->Programs
            Title="Hercules Documentation"
            Description=^Open the Documentation in your default browser^
            WorkDir="INSTALLDIR"
            Icon="@.\rc_html.ico"
+	   Feature="."
         >
     #)
 <$/Component>
