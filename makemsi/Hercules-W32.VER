@@ -13,12 +13,12 @@
 ; ProductName = Hercules-390 (32-bit)
 ; DESCRIPTION = Hercules-390 Mainframe Emulator
 ; Installed   = WINDOWS_ALL
-; MsiName     = Hercules-3.08-W32
+; MsiName     = Hercules-3.09-W32
 ; Licence     = hercules.licence.rtf
 ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 ;############################################################################
-VERSION : 3.08.00
+VERSION : 3.09.00
 DATE    : 13 July 2013
 CHANGES : Feature Release
 

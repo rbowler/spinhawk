@@ -9,7 +9,10 @@
 ; ~~~~~~~~~~~
 ; This is a first attempt to build an MSI for Hercules using MAkeMsi
 ;----------------------------------------------------------------------------
-
+;
+;  Updated 15-Jul-2013
+;	Make release independant
+;
 
 
 ;--- Include MAKEMSI support (with my customisations and MSI branding) ------
@@ -27,7 +30,7 @@
 
 
 ;--- Define default location where file should install and add files --------
-<$DirectoryTree Key="INSTALLDIR" Dir="[ProgramFilesFolder]\Hercules\R3.08" CHANGE="\" PrimaryFolder="Y">
+<$DirectoryTree Key="INSTALLDIR" Dir="[ProgramFilesFolder]\Hercules\R<$ProductVersion.MAJ>.<$ProductVersion.MIN>" CHANGE="\" PrimaryFolder="Y">
 
 <$Files "..\msvc.DLLMOD.bin\*.dll" DestDir="INSTALLDIR">
 <$Files "..\msvc.DLLMOD.bin\*.exe" DestDir="INSTALLDIR">
@@ -57,7 +60,7 @@
         <$Shortcut
            Target="[INSTALLDIR]\herchere.bat"
            Arguments=^"[INSTALLDIR]"^
-	   Dir="[ProgramMenuFolder]\Hercules\Hercules 3.08 (32 Bit)"          ;;Add to "Start->Programs
+	   Dir="[ProgramMenuFolder]\Hercules\Hercules <$ProductVersion.MAJ>.<$ProductVersion.MIN> (32 Bit)"          ;;Add to "Start->Programs
            Feature="."
            Title="Hercules CMD Prompt (32 bit)"
            Description=^Open a Command Prompt with the Hercules Directory added to the path^
@@ -75,7 +78,7 @@
         ;--- Advertised shortcut in "Start->programs" -----------------------
         <$Shortcut
            Target="[INSTALLDIR]\html\index.html"
-           Dir="[ProgramMenuFolder]\Hercules\Hercules 3.08 (32 Bit)"          ;;Add to "Start->Programs
+           Dir="[ProgramMenuFolder]\Hercules\Hercules <$ProductVersion.MAJ>.<$ProductVersion.MIN> (32 Bit)"          ;;Add to "Start->Programs
            Feature="."
            Title="Hercules Documentation"
            Description=^Open the Documentation in your default browser^

@@ -28,7 +28,7 @@
 
 
 ;--- Define default location where file should install and add files --------
-<$DirectoryTree Key="INSTALLDIR" Dir="[ProgramFiles64Folder]\Hercules\R3.08" CHANGE="\" PrimaryFolder="Y">
+<$DirectoryTree Key="INSTALLDIR" Dir="[ProgramFiles64Folder]\Hercules\R<$ProductVersion.MAJ>.<$ProductVersion.MIN>" CHANGE="\" PrimaryFolder="Y">
 
 <$Files "..\msvc.AMD64.bin\*.dll" DestDir="INSTALLDIR">
 <$Files "..\msvc.AMD64.bin\*.exe" DestDir="INSTALLDIR">
@@ -58,7 +58,7 @@
         <$Shortcut
            Target="[INSTALLDIR]\herchere.bat"
            Arguments=^"[INSTALLDIR]"^
-	   Dir="[ProgramMenuFolder]\Hercules\Hercules 3.08 (64 Bit)"          ;;Add to "Start->Programs
+	   Dir="[ProgramMenuFolder]\Hercules\Hercules <$ProductVersion.MAJ>.<$ProductVersion.MIN> (64 Bit)"          ;;Add to "Start->Programs
            Feature="."
            Title="Hercules CMD Prompt (64 bit)"
            Description=^Open a Command Prompt with the Hercules Directory added to the path^
@@ -76,7 +76,7 @@
         ;--- Advertised shortcut in "Start->programs" -----------------------
         <$Shortcut
            Target="[INSTALLDIR]\html\index.html"
-           Dir="[ProgramMenuFolder]\Hercules\Hercules 3.08 (64 Bit)"          ;;Add to "Start->Programs
+           Dir="[ProgramMenuFolder]\Hercules\Hercules <$ProductVersion.MAJ>.<$ProductVersion.MIN> (64 Bit)"          ;;Add to "Start->Programs
            Feature="."
            Title="Hercules Documentation"
            Description=^Open the Documentation in your default browser^
