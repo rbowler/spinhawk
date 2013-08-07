@@ -1,4 +1,4 @@
-
+/* THIS FILE HAS BEEN MODIFIED FOR USE WITH THE HERCULES PROJECT */
 /*============================================================================
 
 This C source fragment is part of the SoftFloat IEC/IEEE Floating-point
@@ -34,7 +34,7 @@ these four paragraphs for those parts of this code that are retained.
 | Underflow tininess-detection mode, statically initialized to default value.
 | (The declaration in `softfloat.h' must match the `int8' type here.)
 *----------------------------------------------------------------------------*/
-int8 float_detect_tininess = float_tininess_after_rounding;
+int8 float_detect_tininess = float_tininess_before_rounding;
 
 /*----------------------------------------------------------------------------
 | Raises the exceptions specified by `flags'.  Floating-point traps can be
