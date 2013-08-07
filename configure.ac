@@ -1936,7 +1936,7 @@ AM_CONDITIONAL( USE_DLLTOOL,         [ test "$hc_cv_is_windows"       = "yes" ] 
 
 AC_CACHE_SAVE()
 
-AC_OUTPUT( [ Makefile util/Makefile html/Makefile crypto/Makefile man/Makefile m4/Makefile decNumber/Makefile] )
+AC_OUTPUT( [ Makefile util/Makefile html/Makefile crypto/Makefile man/Makefile m4/Makefile decNumber/Makefile softfloat/Makefile] )
 
 ###############################################################################
 #   (end-of-file)
