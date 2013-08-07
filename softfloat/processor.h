@@ -1,8 +1,15 @@
-
+/*----------------------------------------------------------------------------
+| Softfloat processor file for Hercules
+*----------------------------------------------------------------------------*/
+ 
 /*----------------------------------------------------------------------------
 | One of the macros `BIGENDIAN' or `LITTLEENDIAN' must be defined.
 *----------------------------------------------------------------------------*/
+#ifdef WORDS_BIGENDIAN
+#define BIGENDIAN
+#else
 #define LITTLEENDIAN
+#endif
 
 /*----------------------------------------------------------------------------
 | The macro `BITS64' can be defined to indicate that 64-bit integer types are
@@ -64,5 +71,5 @@ typedef signed long long int sbits64;
 | a compiler does not support explicit inlining, this macro should be defined
 | to be `static'.
 *----------------------------------------------------------------------------*/
-#define INLINE extern inline
+#define INLINE static
 
