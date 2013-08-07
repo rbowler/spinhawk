@@ -28,6 +28,8 @@
 
 $(O)decNumber.lib:  $(X)decNumber.dll
 
+$(O)softfloat.lib:  $(X)softfloat.dll
+
 $(O)hdasd.lib:      $(X)hdasd.dll
 
 $(O)htape.lib:      $(X)htape.dll
@@ -55,7 +57,7 @@ $(X)hdasd.dll:   $(hdasd_OBJ)   $(O)hsys.lib           $(O)hutil.lib           $
     $(linkdll)
 
 $(X)hengine.dll: $(hengine_OBJ) $(O)hsys.lib $(O)hdasd.lib $(O)hutil.lib \
-                 $(O)htape.lib $(O)decNumber.lib $(O)hercver.res
+                 $(O)htape.lib $(O)decNumber.lib $(O)softfloat.lib $(O)hercver.res
     $(linkdll)
 
 # -------------------------------------------------------------
@@ -110,6 +112,9 @@ $(X)dyncrypt.dll: $(dyncrypt_OBJ) $(O)hengine.lib $(O)hutil.lib $(O)hsys.lib $(O
 
 $(X)decNumber.dll: $(decNumber_OBJ) $(O)decNumber.res
     $(link) -nologo $(ldebug) $(dlllflags) $** $(LIBS) /def:decNumber\decNumber.def -out:$@ -implib:$(O)$(@B).lib $(conlibsdll) $(MAPFILE) && $(MT_DLL_CMD)
+
+$(X)softfloat.dll: $(softfloat_OBJ) $(O)softfloat.res
+    $(link) -nologo $(ldebug) $(dlllflags) $** $(LIBS) /def:softfloat\softfloat.def -out:$@ -implib:$(O)$(@B).lib $(conlibsdll) $(MAPFILE) && $(MT_DLL_CMD)
 
 # -------------------------------------------------------------
 # Main product executables

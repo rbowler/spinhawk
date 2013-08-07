@@ -1,0 +1,75 @@
+; softfloat.def
+; Module-definition file for SoftFloat DLL (MSVC)
+;
+; This file was added by the Hercules project.
+; It is not part of the original SoftFloat distribution.
+;
+LIBRARY softfloat
+EXPORTS
+    float_raise
+    int32_to_float32
+    int32_to_float64
+    int32_to_float128
+    int64_to_float32
+    int64_to_float64
+    int64_to_float128
+    float32_to_int32
+    float32_to_int32_round_to_zero
+    float32_to_int64
+    float32_to_int64_round_to_zero
+    float32_to_float64
+    float32_to_float128
+    float32_round_to_int
+    float32_add
+    float32_sub
+    float32_mul
+    float32_div
+    float32_rem
+    float32_sqrt
+    float32_eq
+    float32_le
+    float32_lt
+    float32_eq_signaling
+    float32_le_quiet
+    float32_lt_quiet
+    float32_is_signaling_nan
+    float64_to_int32
+    float64_to_int32_round_to_zero
+    float64_to_int64
+    float64_to_int64_round_to_zero
+    float64_to_float32
+    float64_to_float128
+    float64_round_to_int
+    float64_add
+    float64_sub
+    float64_mul
+    float64_div
+    float64_rem
+    float64_sqrt
+    float64_eq
+    float64_le
+    float64_lt
+    float64_eq_signaling
+    float64_le_quiet
+    float64_lt_quiet
+    float64_is_signaling_nan
+    float128_to_int32
+    float128_to_int32_round_to_zero
+    float128_to_int64
+    float128_to_int64_round_to_zero
+    float128_to_float32
+    float128_to_float64
+    float128_round_to_int
+    float128_add
+    float128_sub
+    float128_mul
+    float128_div
+    float128_rem
+    float128_sqrt
+    float128_eq
+    float128_le
+    float128_lt
+    float128_eq_signaling
+    float128_le_quiet
+    float128_lt_quiet
+    float128_is_signaling_nan

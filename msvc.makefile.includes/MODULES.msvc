@@ -38,6 +38,7 @@ MODULES = \
     $(X)hdtqeth.dll  \
     $(X)dyninst.dll  \
     $(X)decNumber.dll \
+    $(X)softfloat.dll \
     $(DYNCRYPT_DLL)
 
 EXECUTABLES = \

@@ -1,0 +1,52 @@
+/* softfloat.rc
+ * Resource-definition script file for SoftFloat DLL (MSVC)
+ *
+ * This file was added by the Hercules project.
+ * It is not part of the original SoftFloat distribution.
+ *
+ * $Log$
+ *
+ */
+
+#include <winver.h>
+
+  #define DECNAME     "SoftFloat"                       /* Short name */
+  #define DECVERSION  "SoftFloat-2b"             /* Version [16 max.] */
+  #define DECFULLNAME "SoftFloat package"             /* Verbose name */
+  #define DECAUTHOR   "John R. Hauser"                /* Who to blame */
+
+  #define DECCOPYRIGHT "Copyright (c) John R. Hauser, 2002"
+  #define DECLICENSE   "BSD-like License"
+  #define DECVERMAJOR 2                       /* Major version number */
+  #define DECVERMINOR 2                       /* Minor version number */
+
+  #define SPECIALINFO "Built for Hercules"
+
+1 VERSIONINFO
+ FILEVERSION    DECVERMAJOR,DECVERMINOR,0,0
+ PRODUCTVERSION DECVERMAJOR,DECVERMINOR,0,0
+ FILEFLAGSMASK  VS_FFI_FILEFLAGSMASK
+ FILEFLAGS      VS_FF_SPECIALBUILD
+ FILEOS         VOS__WINDOWS32
+ FILETYPE       VFT_DLL
+
+BEGIN
+  BLOCK "StringFileInfo"
+  BEGIN
+    BLOCK "040904B0" /* US English, Unicode */
+    BEGIN
+      VALUE "Comments",         DECLICENSE              "\0"
+      VALUE "CompanyName",      DECAUTHOR               "\0"
+      VALUE "FileDescription",  DECFULLNAME             "\0"
+      VALUE "FileVersion",      DECVERSION              "\0"
+      VALUE "LegalCopyright",   DECCOPYRIGHT            "\0"
+      VALUE "ProductName",      DECFULLNAME             "\0"
+      VALUE "ProductVersion",   DECVERSION              "\0"
+      VALUE "SpecialBuild",     SPECIALINFO             "\0"
+    END
+  END
+  BLOCK "VarFileInfo"
+  BEGIN
+    VALUE "Translation",0x409,0x4B0 /* US English, Unicode */
+  END
+END
