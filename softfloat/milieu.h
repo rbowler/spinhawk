@@ -33,7 +33,7 @@ these four paragraphs for those parts of this code that are retained.
 /*----------------------------------------------------------------------------
 | Include common integer types and flags.
 *----------------------------------------------------------------------------*/
-#include "../../../processors/!!!processor.h"
+#include "processor.h"
 
 /*----------------------------------------------------------------------------
 | Symbolic Boolean literals.
