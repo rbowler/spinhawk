@@ -140,6 +140,9 @@ do { \
 #if !defined(_IEEE_C)
 /* Architecture independent code goes within this ifdef */
 
+#include "milieu.h"
+#include "softfloat.h"
+
 #ifndef FE_INEXACT
 #define FE_INEXACT 0x00
 #endif
@@ -203,6 +206,8 @@ struct sbfp {
 #define ieee_exception ARCH_DEP(ieee_exception)
 #define vfetch_lbfp ARCH_DEP(vfetch_lbfp)
 #define vfetch_sbfp ARCH_DEP(vfetch_sbfp)
+#define vfetch_float32 ARCH_DEP(vfetch_float32)
+#define vfetch_float64 ARCH_DEP(vfetch_float64)
 
 #define add_ebfp ARCH_DEP(add_ebfp)
 #define add_lbfp ARCH_DEP(add_lbfp)
@@ -904,6 +909,51 @@ static void lengthen_short_to_ext(struct sbfp *op2, struct ebfp *op1, REGS *regs
         ebfpntos(op1);
         break;
     }
+}
+#endif  /* !defined(_IEEE_C) */
+
+#if !defined(_IEEE_C)
+/*
+ * Get softfloat operands from registers
+ */
+static inline void get_float32(float32 *op, U32 *fpr) {
+    *op = *fpr;
+}
+static inline void get_float64(float64 *op, U32 *fpr) {
+    *op = ((U64)fpr[0] << 32) | fpr[1];
+}
+static inline void get_float128(float128 *op, U32 *fpr) {
+    op->high = ((U64)fpr[0] << 32) | fpr[1];
+    op->low = ((U64)fpr[FPREX] << 32) | fpr[FPREX+1];
+}
+#endif  /* !defined(_IEEE_C) */
+ 
+/*
+ * Fetch softfloat operands from memory
+ */
+static inline void vfetch_float32(float32 *op, VADR addr, int arn, REGS *regs) {
+    *op = vfetch4(addr, arn, regs);
+}
+static inline void vfetch_float64(float64 *op, VADR addr, int arn, REGS *regs) {
+    *op = vfetch8(addr, arn, regs);
+}
+
+#if !defined(_IEEE_C)
+/*
+ * Put softfloat operands into registers
+ */
+static inline void put_float32(float32 *op, U32 *fpr) {
+    *fpr = *op;
+}
+static inline void put_float64(float64 *op, U32 *fpr) {
+    fpr[0] = (U32)(*op >> 32);
+    fpr[1] = (U32)(*op & 0xFFFFFFFF);
+}
+static inline void put_float128(float128 *op, U32 *fpr) {
+    fpr[0] = (U32)(op->high >> 32);
+    fpr[1] = (U32)(op->high & 0xFFFFFFFF);
+    fpr[FPREX] = (U32)(op->low >> 32);
+    fpr[FPREX+1] = (U32)(op->low & 0xFFFFFFFF);
 }
 #define _IEEE_C
 #endif  /* !defined(_IEEE_C) */
