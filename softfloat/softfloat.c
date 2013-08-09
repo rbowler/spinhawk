@@ -37,8 +37,8 @@ these four paragraphs for those parts of this code that are retained.
 | Floating-point rounding mode, extended double-precision rounding precision,
 | and exception flags.
 *----------------------------------------------------------------------------*/
-int8 float_rounding_mode = float_round_nearest_even;
-int8 float_exception_flags = 0;
+__thread int8 float_rounding_mode = float_round_nearest_even;
+__thread int8 float_exception_flags = 0;
 #ifdef FLOATX80
 int8 floatx80_rounding_precision = 80;
 #endif

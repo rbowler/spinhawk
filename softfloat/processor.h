@@ -71,3 +71,11 @@ typedef signed long long int sbits64;
 #pragma warning(disable:4146) /* unary minus operator applied to unsigned type, result still unsigned */
 #pragma warning(disable:4244) /* conversion from 'type' to 'type', possible loss of data */
 #endif /*defined(_MVSC_)*/
+
+/*----------------------------------------------------------------------------
+| Declaration of static variables that must be instanced on a per-thread basis
+*----------------------------------------------------------------------------*/
+#if defined(_MSVC_)
+#define __thread __declspec(thread)
+#endif /*defined(_MVSC_)*/
+

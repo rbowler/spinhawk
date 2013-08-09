@@ -68,7 +68,7 @@ enum {
 /*----------------------------------------------------------------------------
 | Software IEC/IEEE floating-point rounding mode.
 *----------------------------------------------------------------------------*/
-extern int8 float_rounding_mode;
+extern __thread int8 float_rounding_mode;
 enum {
     float_round_nearest_even = 0,
     float_round_to_zero      = 1,
@@ -79,7 +79,7 @@ enum {
 /*----------------------------------------------------------------------------
 | Software IEC/IEEE floating-point exception flags.
 *----------------------------------------------------------------------------*/
-extern int8 float_exception_flags;
+extern __thread int8 float_exception_flags;
 enum {
     float_flag_inexact   =  1,
     float_flag_underflow =  2,
