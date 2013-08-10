@@ -1069,8 +1069,7 @@ static int ARCH_DEP(cmpsc_store_is)(struct cc *cc, U16 is)
   cbn = GR1_cbn(cc->iregs);
 
   /* Can we write an index or interchange symbol */
-  if(unlikely(GR_A(cc->r1 + 1, cc->iregs) < 2 ||
-    ((cbn + cc->smbsz - 1) / 8) >= GR_A(cc->r1 + 1, cc->iregs)))
+  if(unlikely(GR_A(cc->r1 + 1, cc->iregs) < 3 && ((cbn + cc->smbsz - 1) / 8) >= GR_A(cc->r1 + 1, cc->iregs)))
   {
     cc->regs->psw.cc = 1;
 
