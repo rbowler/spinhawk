@@ -1582,18 +1582,15 @@ static int ARCH_DEP(cmpsc_fetch_is)(struct ec *ec, U16 *is)
   cbn = GR1_cbn(ec->iregs);
 
   /* Check if we can read an index symbol */
-  if(unlikely(GR_A(ec->r2 + 1, ec->iregs) < 2))
+  if(unlikely(GR_A(ec->r2 + 1, ec->iregs) < 3 && ((cbn + ec->smbsz - 1) / 8) >= GR_A(ec->r2 + 1, ec->iregs)))
   {
-    if(unlikely(((cbn + ec->smbsz - 1) / 8) >= GR_A(ec->r2 + 1, ec->iregs)))
-    {
 
 #ifdef OPTION_CMPSC_DEBUG
-      logmsg("fetch_is : reached end of source\n");
+    logmsg("fetch_is : reached end of source\n");
 #endif /* #ifdef OPTION_CMPSC_DEBUG */
 
-      ec->regs->psw.cc = 0;
-      return(-1);
-    }
+    ec->regs->psw.cc = 0;
+    return(-1);
   }
 
   /* Clear possible fetched 3rd byte */
