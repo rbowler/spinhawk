@@ -1,4 +1,4 @@
-/* CMPSC.C      (c) Bernard van der Helm, 2000-2012                  */
+/* CMPSC.C      (c) Bernard van der Helm, 2000-2013                  */
 /*              S/390 compression call instruction                   */
 
 /*----------------------------------------------------------------------------*/
@@ -10,7 +10,9 @@
 /*                                                                            */
 /* Please pay attention to the Q Public License Version 1. This is open       */
 /* source, but you are not allowed to "reuse" parts for your own purpose      */
-/* without the author's written permission!                                   */
+/* without the author's written permission! It shows disrespect to the        */
+/* original author. It is real easy implementing CMPSC with this file as      */
+/* an example.                                                                */
 /*                                                                            */
 /* Implemented "unique" features:                                             */
 /*   8 index symbol block fetching and storing, preventing cbn calculations.  */
@@ -18,7 +20,7 @@
 /*   Compression dead end determination and elimination.                      */
 /*   Proactive dead end determination and elimination.                        */
 /*                                                                            */
-/*                              (c) Copyright Bernard van der Helm, 2000-2012 */
+/*                              (c) Copyright Bernard van der Helm, 2000-2013 */
 /*                              Noordwijkerhout, The Netherlands.             */
 /*                                                                            */
 /*----------------------------------------------------------------------------*/
@@ -136,7 +138,8 @@
 /*                                                                            */
 /* We recognize the zp flag and do conform POP nothing! We do something       */
 /* better: Eight index symbol processing. It saves a lot of time in cbn       */
-/* processing, index symbol fetching and storing.                             */
+/* processing, index symbol fetching and storing. Please contact me if a      */
+/* 100% equal functionality is needed. I doubt it!                            */
 /*----------------------------------------------------------------------------*/
 #define GR0_cdss(regs)       (((regs)->GR_L(0) & 0x0000F000) >> 12)
 #define GR0_e(regs)          ((regs)->GR_L(0) & 0x00000100)
@@ -458,7 +461,7 @@ static void ARCH_DEP(cmpsc_compress)(int r1, int r2, REGS *regs, REGS *iregs)
 
   /*-------------------------------------------------------------------------*/
 
-  /* Process individual index symbols until cbn bocomes zero */
+  /* Process individual index symbols until cbn becomes zero */
   while(unlikely(GR1_cbn(iregs)))
   {
     /* Get the next character, return on end of source */
@@ -1939,4 +1942,3 @@ static int ARCH_DEP(cmpsc_vstore)(struct ec *ec, BYTE *buf, unsigned len)
     #include "cmpsc.c"
   #endif /* #ifdef _ARCHMODE3 */
 #endif /* #ifndef _GEN_ARCH */
-
