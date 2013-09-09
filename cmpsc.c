@@ -1891,8 +1891,7 @@ static int ARCH_DEP(cmpsc_vstore)(struct ec *ec, BYTE *buf, unsigned len)
         for(j = i + 32; j + 32 < len && !memcmp(&buf[j], &buf[j - 32], 32); j += 32);
         if(j > 32)
         {
-          logmsg(" - " F_GREG " Same line as above\n" F_GREG,
-                ec->iregs->GR(ec->r1) + j - 32, ec->iregs->GR(ec->r1) + j);
+          logmsg(":  Same line as above\n" F_GREG, ec->iregs->GR(ec->r1) + j);
           i = j;
         }
       }
