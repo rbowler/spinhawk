@@ -1303,7 +1303,7 @@ typedef struct _MBK {
 #define PFMF_FSC             0x00007000 /* Frame-Size Code           */
 #define PFMF_FSC_4K          0x00000000 /* 4K                        */
 #define PFMF_FSC_1M          0x00001000 /* 1M                        */
-#define PFMF_FSC_RESV        0x00006000 /* Reserved                  */
+#define PFMF_FSC_2G          0x00002000 /* 2G                        */
 #define PFMF_NQ              0x00000800 /* Quiesce (SK must be one)  */
 #define PFMF_MR              0x00000400 /* Reference Bit Update Mask */
 #define PFMF_MC              0x00000200 /* Change Bit Update Mask    */

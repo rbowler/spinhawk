@@ -5244,7 +5244,7 @@ int     page_offset;                    /* Low order bits of R2      */
     mask = regs->GR_L(r1);
 
     /* Program check if reserved bits are non-zero */
-    if ((regs->GR_L(r1) & (PFMF_RESERVED|PFMF_FMFI_RESV|PFMF_FSC_RESV))
+    if ((regs->GR_L(r1) & (PFMF_RESERVED|PFMF_FMFI_RESV))
       || (regs->GR_L(r1) & PFMF_NQ))
         regs->program_interrupt (regs, PGM_SPECIFICATION_EXCEPTION);
 
@@ -5259,8 +5259,19 @@ int     page_offset;                    /* Low order bits of R2      */
         /* Prefixing is not applied in multipage mode */
         fc = 0x100 - ((regs->GR_L(r2) & 0xFF000) >> 12);
         break;
-    /* Code for 2G pages goes here */
+#if defined(FEATURE_ENHANCED_DAT_FACILITY_2)       
+    case PFMF_FSC_2G:
+        /* Program check if 2GB frame size with 24-bit addressing mode */
+        if (regs->psw.amode64 == 0 && regs->psw.amode == 0) {
+            regs->program_interrupt (regs, PGM_SPECIFICATION_EXCEPTION);
+        }
+        /* Prefixing is not applied in multipage mode */
+        fc = 0x100000 - ((regs->GR_L(r2) & 0xFFFFF000) >> 12);
+        break;
+#endif /*defined(FEATURE_ENHANCED_DAT_FACILITY_2)*/
     default:
+        /* Program check if frame size code is invalid */
+        regs->program_interrupt (regs, PGM_SPECIFICATION_EXCEPTION);
         break;
     case PFMF_FSC_4K:
         /* Prefixing is applied in single frame operation */
@@ -5516,10 +5527,10 @@ int     page_offset;                    /* Low order bits of R2      */
         /* Update r2 - point to the next frame */
         switch (PFMF_FSC & regs->GR_L(r1)) {
         case PFMF_FSC_1M:
+        case PFMF_FSC_2G:
             aaddr = addr += 0x1000;
             SET_GR_A(r2, regs, (addr & ADDRESS_MAXWRAP(regs)) + page_offset);
             break;
-        /* Code for 2G pages goes here */
         default:
             break;
         case PFMF_FSC_4K:
