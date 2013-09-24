@@ -142,6 +142,10 @@
  #define _FEATURE_ENHANCED_DAT_FACILITY
 #endif
 
+#if defined(FEATURE_ENHANCED_DAT_FACILITY_2)
+ #define _FEATURE_ENHANCED_DAT_FACILITY_2
+#endif
+
 #if defined(FEATURE_SENSE_RUNNING_STATUS)
  #define _FEATURE_SENSE_RUNNING_STATUS
 #endif
@@ -432,6 +436,11 @@
   && defined(FEATURE_INTERPRETIVE_EXECUTION) \
   && !defined(_FEATURE_SIE)
  #error ESA/390 SIE must be defined when defining ESAME SIE
+#endif
+
+#if defined(FEATURE_ENHANCED_DAT_FACILITY_2) \
+  && !defined(FEATURE_ENHANCED_DAT_FACILITY)
+ #error Enhanced DAT facility 2 requires enhanced DAT facility
 #endif
 
 #if defined(FEATURE_MULTIPLE_CONTROLLED_DATA_SPACE) \

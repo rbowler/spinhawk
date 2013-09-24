@@ -3826,6 +3826,7 @@ DEF_INST(subtract_logical_y);
 DEF_INST(test_under_mask_y);
 DEF_INST(compare_and_swap_and_purge_long);
 DEF_INST(invalidate_dat_table_entry);
+DEF_INST(compare_and_replace_dat_table_entry);                  /*912*/
 DEF_INST(load_page_table_entry_address);                        /*@Z9*/
 DEF_INST(add_fullword_immediate);                               /*@Z9*/
 DEF_INST(add_long_fullword_immediate);                          /*@Z9*/

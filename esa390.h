@@ -352,9 +352,16 @@ typedef struct _DAT {
 
 /* Region table entry bit definitions (ESAME mode) */
 #define REGTAB_TO       0xFFFFFFFFFFFFF000ULL /* Table origin        */
+#define REGTAB_RFAA     0xFFFFFFFF80000000ULL /* Region addr    EDAT2*/
+#define REGTAB_AV       0x10000         /* ACCF validity bit    EDAT2*/
+#define REGTAB_ACC      0xF000          /* Access control bits  EDAT2*/
+#define REGTAB_F        0x800           /* Fetch protect bit    EDAT2*/
+#define REGTAB_FC       0x400           /* Format control bit   EDAT2*/
 #define REGTAB_P        0x200           /* DAT Protection bit    EDAT*/
+#define REGTAB_CO       0x100           /* Change override bit  EDAT2*/
 #define REGTAB_TF       0x0C0           /* Table offset              */
 #define REGTAB_I        0x020           /* Region invalid            */
+#define REGTAB_CR       0x010           /* Common region bit    EDAT2*/
 #define REGTAB_TT       0x00C           /* Table type                */
 #define REGTAB_TL       0x003           /* Table length              */
 #define REGTAB_RESV     0xD10           /* Reserved bits - ignored   */

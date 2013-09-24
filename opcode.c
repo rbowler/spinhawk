@@ -246,6 +246,10 @@
  UNDEF_INST(perform_frame_management_function)                  /*208*/
 #endif /*!defined(FEATURE_ENHANCED_DAT_FACILITY)*/              /*208*/
 
+#if !defined(FEATURE_ENHANCED_DAT_FACILITY_2)                   /*912*/
+ UNDEF_INST(compare_and_replace_dat_table_entry)                /*912*/
+#endif /*!defined(FEATURE_ENHANCED_DAT_FACILITY_2)*/            /*912*/
+
 #if !defined(FEATURE_EXECUTE_EXTENSIONS_FACILITY)               /*208*/
  UNDEF_INST(execute_relative_long)                              /*208*/
 #endif /*!defined(FEATURE_EXECUTE_EXTENSIONS_FACILITY)*/        /*208*/
@@ -3971,7 +3975,7 @@ DLL_EXPORT zz_func opcode_b9xx[256][GEN_MAXARCH] = {
  /*B98C*/ GENx___x___x___ ,
  /*B98D*/ GENx37Xx390x900 (extract_psw,RRE,"EPSW"),
  /*B98E*/ GENx___x___x900 (invalidate_dat_table_entry,RRF_R,"IDTE"),
- /*B98F*/ GENx___x___x___ ,
+ /*B98F*/ GENx___x___x900 (compare_and_replace_dat_table_entry,RRF_RM,"CRDTE"),    /*912*/
  /*B990*/ GENx37Xx390x900 (translate_two_to_two,RRF_M3,"TRTT"),
  /*B991*/ GENx37Xx390x900 (translate_two_to_one,RRF_M3,"TRTO"),
  /*B992*/ GENx37Xx390x900 (translate_one_to_two,RRF_M3,"TROT"),
