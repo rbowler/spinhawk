@@ -5266,7 +5266,7 @@ int     page_offset;                    /* Low order bits of R2      */
             regs->program_interrupt (regs, PGM_SPECIFICATION_EXCEPTION);
         }
         /* Prefixing is not applied in multipage mode */
-        fc = 0x100000 - ((regs->GR_L(r2) & 0xFFFFF000) >> 12);
+        fc = 0x80000 - ((regs->GR_L(r2) & 0x7FFFF000) >> 12);
         break;
 #endif /*defined(FEATURE_ENHANCED_DAT_FACILITY_2)*/
     default:
