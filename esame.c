@@ -1138,6 +1138,113 @@ BYTE   *mn;                             /* Mainstor address of ASCE  */
 #endif /*defined(FEATURE_DAT_ENHANCEMENT)*/
 
 
+#if defined(FEATURE_ENHANCED_DAT_FACILITY_2)                    /*912*/
+/*-------------------------------------------------------------------*/
+/* B98F CRDTE - Compare and Replace DAT Table Entry            [RRF] */
+/*-------------------------------------------------------------------*/
+DEF_INST(compare_and_replace_dat_table_entry)                   /*912*/
+{
+int     r1, r2, r3;                     /* Values of R fields        */
+int     m4;                             /* Value of mask field       */
+U64     to;                             /* Table origin              */
+U64     ei;                             /* Effective index           */
+RADR    ea;                             /* Second operand address    */
+U64     dte;                            /* Second operand value      */
+U64     asce = 0;                       /* Address space control elem*/
+int     dtt;                            /* Designated table type     */
+BYTE   *mn;                             /* Mainstor addr of 2nd opnd */
+
+    RRF_RM(inst, regs, r1, r2, r3, m4);
+
+    SIE_XC_INTERCEPT(regs);
+
+    PRIV_CHECK(regs);
+
+    ODD2_CHECK(r1, r2, regs);
+
+    /* The designated table type is in R2 bits 59-61 */
+    dtt = (regs->GR_L(r2) & 0x1C0) >> 2;
+
+    /* Calculate the second operand address depending on table type */
+    switch (dtt) {
+    case 0: /* Page table */
+        to = regs->GR_G(r2) & ZSEGTAB_PTO;
+        ei = (regs->GR_L(r2+1) & 0x000FF000) >> 12;
+        break;
+    case 4: /* Segment table */
+        to = regs->GR_G(r2) & REGTAB_TO;
+        ei = (regs->GR_L(r2+1) & 0x7FF00000) >> 20;
+        break;
+    case 5: /* Region third table */
+        to = regs->GR_G(r2) & REGTAB_TO;
+        ei = (regs->GR_G(r2+1) & 0x000003FF80000000ULL) >> 31;
+        break;
+    case 6: /* Region second table */
+        to = regs->GR_G(r2) & REGTAB_TO;
+        ei = (regs->GR_G(r2+1) & 0x001FFC0000000000ULL) >> 42;
+        break;
+    case 7: /* Region first table */
+        to = regs->GR_G(r2) & ASCE_TO;
+        ei = (regs->GR_G(r2+1) & 0xFFE0000000000000ULL) >> 53;
+        break;
+    default: /* Invalid table type */
+        regs->program_interrupt (regs, PGM_SPECIFICATION_EXCEPTION);
+    }
+
+    /* Program check if bits 52-63 of R2+1 are non-zero */
+    if ((regs->GR_L(r2+1) & 0xFFF) != 0) {
+        regs->program_interrupt (regs, PGM_SPECIFICATION_EXCEPTION);
+    }
+
+    /* Load the address space control element from R3 bits 0-51, 60-61 */
+    if (r3 != 0) {
+        asce = regs->GR_G(r3) & (ASCE_TO | ASCE_DT);
+    }
+
+    /* Perform serialization before starting operation */
+    PERFORM_SERIALIZATION (regs);
+
+    /* Load the second operand from storage */
+    ea = to + 8*ei;
+    mn = MADDR(ea, USE_REAL_ADDR, regs, ACCTYPE_WRITE, regs->psw.pkey);
+    FETCH_DW(dte, mn);
+
+    /* Compare first and second operands */
+    if (regs->GR_G(r1) == dte)
+    {
+        /* Store R1+1 register at second operand location */
+        STORE_DW(mn, regs->GR_G(r1+1));
+
+        /* Clear the TLB and signal all other CPUs to clear their TLB */
+        /* Note: Currently we clear all entries regardless of whether
+           they are related to the original DTE and regardless of whether
+           a clearing ASCE is passed in the r3 register. This conforms
+           to the POP which permits the implementation to clear more
+           entries from the TLB than are strictly necessary. */
+        OBTAIN_INTLOCK(regs);
+        SYNCHRONIZE_CPUS(regs);
+        ARCH_DEP(purge_tlb_all)();
+        RELEASE_INTLOCK(regs);
+
+        /* Set condition code zero to indicate equal operands */
+        regs->psw.cc = 0;
+
+    } else {
+
+        /* Load second operand into the R1 register */
+        regs->GR_G(r1) = dte;
+
+        /* Set condition code 1 to indicate unequal operands */
+        regs->psw.cc = 1;
+    }
+
+    /* Perform serialization after completing operation */
+    PERFORM_SERIALIZATION (regs);
+
+} /* end DEF_INST(compare_and_replace_dat_table_entry) */
+#endif /*defined(FEATURE_ENHANCED_DAT_FACILITY_2)*/
+
+
 #if defined(FEATURE_DAT_ENHANCEMENT_FACILITY_2)
 /*-------------------------------------------------------------------*/
 /* B9AA LPTEA - Load Page-Table-Entry Address                  [RRF] */
