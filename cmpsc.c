@@ -10,9 +10,7 @@
 /*                                                                            */
 /* Please pay attention to the Q Public License Version 1. This is open       */
 /* source, but you are not allowed to "reuse" parts for your own purpose      */
-/* without the author's written permission! It shows disrespect to the        */
-/* original author. It is real easy implementing CMPSC with this file as      */
-/* an example.                                                                */
+/* without the author's written permission!                                   */
 /*                                                                            */
 /* Implemented "unique" features:                                             */
 /*   8 index symbol block fetching and storing, preventing cbn calculations.  */
@@ -295,7 +293,7 @@ DEF_INST(compression_call)
   {
     
 #ifdef OPTION_CMPSC_DEBUG
-    logmsg(" Zero input\n");
+    logmsg(" Zero input, returning cc0\n");
 #endif /* #ifdef OPTION_CMPSC_DEBUG */
 
     regs->psw.cc = 0;
@@ -307,7 +305,7 @@ DEF_INST(compression_call)
   {
     
 #ifdef OPTION_CMPSC_DEBUG
-    logmsg(" Zero output\n");
+    logmsg(" Zero output, returning cc1\n");
 #endif /* #ifdef OPTION_CMPSC_DEBUG */
 
     regs->psw.cc = 1;
@@ -730,7 +728,6 @@ static int ARCH_DEP(cmpsc_fetch_ch)(struct cc *cc)
   if(unlikely(GR_A(cc->r2 + 1, cc->iregs) < cc->srclen))
     cc->srclen = GR_A(cc->r2 + 1, cc->iregs);
 
-
   /* Get address */
   cc->src = MADDR(GR_A(cc->r2, cc->iregs) & ADDRESS_MAXWRAP(cc->regs), cc->r2, cc->regs, ACCTYPE_READ, cc->regs->psw.pkey);
   return(0);
@@ -1150,9 +1147,7 @@ static int ARCH_DEP(cmpsc_store_is)(struct cc *cc, U16 is)
   GR1_setcbn(cc->iregs, (cbn + cc->smbsz) % 8);
 
 #ifdef OPTION_CMPSC_DEBUG
-  logmsg("store_is : %04X, cbn=%d, GR%02d=" F_VADR ", GR%02d=" F_GREG "\n",
-        is, GR1_cbn(cc->iregs), cc->r1, cc->iregs->GR(cc->r1), cc->r1 + 1,
-        cc->iregs->GR(cc->r1 + 1));
+  logmsg("store_is : %04X, cbn=%d, GR%02d=" F_VADR ", GR%02d=" F_GREG "\n", is, GR1_cbn(cc->iregs), cc->r1, cc->iregs->GR(cc->r1), cc->r1 + 1, cc->iregs->GR(cc->r1 + 1));
 #endif /* #ifdef OPTION_CMPSC_DEBUG */
 
   return(0);
@@ -1324,8 +1319,7 @@ static void ARCH_DEP(cmpsc_store_iss)(struct cc *cc)
   logmsg("store_iss:");
   for(i = 0; i < 8; i++)
     logmsg(" %04X", cc->is[i]);
-  logmsg(", GR%02d=" F_VADR ", GR%02d=" F_GREG "\n", cc->r1,
-        cc->iregs->GR(cc->r1), cc->r1 + 1, cc->iregs->GR(cc->r1 + 1));
+  logmsg(", GR%02d=" F_VADR ", GR%02d=" F_GREG "\n", cc->r1, cc->iregs->GR(cc->r1), cc->r1 + 1, cc->iregs->GR(cc->r1 + 1));
 #endif /* #ifdef OPTION_CMPSC_DEBUG */
 
 }
@@ -1491,7 +1485,6 @@ static void ARCH_DEP(cmpsc_expand)(int r1, int r2, REGS *regs, REGS *iregs)
     logmsg("Stats: iss %6u; ach %6u: %3d%; hts %6u: %3d%; bin %6u, out %6u: %6d%\n", ec.dbgiss, ec.dbgac, ec.dbgac * 100 / ec.dbgiss, ec.dbgch, ec.dbgch * 100 / ec.dbgiss, ec.dbgbi, ec.dbgbo, ec.dbgbo * 100 / ec.dbgbi);
 #endif /* #ifdef OPTION_CMPSC_DEBUG */
 
-
     /* Write and commit, cbn unchanged, so no commit for GR1 needed */
     if(unlikely(ARCH_DEP(cmpsc_vstore)(&ec, ec.oc, ec.ocl)))
       return;
@@ -1566,13 +1559,9 @@ static void ARCH_DEP(cmpsc_expand_is)(struct ec *ec, U16 is)
 
   while(likely(psl))
   {
-    /* Check data exception */
-    if(unlikely(psl > 5))
-      ARCH_DEP(program_interrupt)((ec->regs), PGM_DATA_EXCEPTION);
-
-    /* Count and check for writing child 261 */
+    /* Count and check for writing child 261 and check valid psl */
     cw += psl;
-    if(unlikely(cw > 260))
+    if(unlikely(cw > 260 || psl > 5))
       ARCH_DEP(program_interrupt)((ec->regs), PGM_DATA_EXCEPTION);
 
     /* Process extension characters in preceded entry */
@@ -1586,7 +1575,7 @@ static void ARCH_DEP(cmpsc_expand_is)(struct ec *ec, U16 is)
     ITIMER_SYNC((ec->dictor + index) & ADDRESS_MAXWRAP(ec->regs), 8 - 1, ec->regs);
 
 #ifdef OPTION_CMPSC_DEBUG
-    logmsg("fetch_ece: index %04X\n", index /8);
+    logmsg("fetch_ece: index %04X\n", index / 8);
     cmpsc_print_ece(ece);
 #endif /* #ifdef OPTION_CMPSC_DEBUG */
 
@@ -1594,14 +1583,10 @@ static void ARCH_DEP(cmpsc_expand_is)(struct ec *ec, U16 is)
     psl = ECE_psl(ece);
   }
 
-  /* Check data exception */
+  /* Count and check for writing child 261, valid csl and invalid bits */
   csl = ECE_csl(ece);
-  if(unlikely(!csl || ECE_bit34(ece)))
-    ARCH_DEP(program_interrupt)((ec->regs), PGM_DATA_EXCEPTION);
-
-  /* Count and check for writing child 261 */
   cw += csl;
-  if(unlikely(cw > 260))
+  if(unlikely(cw > 260 || !csl || ECE_bit34(ece)))
     ARCH_DEP(program_interrupt)((ec->regs), PGM_DATA_EXCEPTION);
 
   /* Process extension characters in unpreceded entry */
@@ -1658,9 +1643,7 @@ static int ARCH_DEP(cmpsc_fetch_is)(struct ec *ec, U16 *is)
   GR1_setcbn(ec->iregs, (cbn + ec->smbsz) % 8);
 
 #ifdef OPTION_CMPSC_DEBUG
-  logmsg("fetch_is : %04X, cbn=%d, GR%02d=" F_VADR ", GR%02d=" F_GREG "\n",
-        *is, GR1_cbn(ec->iregs), ec->r2, ec->iregs->GR(ec->r2), ec->r2 + 1,
-        ec->iregs->GR(ec->r2 + 1));
+  logmsg("fetch_is : %04X, cbn=%d, GR%02d=" F_VADR ", GR%02d=" F_GREG "\n", *is, GR1_cbn(ec->iregs), ec->r2, ec->iregs->GR(ec->r2), ec->r2 + 1, ec->iregs->GR(ec->r2 + 1));
 #endif /* #ifdef OPTION_CMPSC_DEBUG */
 
   return(0);
@@ -1879,8 +1862,7 @@ static int ARCH_DEP(cmpsc_vstore)(struct ec *ec, BYTE *buf, unsigned len)
 
 #ifdef OPTION_CMPSC_DEBUG
   if(plen == len && !memcmp(pbuf, buf, plen))
-    logmsg(F_GREG " - " F_GREG " Same buffer as previously shown\n",
-          ec->iregs->GR(ec->r1), ec->iregs->GR(ec->r1) + len - 1);
+    logmsg(F_GREG " - " F_GREG " Same buffer as previously shown\n", ec->iregs->GR(ec->r1), ec->iregs->GR(ec->r1) + len - 1);
   else
   {
     for(i = 0; i < len; i += 32)
