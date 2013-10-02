@@ -186,6 +186,8 @@ struct rtentry
 
 #define RTMSG_AR_FAILED         0x51    /* Address Resolution failed.  */
 
+#endif /*defined(OPTION_W32_CTCI)*/
+
 /* Use the definitions from the kernel header files.  */
 //#include <asm/ioctls.h>
 
@@ -286,7 +288,6 @@ struct rtentry
 
 #define SIOCPROTOPRIVATE 0x89E0 /* to 89EF */
 
-#endif /*defined(OPTION_W32_CTCI)*/
 #endif // defined( WIN32 )
 
 #endif // __TUNTAP_H_
