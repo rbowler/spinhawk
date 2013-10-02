@@ -1138,6 +1138,113 @@ BYTE   *mn;                             /* Mainstor address of ASCE  */
 #endif /*defined(FEATURE_DAT_ENHANCEMENT)*/
 
 
+#if defined(FEATURE_ENHANCED_DAT_FACILITY_2)                    /*912*/
+/*-------------------------------------------------------------------*/
+/* B98F CRDTE - Compare and Replace DAT Table Entry            [RRF] */
+/*-------------------------------------------------------------------*/
+DEF_INST(compare_and_replace_dat_table_entry)                   /*912*/
+{
+int     r1, r2, r3;                     /* Values of R fields        */
+int     m4;                             /* Value of mask field       */
+U64     to;                             /* Table origin              */
+U64     ei;                             /* Effective index           */
+RADR    ea;                             /* Second operand address    */
+U64     dte;                            /* Second operand value      */
+U64     asce = 0;                       /* Address space control elem*/
+int     dtt;                            /* Designated table type     */
+BYTE   *mn;                             /* Mainstor addr of 2nd opnd */
+
+    RRF_RM(inst, regs, r1, r2, r3, m4);
+
+    SIE_XC_INTERCEPT(regs);
+
+    PRIV_CHECK(regs);
+
+    ODD2_CHECK(r1, r2, regs);
+
+    /* The designated table type is in R2 bits 59-61 */
+    dtt = (regs->GR_L(r2) & 0x1C0) >> 2;
+
+    /* Calculate the second operand address depending on table type */
+    switch (dtt) {
+    case 0: /* Page table */
+        to = regs->GR_G(r2) & ZSEGTAB_PTO;
+        ei = (regs->GR_L(r2+1) & 0x000FF000) >> 12;
+        break;
+    case 4: /* Segment table */
+        to = regs->GR_G(r2) & REGTAB_TO;
+        ei = (regs->GR_L(r2+1) & 0x7FF00000) >> 20;
+        break;
+    case 5: /* Region third table */
+        to = regs->GR_G(r2) & REGTAB_TO;
+        ei = (regs->GR_G(r2+1) & 0x000003FF80000000ULL) >> 31;
+        break;
+    case 6: /* Region second table */
+        to = regs->GR_G(r2) & REGTAB_TO;
+        ei = (regs->GR_G(r2+1) & 0x001FFC0000000000ULL) >> 42;
+        break;
+    case 7: /* Region first table */
+        to = regs->GR_G(r2) & ASCE_TO;
+        ei = (regs->GR_G(r2+1) & 0xFFE0000000000000ULL) >> 53;
+        break;
+    default: /* Invalid table type */
+        regs->program_interrupt (regs, PGM_SPECIFICATION_EXCEPTION);
+    }
+
+    /* Program check if bits 52-63 of R2+1 are non-zero */
+    if ((regs->GR_L(r2+1) & 0xFFF) != 0) {
+        regs->program_interrupt (regs, PGM_SPECIFICATION_EXCEPTION);
+    }
+
+    /* Load the address space control element from R3 bits 0-51, 60-61 */
+    if (r3 != 0) {
+        asce = regs->GR_G(r3) & (ASCE_TO | ASCE_DT);
+    }
+
+    /* Perform serialization before starting operation */
+    PERFORM_SERIALIZATION (regs);
+
+    /* Load the second operand from storage */
+    ea = to + 8*ei;
+    mn = MADDR(ea, USE_REAL_ADDR, regs, ACCTYPE_WRITE, regs->psw.pkey);
+    FETCH_DW(dte, mn);
+
+    /* Compare first and second operands */
+    if (regs->GR_G(r1) == dte)
+    {
+        /* Store R1+1 register at second operand location */
+        STORE_DW(mn, regs->GR_G(r1+1));
+
+        /* Clear the TLB and signal all other CPUs to clear their TLB */
+        /* Note: Currently we clear all entries regardless of whether
+           they are related to the original DTE and regardless of whether
+           a clearing ASCE is passed in the r3 register. This conforms
+           to the POP which permits the implementation to clear more
+           entries from the TLB than are strictly necessary. */
+        OBTAIN_INTLOCK(regs);
+        SYNCHRONIZE_CPUS(regs);
+        ARCH_DEP(purge_tlb_all)();
+        RELEASE_INTLOCK(regs);
+
+        /* Set condition code zero to indicate equal operands */
+        regs->psw.cc = 0;
+
+    } else {
+
+        /* Load second operand into the R1 register */
+        regs->GR_G(r1) = dte;
+
+        /* Set condition code 1 to indicate unequal operands */
+        regs->psw.cc = 1;
+    }
+
+    /* Perform serialization after completing operation */
+    PERFORM_SERIALIZATION (regs);
+
+} /* end DEF_INST(compare_and_replace_dat_table_entry) */
+#endif /*defined(FEATURE_ENHANCED_DAT_FACILITY_2)*/
+
+
 #if defined(FEATURE_DAT_ENHANCEMENT_FACILITY_2)
 /*-------------------------------------------------------------------*/
 /* B9AA LPTEA - Load Page-Table-Entry Address                  [RRF] */
@@ -5244,9 +5351,9 @@ int     page_offset;                    /* Low order bits of R2      */
     mask = regs->GR_L(r1);
 
     /* Program check if reserved bits are non-zero */
-    if ((regs->GR_L(r1) & (PFMF_RESERVED|PFMF_FSC_RESV))
+    if ((regs->GR_L(r1) & (PFMF_RESERVED|PFMF_FMFI_RESV))
       || (regs->GR_L(r1) & PFMF_NQ))
-        regs->program_interrupt (regs, PGM_SPECIAL_OPERATION_EXCEPTION);
+        regs->program_interrupt (regs, PGM_SPECIFICATION_EXCEPTION);
 
     /* Wrap address according to addressing mode */
     aaddr = addr = ADDRESS_MAXWRAP(regs) & regs->GR_G(r2) & PAGEFRAME_PAGEMASK;
@@ -5259,8 +5366,19 @@ int     page_offset;                    /* Low order bits of R2      */
         /* Prefixing is not applied in multipage mode */
         fc = 0x100 - ((regs->GR_L(r2) & 0xFF000) >> 12);
         break;
-    /* Code for 2G pages goes here */
+#if defined(FEATURE_ENHANCED_DAT_FACILITY_2)       
+    case PFMF_FSC_2G:
+        /* Program check if 2GB frame size with 24-bit addressing mode */
+        if (regs->psw.amode64 == 0 && regs->psw.amode == 0) {
+            regs->program_interrupt (regs, PGM_SPECIFICATION_EXCEPTION);
+        }
+        /* Prefixing is not applied in multipage mode */
+        fc = 0x80000 - ((regs->GR_L(r2) & 0x7FFFF000) >> 12);
+        break;
+#endif /*defined(FEATURE_ENHANCED_DAT_FACILITY_2)*/
     default:
+        /* Program check if frame size code is invalid */
+        regs->program_interrupt (regs, PGM_SPECIFICATION_EXCEPTION);
         break;
     case PFMF_FSC_4K:
         /* Prefixing is applied in single frame operation */
@@ -5516,10 +5634,10 @@ int     page_offset;                    /* Low order bits of R2      */
         /* Update r2 - point to the next frame */
         switch (PFMF_FSC & regs->GR_L(r1)) {
         case PFMF_FSC_1M:
+        case PFMF_FSC_2G:
             aaddr = addr += 0x1000;
             SET_GR_A(r2, regs, (addr & ADDRESS_MAXWRAP(regs)) + page_offset);
             break;
-        /* Code for 2G pages goes here */
         default:
             break;
         case PFMF_FSC_4K:
@@ -5664,6 +5782,24 @@ BYTE ARCH_DEP(stfl_data)[] = {
 #endif /*defined(FEATURE_FAST_BCR_SERIALIZATION_FACILITY)*/     /*810*/
                  ,
                  0
+#if defined(FEATURE_DFP_ZONED_CONVERSION_FACILITY)              /*912*/
+                 | STFL_6_DFP_ZONED_CONV                        /*912*/
+#endif /*defined(FEATURE_DFP_ZONED_CONVERSION_FACILITY)*/       /*912*/
+#if defined(FEATURE_EXECUTION_HINT_FACILITY)                    /*912*/ \
+    && defined(FEATURE_LOAD_AND_TRAP_FACILITY)                  /*912*/ \
+    && defined(FEATURE_MISC_INSTRUCTION_EXTENSIONS_FACILITY)    /*912*/ \
+    && defined(FEATURE_PROCESSOR_ASSIST_FACILITY)               /*912*/
+                 | STFL_6_MISC_INST_EXT                         /*912*/
+#endif                                                          /*912*/
+#if defined(FEATURE_TRANSACTIONAL_EXECUTION_FACILITY)           /*912*/
+                 | STFL_6_CONSTRAINED_TEF                       /*912*/
+#endif /*defined(FEATURE_TRANSACTIONAL_EXECUTION_FACILITY)*/    /*912*/
+#if defined(FEATURE_LOCAL_TLB_CLEARING_FACILITY)                /*912*/
+                 | STFL_6_LOCAL_TLB_CLEAR                       /*912*/
+#endif /*defined(FEATURE_LOCAL_TLB_CLEARING_FACILITY)*/         /*912*/
+#if defined(FEATURE_INTERLOCKED_ACCESS_FACILITY_2)              /*912*/
+                 | STFL_6_INTERLOCK_ACC_2                       /*912*/
+#endif /*defined(FEATURE_INTERLOCKED_ACCESS_FACILITY_2)*/       /*912*/
                  ,
                  0
                  ,
@@ -5679,6 +5815,9 @@ BYTE ARCH_DEP(stfl_data)[] = {
 #endif /*defined(FEATURE_CPU_MEASUREMENT_SAMPLING_FACILITY)*/
                  ,
                  0
+#if defined(FEATURE_TRANSACTIONAL_EXECUTION_FACILITY)           /*912*/
+                 | STFL_9_TRANSACT_EXEC                         /*912*/
+#endif /*defined(FEATURE_TRANSACTIONAL_EXECUTION_FACILITY)*/    /*912*/
 #if defined(FEATURE_ACCESS_EXCEPTION_FETCH_STORE_INDICATION)    /*810*/
                  | STFL_9_ACC_EX_FS_INDIC                       /*810*/
 #endif /*defined(FEATURE_ACCESS_EXCEPTION_FETCH_STORE_INDICATION)*/
@@ -5688,6 +5827,9 @@ BYTE ARCH_DEP(stfl_data)[] = {
 #if defined(FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_4)        /*810*/
                  | STFL_9_MSA_EXTENSION_4                       /*810*/
 #endif /*defined(FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_4)*/ /*810*/
+#if defined(FEATURE_ENHANCED_DAT_FACILITY_2)                    /*912*/
+                 | STFL_9_ENHANCED_DAT_2                        /*912*/
+#endif /*defined(FEATURE_ENHANCED_DAT_FACILITY_2)*/             /*912*/
                  ,
                  0
                  ,

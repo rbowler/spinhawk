@@ -153,6 +153,10 @@
 /m4/Makefile
 /m4/Makefile.in
 
+# /makemsi
+/makemsi/out
+/vc-redist
+
 # /man/
 /man/Makefile
 /man/Makefile.in

@@ -1,0 +1,12 @@
+* PCC test
+sysclear
+archmode esame
+r 1a0=00000001800000000000000000000200 # z/Arch restart PSW
+r 1d0=0002000180000000000000000000DEAD # z/Arch pgm new PSW
+r 200=C01100002000 # LGFI R1,X'2000'   R1=parameter block address
+r 206=C001ABCDEF00 # LGFI R0,X'ABCDEF00' R0 bits 57-63=fc0 (query)
+r 20C=B92C0000     # PCC ,             PCC-query
+r 210=B2B20300     # LPSWE WAITPSW     Load enabled wait PSW
+r 300=07020001800000000000000000FED0D0 # WAITPSW Enabled wait state PSW
+s+
+restart

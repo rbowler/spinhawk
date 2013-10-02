@@ -28,6 +28,8 @@ EXTRA_DIST =        \
     csst.txt        \
     cxgbr.txt       \
     cxgtr.txt       \
+    cxzt.txt        \
+    czxt.txt        \
     diag24.txt      \
     dxtr.txt        \
     epsw.txt        \
@@ -73,6 +75,7 @@ EXTRA_DIST =        \
     mvcos.txt       \
     mxtr.txt        \
     pfmf.txt        \
+    pcc.txt         \
     popcnt.txt      \
     prtest.txt      \
     rnsbg.txt       \

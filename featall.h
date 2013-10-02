@@ -117,11 +117,13 @@
 #undef FEATURE_DAT_ENHANCEMENT
 #undef FEATURE_DAT_ENHANCEMENT_FACILITY_2                       /*@Z9*/
 #undef FEATURE_DECIMAL_FLOATING_POINT                           /*DFP*/
+#undef FEATURE_DFP_ZONED_CONVERSION_FACILITY                    /*912*/
 #undef FEATURE_DISTINCT_OPERANDS_FACILITY                       /*810*/
 #undef FEATURE_DUAL_ADDRESS_SPACE
 #undef FEATURE_ECPSVM
 #undef FEATURE_EMULATE_VM
 #undef FEATURE_ENHANCED_DAT_FACILITY                            /*208*/
+#undef FEATURE_ENHANCED_DAT_FACILITY_2                          /*912*/
 #undef FEATURE_ENHANCED_MONITOR_FACILITY                        /*810*/
 #undef FEATURE_ENHANCED_SUPPRESSION_ON_PROTECTION               /*208*/
 #undef FEATURE_ESAME
@@ -129,6 +131,7 @@
 #undef FEATURE_ETF2_ENHANCEMENT                                 /*@Z9*/
 #undef FEATURE_ETF3_ENHANCEMENT                                 /*@Z9*/
 #undef FEATURE_EXECUTE_EXTENSIONS_FACILITY                      /*208*/
+#undef FEATURE_EXECUTION_HINT_FACILITY                          /*912*/
 #undef FEATURE_EXPANDED_STORAGE
 #undef FEATURE_EXPEDITED_SIE_SUBSET
 #undef FEATURE_EXTENDED_DIAG204
@@ -160,14 +163,17 @@
 #undef FEATURE_INTEGRATED_3270_CONSOLE
 #undef FEATURE_INTEGRATED_ASCII_CONSOLE
 #undef FEATURE_INTERLOCKED_ACCESS_FACILITY                      /*810*/
+#undef FEATURE_INTERLOCKED_ACCESS_FACILITY_2                    /*912*/
 #undef FEATURE_INTERPRETIVE_EXECUTION
 #undef FEATURE_INTERVAL_TIMER
 #undef FEATURE_IPTE_RANGE_FACILITY                              /*810*/
 #undef FEATURE_IO_ASSIST
 #undef FEATURE_LINKAGE_STACK
-#undef FEATURE_LOAD_REVERSED
+#undef FEATURE_LOAD_AND_TRAP_FACILITY                           /*912*/
 #undef FEATURE_LOAD_PROGRAM_PARAMETER_FACILITY
+#undef FEATURE_LOAD_REVERSED
 #undef FEATURE_LOAD_STORE_ON_CONDITION_FACILITY                 /*810*/
+#undef FEATURE_LOCAL_TLB_CLEARING_FACILITY                      /*912*/
 #undef FEATURE_LOCK_PAGE
 #undef FEATURE_LONG_DISPLACEMENT
 #undef FEATURE_MESSAGE_SECURITY_ASSIST
@@ -176,6 +182,7 @@
 #undef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_3              /*810*/
 #undef FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_4              /*810*/
 #undef FEATURE_MIDAW                                            /*@Z9*/
+#undef FEATURE_MISC_INSTRUCTION_EXTENSIONS_FACILITY             /*912*/
 #undef FEATURE_MOVE_PAGE_FACILITY_2
 #undef FEATURE_MOVE_WITH_OPTIONAL_SPECIFICATIONS                /*208*/
 #undef FEATURE_MPF_INFO
@@ -189,9 +196,11 @@
 #undef FEATURE_PER
 #undef FEATURE_PER2
 #undef FEATURE_PER3                                             /*@Z9*/
+#undef FEATURE_PER_ZERO_ADDRESS_DETECTION_FACILITY              /*912*/
 #undef FEATURE_PFPO                                             /*407*/
 #undef FEATURE_POPULATION_COUNT_FACILITY                        /*810*/
 #undef FEATURE_PRIVATE_SPACE
+#undef FEATURE_PROCESSOR_ASSIST_FACILITY                        /*912*/
 #undef FEATURE_PROGRAM_DIRECTED_REIPL                           /*@Z9*/
 #undef FEATURE_PROTECTION_INTERCEPTION_CONTROL
 #undef FEATURE_QUEUED_DIRECT_IO
@@ -221,8 +230,10 @@
 #undef FEATURE_TEST_BLOCK
 #undef FEATURE_TOD_CLOCK_STEERING                               /*@Z9*/
 #undef FEATURE_TRACING
+#undef FEATURE_TRANSACTIONAL_EXECUTION_FACILITY                 /*912*/
 #undef FEATURE_VECTOR_FACILITY
 #undef FEATURE_VM_BLOCKIO
 #undef FEATURE_WAITSTATE_ASSIST
+#undef FEATURE_WARNING_TRACK_INTERRUPTION_FACILITY              /*912*/
 
 /* end of FEATALL.H */

@@ -66,19 +66,15 @@
     So what exactly does that mean?
 </H4>
 <P>
-    It means that your PC can emulate an IBM mainframe processor. The
-    mainframe can range from a System/360 to a z10 - running in "S/370"
-    mode, "ESA/390" mode, or "z/Architecture" mode.
+    It means that your PC can execute programs designed to run on an IBM
+    mainframe.
 </P>
 <P>
     Hercules executes S/370, ESA/390, and z/Architecture instructions
     and channel programs.  It emulates mainframe I/O devices by using
     PC devices.  For example, 3390 DASD devices are emulated by large
     files on your hard disk, and local 3270 screens are emulated by tn3270
-    sessions. (Note: Not all 370 and 390 features have been implemented
-    in Hercules. See the list of particulars later in this document.
-    Also, certain non-standard models, 360/20s, and the 360/67 virtual
-    memory mode are not emulated.)
+    sessions. 
 </P>
 <P>
     Hercules implements only the raw S/370, ESA/390, and z/Architecture
@@ -88,7 +84,7 @@
     You will have to write the operating system or standalone program
     yourself, unless you can manage to obtain a license from IBM to run
     one of their operating systems on your PC, or use IBM programs and
-    operating systems which have been placed in the public domain.
+    operating systems which are effectively in the public domain.
 </P>
 <H4><A NAME="1.03">1.03</A>
     Is it functional enough to run production work?
@@ -130,7 +126,9 @@
     <b>But</b> (and this is a big but), these operating systems are all
     IBM Licensed Program Products, whose conditions of use generally
     restrict their usage to specific IBM machine serial numbers. So you
-    cannot just copy these systems from work and run them on your PC.
+    cannot just copy these systems from work and run them on your PC, as
+    this would almost certainly be a violation of your company's licensing
+    agreement with IBM.
 </P>
 <H4><A NAME="2.02">2.02</A>
     What operating systems can I run legally?
@@ -140,7 +138,8 @@
     <UL>
     <LI>
     Older IBM operating systems including OS/360, DOS/360, DOS/VS,
-    MVS 3.8, VM/370, and TSS/370 which are either public domain or
+    MVS 3.8, VM/370, and TSS/370 which are widely believed to be
+    either public domain or
     "copyrighted software provided without charge."
     </LI>
     <LI>
@@ -179,23 +178,19 @@
 <P>
     Any program which uses the S/370, ESA/390, or z/Architecture instruction
     set, as implemented in Hercules. Some special utilities in the form of
-    standalone programs are known to run well. I can particularly recommend
+    standalone programs are known to run well. A good example is 
     Jan Jaeger's excellent standalone editor (ZZSA) which is included in the
     Hercules distribution, or it can be downloaded from
 <A HREF="http://www.cbttape.org/~jjaeger">http://www.cbttape.org/~jjaeger</A>;
-    I use it regularly to look at DASD while debugging an OS installation,
-    which is just what it's designed to do. Note: ZZSA runs in ESA/390 mode.
+    ZZSA allows you to examine and edit MVS datasets without the need to load
+    an operating system. Note: ZZSA runs in ESA/390 mode.
     See Jan Jaeger's website for more information and special logon procedures.
 </P>
 <H4><A NAME="2.04">2.04</A>
     Where can I obtain OS/360 ?
 </H4>
 <P>
-    1. Rick Fochtman's OS/360 archive CD is now obtainable by download
-    from these locations:
-</P>
-<UL>
-<LI>
+       Rick Fochtman's OS/360 archive CD is obtainable by download from
 <A HREF="http://www.jaymoseley.com/hercules/install.htm">http://www.jaymoseley.com/hercules/install.htm</A>
 <!-- Following links no longer exist
 <LI>
@@ -207,15 +202,10 @@
 <LI>
 <A HREF="ftp://source.rfc822.org/pub/mirror/hercules/hercos360/os360.tar.gz">ftp://source.rfc822.org/pub/mirror/hercules/hercos360/os360.tar.gz</A>
 </LI>
-     end of non-existent links -->
 <LI>
 <A HREF="http://open360.copyleft.de/OS360/Download.html">http://open360.copyleft.de/OS360/Download.html</A>
 </LI>
 </UL>
-<P>
-    2. If you are interested in obtaining a copy of the CD itself,
-    contact Rick Fochtman at <EM>rfochtman</EM>@<EM>ync.net</EM>.
-</P>
 <P>
     3. Alternatively, you can download the OS/360 Y2K Starter package
     from <a href="http://open360.copyleft.de/OS360/Download.html">
@@ -226,14 +216,41 @@
     21.0. The same site also offers a MVTDBL volume and a
     <EM>Builder</EM> package for those who like to participate in
     OS/360 nucleus hacking.
+     end of non-existent links -->
 </P>
 <P>
-    4. Jay Maynard's "IBM Public Domain Software Collection"
+       Jay Maynard's "IBM Public Domain Software Collection"
        at <a href="http://www.ibiblio.org/jmaynard/">http://www.ibiblio.org/jmaynard/</a>
        contains copies of the OS/360 Release 21.8 distribution tapes.
 <H4><A NAME="2.05">2.05</A>
     Where can I obtain MVS 3.8 ?
 </H4>
+<P>
+The MVS 3.8J Turnkey System built by Volker Bandke can be obtained from
+<A HREF="http://www.bsp-gmbh.com/">http://www.bsp-gmbh.com/</A>
+</P>
+<P>
+For news about updates to the MVS 3.8J Turnkey System,
+subscribe to the H390-MVS forum at
+<A HREF="http://tech.groups.yahoo.com/group/H390-MVS/">
+http://tech.groups.yahoo.com/group/H390-MVS/</A>
+</P>
+<P>
+Phil Roberts has made available an updated MVS Turnkey System
+which can be downloaded from
+<a href="http://www.4shared.com/file/RfClJ57w/tk3upd.html">
+http://www.4shared.com/file/RfClJ57w/tk3upd.html</a>
+</P>
+<P>
+Paul Edwards created a distribution consisting of a modified version
+of Hercules together with operating system modifications which allow
+applications to break the 24-bit addressing barrier inherent in S/370.
+The distribution is called MVS/380 and it can be downloaded from
+<a href="http://mvs380.sourceforge.net/">
+http://mvs380.sourceforge.net/</a>
+</P>
+
+<!-- Following links no longer exist
 <P>
     The Original MVS 3.8 distribution as it was first used came from
 </P>
@@ -256,6 +273,7 @@
 <LI><A HREF="http://www.bsp-gmbh.com/hercules/">Volker Bandke from BSP GmbH</A></LI>
 <LI><A HREF="http://www.schaefernet.de/hercules/">Wolfgang Sch&auml;fer from Sch&auml;fernet</A></LI>
 </UL>
+     end of non-existent links -->
 <H4><A NAME="2.06">2.05</A>
     Where can I obtain VM/370 ?
 </H4>
@@ -266,22 +284,29 @@
 <UL><LI>
 <A HREF="http://www.archaelogic.com/vm370/">http://www.archaelogic.com/vm370</A>
 </LI></UL>
-<P>
-    Right now it's in an embryonic state. If anyone has material that
-    they'd like to contribute, please send it to me. I'm looking for
-    FAQ material, command summaries, how-to's, personal experiences and
-    anecdotes, machine room photos, and just about anything else you
-    think might be of interest.
-</P>
      end of non-existent link -->
 <P>
-The VM/370 page at <a href="http://www.cbttape.org/vm6.htm">cbttape.org</a>
+The VM/370 page at <a href="http://www.cbttape.org/vm6.htm">
+http://www.cbttape.org/vm6.htm</a>
 contains download links for the Andy Norrie VM 4-pack system and
 the Bob Abeles VM/370 R6 distribution.
 </P>
+<P>
+Dave Wade's VM/370 Downloads page at
+<a href="http://www.smrcc.org.uk/members/g4ugm/VM370.htm">
+http://www.smrcc.org.uk/members/g4ugm/VM370.htm</a>
+contains links to the most recent VM/370 distributions.
+</P>
+<P>
+You may also wish to subscribe to the H390-VM forum at
+<A HREF="http://tech.groups.yahoo.com/group/H390-VM/">
+http://tech.groups.yahoo.com/group/H390-VM/</A>
+</P>
+
 <H4><A NAME="2.07">2.07</A>
     Where can I obtain DOS/VS ?
 </H4>
+<!-- Following links no longer exist
 <P>
     I've put the DOS/VS r34 install tape on my site. It'll expand to a 21
     MB AWSTAPE file, dosrel34.aws. You need the <EM>Coverletter</EM> to
@@ -296,6 +321,17 @@ the Bob Abeles VM/370 R6 distribution.
 <LI><A HREF="http://www.hercules-390.org/dosrel34coverletter.pdf">http://www.hercules-390.org/dosrel34coverletter.pdf</A></LI>
 <LI><A HREF="http://open360.copyleft.de/DOS34/Installation.html">http://open360.copyleft.de/DOS34/Installation.html</A></LI>
 </UL>
+     end of non-existent links -->
+<P>
+George Shedlock's DOS/VS 5-pack system can be obtained from
+<a href="https://docs.google.com/open?id=0B7scZ2voEa--Zm50U09xYy15ejg">
+https://docs.google.com/open?id=0B7scZ2voEa--Zm50U09xYy15ejg</a>
+</P>
+<P>
+Other useful files may be downloaded from the H390-DOSVS forum at
+<A HREF="http://tech.groups.yahoo.com/group/H390-DOSVS/files/">
+http://tech.groups.yahoo.com/group/H390-DOSVS/files/</A>
+</P>
 <H4><A NAME="2.08">2.08</A>
     Where can I obtain Linux/390 ?
 </H4>
@@ -317,17 +353,36 @@ is <A HREF="http://www.linuxvm.org/">http://www.linuxvm.org/</A>
     Where can I find documentation?
 </H4>
 <P>
-    The
-<A HREF="hercload.html">Creating Hercules DASD</A>
-    document describes various methods of creating and loading virtual
-    DASD volumes.
+There are several sites containing introductory documentation for MVS 3.8
+with Hercules, including:
+</P>
+<ul>
+<li><a href="http://www.jaymoseley.com/hercules">http://www.jaymoseley.com/hercules</a>
+    <br>Jay Moseley's Hercules site - lots of Hercules and MVS information
+<li><a href="http://www.tommysprinkle.com/mvs">http://www.tommysprinkle.com/mvs</a>
+    <br>Tommy Sprinkle's MVS 3.8 documentation
+<li><a href="http://hansen-family.com/mvs">http://hansen-family.com/mvs</a>
+    <br>Bob Hansen's MVS 3.8 documentation
+<li><a href="http://timpinkawa.net/hercules/">http://timpinkawa.net/hercules/</a>
+    <br>Tim Pinkawa's Hercules Page
+</ul>
+<P>
+Much of the original IBM documentation for the 360 and 370 series is preserved at
+the bitsavers.org website. A good starting point is:
+<ul>
+<li><a href="http://bitsavers.trailing-edge.com/pdf/ibm/360/">
+    http://bitsavers.trailing-edge.com/pdf/ibm/360/</a>
+<li><a href="http://bitsavers.trailing-edge.com/pdf/ibm/370/">
+    http://bitsavers.trailing-edge.com/pdf/ibm/370/</a>
+</ul>
 </P>
 <P>
-    I've produced a document describing how to build an OS/360 system
+    Jay Maynard produced a document describing how to build an OS/360 system
     on Hercules, called "OS/360 on Hercules". It can be found at
 </P>
 <UL><LI>
-<A HREF="http://www.conmicro.com/hercos360/">http://www.conmicro.com/hercos360/hercos360/</A>.
+<A HREF="http://web.archive.org/web/20120202010657/http://www.conmicro.com/hercos360/">
+http://web.archive.org/web/20120202010657/http://www.conmicro.com/hercos360/</A>.
 </LI></UL>
 <P>
     This will build an MVT system without TCAM/TSO, but with two 3270
@@ -337,6 +392,7 @@ is <A HREF="http://www.linuxvm.org/">http://www.linuxvm.org/</A>
 <UL><LI>
 <A HREF="http://www.clueful.co.uk/mbeattie/hercules/3270.html">http://www.clueful.co.uk/mbeattie/hercules/3270.html</A>
 </LI></UL>
+<!-- Following links no longer exist
 <P>
     The N.U.D.E guides can be found at :
 </P>
@@ -350,6 +406,7 @@ is <A HREF="http://www.linuxvm.org/">http://www.linuxvm.org/</A>
 <UL><LI>
 <a href="http://www.s390.ibm.com/bookmgr-cgi/bookmgr.cmd/LIBRARY">IBM BookManager(r) BookServer Library</a>
 </LI></UL>
+     end of non-existent links -->
 <HR>
 </P>
 <H4><A NAME="3.01">3.01</A>
@@ -364,8 +421,8 @@ is <A HREF="http://www.linuxvm.org/">http://www.linuxvm.org/</A>
     Anything more up-to-date, such as Linux/390 or OS/390, requires much more
     processing power. Hercules is CPU intensive, so you will want to use the
     fastest processor you can get. A 2GHz Pentium, preferably with hyperthreading,
-    will probably provide acceptable performance for a light workload.
-    If you can afford a multiprocessor system, so much the better. Hercules
+    will probably provide acceptable performance for a light workload. Recent
+    64-bit multiprocessor systems will provide better performance. Hercules
     makes extensive use of multi-threading to overlap I/O with CPU activity,
     and to dispatch multiple emulated CPU's in parallel.
 </P>
@@ -379,10 +436,10 @@ is <A HREF="http://www.linuxvm.org/">http://www.linuxvm.org/</A>
     or PPC (Power Mac G5) with OS X.
 </P>
 <P>
-    Hercules does not depend on the Pentium architecture. I've built and run
-    it successfully on a 500 MHz Alpha 21164, and others have run it on SPARC
-    and S/390 (!) Linux systems. One guy has even run OS/360 under Hercules
-    under Linux/390 under Hercules under Linux/390 under VM/ESA!
+    Hercules does not depend on the x86 architecture. It has been built and
+    run successfully on 500 MHz Alpha 21164, SPARC, and S/390 Linux.
+    One guy has even run OS/360 under Hercules under Linux/390 under Hercules
+    under Linux/390 under VM/ESA!
     The prize for the world's smallest mainframe probably goes to Ivan Warren,
     who claims to have run VM/370 under Hercules on an iPAQ 5450 handheld PDA.
 </P>
@@ -542,19 +599,10 @@ is <A HREF="http://www.linuxvm.org/">http://www.linuxvm.org/</A>
     guarantee that it will run on every operating system platform out there.
 </P>
 <P>
-    If you want to make Hercules run on AS/400, OS/2, or
-    whatever, then by all means go ahead. I welcome reports of any bugs or
-    problems you find, but I probably won't fix problems if it means introducing
-    platform-specific code, and I will not be able to test new releases against
-    other platforms. Folks who have gotten it compiled on the BSDs report that
-    the hardest part is removing the Linux-specific tape support.
-</P>
-<P>
     The Hercules code is not intended to be specific to Intel hardware, so if
     you find any issues or faults related to running on other hardware (SPARC,
-    Alpha, PPC, ...) under Linux, then I'm likely to be receptive to fixing
-    that sort of problem. Issues related to Unix variants are less likely
-    to be fixed however.
+    Alpha, PPC, ...) under Linux, feel free to report it to the Hercules forum
+    (see the <a href="hercsupp.html">Hercules Technical Support</a> page).
 </P>
 <P>
 <HR>
@@ -784,6 +832,10 @@ is <A HREF="http://www.linuxvm.org/">http://www.linuxvm.org/</A>
 <li>Load-Program-Parameter Facility
 <li>IPTE-Range Facility
 <li>Enhanced-DAT Facility
+<li>Decimal Floating Point Zoned-Conversion Facility
+<li>Execution-Hint Facility
+<li>Load-and-Trap Facility
+<li>Miscellaneous-Instruction-Extensions Facility
 </ul>
 
 <P>The following optional features of z/Architecture have not yet been implemented:</P>
@@ -795,6 +847,13 @@ is <A HREF="http://www.linuxvm.org/">http://www.linuxvm.org/</A>
 <li>CPU-Measurement Sampling Facility
 <li>Floating-Point-Extension Facility
 <li>Nonquiescing Key-Setting Facility
+<li>Enhanced-DAT Facility 2
+<li>Interlocked-Access Facility 2
+<li>Local-TLB-Clearing Facility
+<li>PER Zero-Address-Detection Facility
+<li>Processor-Assist Facility
+<li>Transactional-Execution Facility
+<li>Warning-Track-Interruption Facility
 </ul>
 
 <P>The following standard feature has not yet been implemented: </P>
@@ -838,16 +897,16 @@ z/Architecture mode.</p>
 project, either as coders or as testers or both:</P>
 <P></P>
 <sl>
-<li><A HREF="http://perso.wanadoo.fr/rbowler">Roger Bowler</A>
+<li><A HREF="http://www.rogerbowler.fr/hercules.htm">Roger Bowler</A>
 (original author)
-<li><A HREF="http://www.conmicro.com/">Jay Maynard</A> (current
-maintainer)
+<li><A HREF="http://en.wikipedia.org/wiki/Jay_Maynard">Jay Maynard</A>
 <li><A HREF="http://www.cbttape.org/~jjaeger">Jan Jaeger</A>
-<li><A HREF="http://www.bsp-gmbh.com/hercules">Volker Bandke</A>
+<li><A HREF="http://www.bsp-gmbh.com/">Volker Bandke</A>
 <li>David Barth
 <li><A HREF="http://www.clueful.co.uk/mbeattie/">Malcolm Beattie</A>
 <li>Mario Bezzi
 <li>Florian Bilek
+<li>Gordon Bonorchis
 <li>Mike Cairns
 <li><a href="http://www.isoc.org.pl/user/3">Marcin Cieslak</a>
 <li><a href="http://au.linkedin.com/in/clementclarke">Clem Clarke</a>
@@ -889,7 +948,7 @@ maintainer)
 <li>Christophe Nillon
 <li>Mike Noel
 <li>Andy Norrie
-<li><A HREF="http://www.sysun.com/museum">Dutch Owen</A>
+<li>Dutch Owen
 <li><a href="http://www.lightlink.com/mhp/3705/">Max H. Parke</a>
 <li>Reed H. Petty
 <li>Jim Pierson
@@ -901,7 +960,7 @@ maintainer)
 <li><a href="http://www.debian.org/News/2010/20100831">Frans Pop</a>
 <li><a href="http://www.xing.com/profile/Wolfhard_Reimer">Wolfhard Reimer</a>
 <li>Emerson Santos
-<li><a href="http://blogs.sun.com/jsavit/">Jeff Savit</a>
+<li><a href="http://blogs.oracle.com/jsavit/">Jeff Savit</a>
 <li><a href="http://de.linkedin.com/pub/axel-schwarzer/2/739/655">Axel Schwarzer</a>
 <li>Paul Scott
 <li>Daniel Seagraves
@@ -911,9 +970,9 @@ maintainer)
 <li>Enrico Sorichetti
 <li>John Summerfield
 <li>Mark Szlaga
-<li><a href="http://www.linuxvm.org/community/athornton.html">Adam Thornton</a>
+<li>Adam Thornton
 <li>Adrian Trenkwalder
-<li><A HREF="http://www.softdevlabs.com/Hercules/hercgui-index.html">"Fish" (David B. Trout)</A>
+<li><A HREF="http://www.softdevlabs.com/">"Fish" (David B. Trout)</A>
 <li>Ronen Tzur
 <li>Bernard van der Helm
 <li>Ard van der Leeuw
@@ -931,14 +990,14 @@ maintainer)
 <li>Tim Alpaerts
 <li>Bertus Bekker
 <li>Giorgio de Nunzio
-<li>Rick Fochtman
+<li><a href="http://articles.petoskeynews.com/2012-07-27/memorial-service_32894245">Rick Fochtman</a>
 <li>Alex Friis
 <li>Sam Golob
 <li><a href="http://home.arcor.de/achim.haag//haagjobe.htm">Achim Haag</a>
-<li><a href="http://cy2kr.tacticom.com/AdvisoryCouncil.html">Cory Hamasaki</a>
+<li><a href="http://www.legacy.com/obituaries/washingtonpost/obituary.aspx?pid=143636886">Cory Hamasaki</a>
 <li>Tony Harminc
 <li><a href="http://www.linuxvm.org/community/rhigson.html">Richard Higson</a>
-<li>Jim Keohane
+<li><a href="http://groups.yahoo.com/group/hercules-390/message/50662">Jim Keohane</a>
 <li>Sam Knutson
 <li><a href="http://www.corestore.org/">Mike Ross</a>
 <li>Daniel Rudin
@@ -947,7 +1006,7 @@ maintainer)
 <li>Mark S. Waterbury
 </sl></P>
 <P>If anyone feels they have been unfairly omitted from either of these
-lists, please let me (Jay Maynard) know.</P>
+lists, please let the maintainer (maintainer&nbsp;@&nbsp;hercules-390.eu) know.</P>
 <P>
 <HR>
 </P>
@@ -957,7 +1016,7 @@ lists, please let me (Jay Maynard) know.</P>
 </H4>
 
 <P>
-Please see our <a href="hercsupp.html">Technical Support</a> web page.
+Please see the <a href="hercsupp.html">Hercules Technical Support</a> page.
 </P>
 
 <p><center><hr width=15% noshade>

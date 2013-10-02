@@ -352,9 +352,16 @@ typedef struct _DAT {
 
 /* Region table entry bit definitions (ESAME mode) */
 #define REGTAB_TO       0xFFFFFFFFFFFFF000ULL /* Table origin        */
+#define REGTAB_RFAA     0xFFFFFFFF80000000ULL /* Region addr    EDAT2*/
+#define REGTAB_AV       0x10000         /* ACCF validity bit    EDAT2*/
+#define REGTAB_ACC      0xF000          /* Access control bits  EDAT2*/
+#define REGTAB_F        0x800           /* Fetch protect bit    EDAT2*/
+#define REGTAB_FC       0x400           /* Format control bit   EDAT2*/
 #define REGTAB_P        0x200           /* DAT Protection bit    EDAT*/
+#define REGTAB_CO       0x100           /* Change override bit  EDAT2*/
 #define REGTAB_TF       0x0C0           /* Table offset              */
 #define REGTAB_I        0x020           /* Region invalid            */
+#define REGTAB_CR       0x010           /* Common region bit    EDAT2*/
 #define REGTAB_TT       0x00C           /* Table type                */
 #define REGTAB_TL       0x003           /* Table length              */
 #define REGTAB_RESV     0xD10           /* Reserved bits - ignored   */
@@ -1303,7 +1310,7 @@ typedef struct _MBK {
 #define PFMF_FSC             0x00007000 /* Frame-Size Code           */
 #define PFMF_FSC_4K          0x00000000 /* 4K                        */
 #define PFMF_FSC_1M          0x00001000 /* 1M                        */
-#define PFMF_FSC_RESV        0x00006000 /* Reserved                  */
+#define PFMF_FSC_2G          0x00002000 /* 2G                        */
 #define PFMF_NQ              0x00000800 /* Quiesce (SK must be one)  */
 #define PFMF_MR              0x00000400 /* Reference Bit Update Mask */
 #define PFMF_MC              0x00000200 /* Change Bit Update Mask    */
@@ -1402,6 +1409,17 @@ typedef struct _MBK {
 #define STFL_5_CMPSC_ENH        0x01    /* CMPSC-enhancement
                                            Facility installed     810*/
 /* Byte STFL_6: STFLE bits 48-55 */
+#define STFL_6_DFP_ZONED_CONV   0x80    /* DFP zoned-conversion
+                                           facility is installed  912*/
+#define STFL_6_MISC_INST_EXT    0x40    /* Execution-hint,load-and-trap
+                                           misc-inst-ext,processor-asst
+                                           facilities installed   912*/
+#define STFL_6_CONSTRAINED_TEF  0x20    /* Constrained-transactn-execn
+                                           facility is installed  912*/
+#define STFL_6_LOCAL_TLB_CLEAR  0x10    /* Local-TLB-clearing
+                                           facility is installed  912*/
+#define STFL_6_INTERLOCK_ACC_2  0x08    /* Interlocked-access
+                                           facility 2 installed   912*/
 /* Byte STFL_7: STFLE bits 56-63 */
 /* Byte STFL_8: STFLE bits 64-71 */
 #define STFL_8_RES_REF_BITS_MUL 0x20    /* Reset-Reference-Bits-Multiple
@@ -1411,12 +1429,16 @@ typedef struct _MBK {
 #define STFL_8_CPU_MEAS_SAMPLNG 0x08    /* CPU-measurement sampling
                                            facility installed (ESAME)*/
 /* Byte STFL_9: STFLE bits 72-79 */
+#define STFL_9_TRANSACT_EXEC    0x40    /* Transactional execution    
+                                           facility is installed  912*/
 #define STFL_9_ACC_EX_FS_INDIC  0x10    /* Access-exception fetch/store
                                            indication facility    810*/
 #define STFL_9_MSA_EXTENSION_3  0x08    /* Message Security Assist
                                            Extension 3 installed  810*/
 #define STFL_9_MSA_EXTENSION_4  0x04    /* Message Security Assist
                                            Extension 4 installed  810*/
+#define STFL_9_ENHANCED_DAT_2   0x02    /* Enhanced-DAT facility 2
+                                           is installed           912*/
 
 /* Bit definitions for the Vector Facility */
 #define VSR_M    0x0001000000000000ULL  /* Vector mask mode bit      */
