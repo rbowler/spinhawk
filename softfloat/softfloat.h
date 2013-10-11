@@ -145,7 +145,10 @@ flag float32_lt( float32, float32 );
 flag float32_eq_signaling( float32, float32 );
 flag float32_le_quiet( float32, float32 );
 flag float32_lt_quiet( float32, float32 );
+flag float32_is_nan( float32 );
+flag float32_is_neg( float32 );
 flag float32_is_signaling_nan( float32 );
+flag float32_is_zero( float32 );
 
 /*----------------------------------------------------------------------------
 | Software IEC/IEEE double-precision conversion routines.
@@ -178,7 +181,10 @@ flag float64_lt( float64, float64 );
 flag float64_eq_signaling( float64, float64 );
 flag float64_le_quiet( float64, float64 );
 flag float64_lt_quiet( float64, float64 );
+flag float64_is_nan( float64 );
+flag float64_is_neg( float64 );
 flag float64_is_signaling_nan( float64 );
+flag float64_is_zero( float64 );
 
 #ifdef FLOATX80
 
@@ -252,7 +258,10 @@ flag float128_lt( float128, float128 );
 flag float128_eq_signaling( float128, float128 );
 flag float128_le_quiet( float128, float128 );
 flag float128_lt_quiet( float128, float128 );
+flag float128_is_nan( float128 );
+flag float128_is_neg( float128 );
 flag float128_is_signaling_nan( float128 );
+flag float128_is_zero( float128 );
 
 #endif
 

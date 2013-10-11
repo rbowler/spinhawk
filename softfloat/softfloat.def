@@ -6,6 +6,8 @@
 ;
 LIBRARY softfloat
 EXPORTS
+    float_rounding_mode
+    float_exception_flags
     float_raise
     int32_to_float32
     int32_to_float64
@@ -32,7 +34,10 @@ EXPORTS
     float32_eq_signaling
     float32_le_quiet
     float32_lt_quiet
+    float32_is_nan
+    float32_is_neg
     float32_is_signaling_nan
+    float32_is_zero
     float64_to_int32
     float64_to_int32_round_to_zero
     float64_to_int64
@@ -52,7 +57,10 @@ EXPORTS
     float64_eq_signaling
     float64_le_quiet
     float64_lt_quiet
+    float64_is_nan
+    float64_is_neg
     float64_is_signaling_nan
+    float64_is_zero
     float128_to_int32
     float128_to_int32_round_to_zero
     float128_to_int64
@@ -72,4 +80,7 @@ EXPORTS
     float128_eq_signaling
     float128_le_quiet
     float128_lt_quiet
+    float128_is_nan
+    float128_is_neg
     float128_is_signaling_nan
+    float128_is_zero

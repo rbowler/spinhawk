@@ -76,6 +76,18 @@ flag float32_is_nan( float32 a )
 }
 
 /*----------------------------------------------------------------------------
+| Returns 1 if the single-precision floating-point value `a' is negative;
+| otherwise returns 0.
+*----------------------------------------------------------------------------*/
+
+flag float32_is_neg( float32 a )
+{
+
+    return ( a>>31 );
+
+}
+
+/*----------------------------------------------------------------------------
 | Returns 1 if the single-precision floating-point value `a' is a signaling
 | NaN; otherwise returns 0.
 *----------------------------------------------------------------------------*/
@@ -84,6 +96,18 @@ flag float32_is_signaling_nan( float32 a )
 {
 
     return ( ( ( a>>22 ) & 0x1FF ) == 0x1FE ) && ( a & 0x003FFFFF );
+
+}
+
+/*----------------------------------------------------------------------------
+| Returns 1 if the single-precision floating-point value `a' is zero;
+| otherwise returns 0.
+*----------------------------------------------------------------------------*/
+
+flag float32_is_zero( float32 a )
+{
+
+    return ( ( a & 0x7FFFFFFF ) == 0);
 
 }
 
@@ -161,6 +185,18 @@ flag float64_is_nan( float64 a )
 }
 
 /*----------------------------------------------------------------------------
+| Returns 1 if the double-precision floating-point value `a' is negative;
+| otherwise returns 0.
+*----------------------------------------------------------------------------*/
+
+flag float64_is_neg( float64 a )
+{
+
+    return ( a>>63 );
+
+}
+
+/*----------------------------------------------------------------------------
 | Returns 1 if the double-precision floating-point value `a' is a signaling
 | NaN; otherwise returns 0.
 *----------------------------------------------------------------------------*/
@@ -171,6 +207,18 @@ flag float64_is_signaling_nan( float64 a )
     return
            ( ( ( a>>51 ) & 0xFFF ) == 0xFFE )
         && ( a & LIT64( 0x0007FFFFFFFFFFFF ) );
+
+}
+
+/*----------------------------------------------------------------------------
+| Returns 1 if the double-precision floating-point value `a' is zero;
+| otherwise returns 0.
+*----------------------------------------------------------------------------*/
+
+flag float64_is_zero( float64 a )
+{
+
+    return ( ( a & LIT64( 0x7FFFFFFFFFFFFFFF ) ) == 0);
 
 }
 
@@ -357,6 +405,18 @@ flag float128_is_nan( float128 a )
 }
 
 /*----------------------------------------------------------------------------
+| Returns 1 if the quadruple-precision floating-point value `a' is negative;
+| otherwise returns 0.
+*----------------------------------------------------------------------------*/
+
+flag float128_is_neg( float128 a )
+{
+
+    return ( a.high>>63 );
+
+}
+
+/*----------------------------------------------------------------------------
 | Returns 1 if the quadruple-precision floating-point value `a' is a
 | signaling NaN; otherwise returns 0.
 *----------------------------------------------------------------------------*/
@@ -367,6 +427,18 @@ flag float128_is_signaling_nan( float128 a )
     return
            ( ( ( a.high>>47 ) & 0xFFFF ) == 0xFFFE )
         && ( a.low || ( a.high & LIT64( 0x00007FFFFFFFFFFF ) ) );
+
+}
+
+/*----------------------------------------------------------------------------
+| Returns 1 if the quadruple-precision floating-point value `a' is zero;
+| otherwise returns 0.
+*----------------------------------------------------------------------------*/
+
+flag float128_is_zero( float128 a )
+{
+
+    return ( a.low == 0 || ( a.high & LIT64( 0x7FFFFFFFFFFFFFFF ) ) == 0 );
 
 }
 
