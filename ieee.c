@@ -204,6 +204,7 @@ struct sbfp {
 
 /* locally defined architecture-dependent functions */
 #define ieee_exception ARCH_DEP(ieee_exception)
+#define float_exception ARCH_DEP(float_exception)
 #define vfetch_lbfp ARCH_DEP(vfetch_lbfp)
 #define vfetch_sbfp ARCH_DEP(vfetch_sbfp)
 #define vfetch_float32 ARCH_DEP(vfetch_float32)
@@ -283,6 +284,53 @@ static inline int ieee_exception(int raised, REGS * regs)
          * Other operations need to take appropriate action
          * to complete the operation.
          * In most cases, C will have done the right thing...
+         */
+        return PGM_DATA_EXCEPTION;
+    } else {
+        /* Set flags in FPC */
+        regs->fpc |= (dxc & 0xF8) << 16;
+        /* have caller take default action */
+        return 0;
+    }
+}
+
+/*
+ * Convert from Softfloat IEEE exception to Pop IEEE exception
+ */
+static inline int float_exception(int flags, REGS * regs)
+{
+    int dxc = 0;
+
+    if (flags & float_flag_inexact) {
+        /*
+         * Softfloat doesn't say whether it truncated or incremented,
+         * so we will just always claim it incremented
+         */
+        dxc = DXC_IEEE_INEXACT_INCR;
+    }
+    /* This sequence sets dxc according to the priorities defined
+     * in PoP, Ch. 6, Data Exception Code.
+     */
+    if (flags & float_flag_underflow) {
+        dxc |= DXC_IEEE_UF_EXACT;
+    } else if (flags & float_flag_overflow) {
+        dxc |= DXC_IEEE_OF_EXACT;
+    } else if (flags & float_flag_divbyzero) {
+        dxc = DXC_IEEE_DIV_ZERO;
+    } else if (flags & float_flag_invalid) {
+        dxc = DXC_IEEE_INVALID_OP;
+    }
+
+    if (dxc & ((regs->fpc & FPC_MASK) >> 24)) {
+        regs->dxc = dxc;
+        regs->fpc |= dxc << 8;
+        if (dxc == DXC_IEEE_DIV_ZERO || dxc == DXC_IEEE_INVALID_OP) {
+            /* suppress operation */
+            regs->program_interrupt(regs, PGM_DATA_EXCEPTION);
+        }
+        /*
+         * Other operations need to take appropriate action
+         * to complete the operation.
          */
         return PGM_DATA_EXCEPTION;
     } else {
@@ -1280,82 +1328,20 @@ DEF_INST(convert_float_long_to_bfp_short_reg)
 /*-------------------------------------------------------------------*/
 /* ADD (extended)                                                    */
 /*-------------------------------------------------------------------*/
-static int add_ebfp(struct ebfp *op1, struct ebfp *op2, REGS *regs)
+static int add_ebfp(float128 *op1, float128 *op2, REGS *regs)
 {
-    int r, cl1, cl2, raised;
+    int code;
+    float128 result;
 
-    if (ebfpissnan(op1) || ebfpissnan(op2)) {
-        r = ieee_exception(FE_INVALID, regs);
-        if (r) {
-            return r;
-        }
-    }
+    result = float128_add(*op1, *op2);
 
-    cl1 = ebfpclassify(op1);
-    cl2 = ebfpclassify(op2);
+    code = float_exception(float_exception_flags, regs);
 
-    if ((cl1 == FP_NORMAL || cl1 == FP_SUBNORMAL)
-      &&(cl2 == FP_NORMAL || cl2 == FP_SUBNORMAL)) {
-        FECLEAREXCEPT(FE_ALL_EXCEPT);
-        ebfpston(op1);
-        ebfpston(op2);
-        op1->v += op2->v;
-        ebfpntos(op1);
-        raised = fetestexcept(FE_ALL_EXCEPT);
-        if (raised) {
-            r = ieee_exception(raised, regs);
-            if (r) {
-                return r;
-            }
-        }
-        cl1 = ebfpclassify(op1);
-    } else if (cl1 == FP_NAN) {
-        if (ebfpissnan(op1)) {
-            ebfpstoqnan(op1);
-        } else if (ebfpissnan(op2)) {
-            *op1 = *op2;
-            ebfpstoqnan(op1);
-        }
-        regs->psw.cc = 3;
-        return 0;
-    } else if (cl2 == FP_NAN) {
-        if (ebfpissnan(op2)) {
-            *op1 = *op2;
-            ebfpstoqnan(op1);
-        } else {
-            *op1 = *op2;
-        }
-        regs->psw.cc = 3;
-        return 0;
-    } else if (cl1 == FP_INFINITE || cl2 == FP_INFINITE) {
-        if (cl1 == FP_INFINITE) {
-            if (cl2 == FP_INFINITE && op1->sign != op2->sign) {
-                r = ieee_exception(FE_INVALID, regs);
-                if (r) {
-                    return r;
-                }
-                ebfpdnan(op1);
-                regs->psw.cc = 3;
-                return 0;
-            } else {
-                /* result is first operand */
-            }
-        } else {
-            *op1 = *op2;
-            cl1 = cl2;
-        }
-    } else if (cl1 == FP_ZERO) {
-        if (cl2 == FP_ZERO && op1->sign != op2->sign) {
-            /* exact-zero difference result */
-            ebfpzero(op1, ((regs->fpc & FPC_BRM) == 3) ? 1 : 0);
-        } else {
-            *op1 = *op2;
-            cl1 = cl2;
-        }
-    } else if (cl2 == FP_ZERO) {
-        /* result is first operand */
-    }
-    regs->psw.cc = cl1 == FP_ZERO ? 0 : op1->sign ? 1 : 2;
+    *op1 = result;
+
+    regs->psw.cc = float128_is_nan(result) ? 3 :
+                   float128_is_zero(result) ? 0 :
+                   float128_is_neg(result) ? 1 : 2;
     return 0;
 }
 
@@ -1365,7 +1351,7 @@ static int add_ebfp(struct ebfp *op1, struct ebfp *op2, REGS *regs)
 DEF_INST(add_bfp_ext_reg)
 {
     int r1, r2;
-    struct ebfp op1, op2;
+    float128 op1, op2;
     int pgm_check;
 
     RRE(inst, regs, r1, r2);
@@ -1373,12 +1359,12 @@ DEF_INST(add_bfp_ext_reg)
     BFPINST_CHECK(regs);
     BFPREGPAIR2_CHECK(r1, r2, regs);
 
-    get_ebfp(&op1, regs->fpr + FPR2I(r1));
-    get_ebfp(&op2, regs->fpr + FPR2I(r2));
+    get_float128(&op1, regs->fpr + FPR2I(r1));
+    get_float128(&op2, regs->fpr + FPR2I(r2));
 
     pgm_check = add_ebfp(&op1, &op2, regs);
 
-    put_ebfp(&op1, regs->fpr + FPR2I(r1));
+    put_float128(&op1, regs->fpr + FPR2I(r1));
 
     if (pgm_check) {
         regs->program_interrupt(regs, pgm_check);
@@ -4764,12 +4750,32 @@ DEF_INST(squareroot_bfp_short)
 /*-------------------------------------------------------------------*/
 
 /*-------------------------------------------------------------------*/
+/* SUBTRACT (extended)                                               */
+/*-------------------------------------------------------------------*/
+static int subtract_ebfp(float128 *op1, float128 *op2, REGS *regs)
+{
+    int code;
+    float128 result;
+
+    result = float128_sub(*op1, *op2);
+
+    code = float_exception(float_exception_flags, regs);
+
+    *op1 = result;
+
+    regs->psw.cc = float128_is_nan(result) ? 3 :
+                   float128_is_zero(result) ? 0 :
+                   float128_is_neg(result) ? 1 : 2;
+    return 0;
+}
+
+/*-------------------------------------------------------------------*/
 /* B34B SXBR  - SUBTRACT (extended BFP)                        [RRE] */
 /*-------------------------------------------------------------------*/
 DEF_INST(subtract_bfp_ext_reg)
 {
     int r1, r2;
-    struct ebfp op1, op2;
+    float128 op1, op2;
     int pgm_check;
 
     RRE(inst, regs, r1, r2);
@@ -4777,13 +4783,12 @@ DEF_INST(subtract_bfp_ext_reg)
     BFPINST_CHECK(regs);
     BFPREGPAIR2_CHECK(r1, r2, regs);
 
-    get_ebfp(&op1, regs->fpr + FPR2I(r1));
-    get_ebfp(&op2, regs->fpr + FPR2I(r2));
-    op2.sign = !(op2.sign);
+    get_float128(&op1, regs->fpr + FPR2I(r1));
+    get_float128(&op2, regs->fpr + FPR2I(r2));
 
-    pgm_check = add_ebfp(&op1, &op2, regs);
+    pgm_check = subtract_ebfp(&op1, &op2, regs);
 
-    put_ebfp(&op1, regs->fpr + FPR2I(r1));
+    put_float128(&op1, regs->fpr + FPR2I(r1));
 
     if (pgm_check) {
         regs->program_interrupt(regs, pgm_check);
