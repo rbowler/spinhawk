@@ -438,7 +438,7 @@ flag float128_is_signaling_nan( float128 a )
 flag float128_is_zero( float128 a )
 {
 
-    return ( a.low == 0 || ( a.high & LIT64( 0x7FFFFFFFFFFFFFFF ) ) == 0 );
+    return ( a.low == 0 && ( a.high & LIT64( 0x7FFFFFFFFFFFFFFF ) ) == 0 );
 
 }
 
