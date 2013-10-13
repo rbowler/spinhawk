@@ -348,6 +348,7 @@ static inline int float_exception(int flags, REGS * regs)
 void set_rounding_mode(U32 fpcreg, int mask)
 {
     int brm, ferm;
+    int8 flrm;
 
     /* If mask is zero, obtain rounding mode from FPC register */
     if (mask == RM_DEFAULT_ROUNDING)
@@ -359,24 +360,32 @@ void set_rounding_mode(U32 fpcreg, int mask)
     switch (brm) {
     case RM_ROUND_TO_NEAREST: /* Round to nearest ties to even */
         ferm = FE_TONEAREST;
+        flrm = float_round_nearest_even;
         break;
     case RM_ROUND_TOWARD_ZERO: /* Round toward zero */
         ferm = FE_TOWARDZERO;
+        flrm = float_round_to_zero;
         break;
     case RM_ROUND_TOWARD_POS_INF: /* Round toward +infinity */
         ferm = FE_UPWARD;
+        flrm = float_round_up;
         break;
     case RM_ROUND_TOWARD_NEG_INF: /* Round toward -infinity */
         ferm = FE_DOWNWARD;
+        flrm = float_round_down;
         break;
     default:
         ferm = FE_TONEAREST;
+        flrm = float_round_nearest_even;
         break;
     } /* end switch(brm) */
 
     /* Switch rounding mode if necessary */
     if (fegetround() != ferm)
         fesetround(ferm);
+
+    /* Set rounding mode for softfloat */
+    float_set_rounding_mode(flrm);
 
 } /* end function set_rounding_mode */
 
