@@ -975,7 +975,7 @@ static inline void get_float128(float128 *op, U32 *fpr) {
     op->low = ((U64)fpr[FPREX] << 32) | fpr[FPREX+1];
 }
 #endif  /* !defined(_IEEE_C) */
- 
+
 /*
  * Fetch softfloat operands from memory
  */
@@ -1342,7 +1342,7 @@ static int add_ebfp(float128 *op1, float128 *op2, REGS *regs)
     regs->psw.cc = float128_is_nan(result) ? 3 :
                    float128_is_zero(result) ? 0 :
                    float128_is_neg(result) ? 1 : 2;
-    return 0;
+    return code;
 }
 
 /*-------------------------------------------------------------------*/
@@ -4766,7 +4766,7 @@ static int subtract_ebfp(float128 *op1, float128 *op2, REGS *regs)
     regs->psw.cc = float128_is_nan(result) ? 3 :
                    float128_is_zero(result) ? 0 :
                    float128_is_neg(result) ? 1 : 2;
-    return 0;
+    return code;
 }
 
 /*-------------------------------------------------------------------*/
