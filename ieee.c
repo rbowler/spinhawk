@@ -3205,22 +3205,25 @@ DEF_INST(load_and_test_bfp_short_reg)
 DEF_INST(load_fp_int_bfp_short_reg)
 {
     int r1, r2, m3, pgm_check;
-    struct sbfp op;
+    float32 op1, op2;
 
     RRF_M(inst, regs, r1, r2, m3);
     //logmsg("FIEBR r1=%d, r2=%d\n", r1, r2);
     BFPINST_CHECK(regs);
     BFPRM_CHECK(m3,regs);
 
-    get_sbfp(&op, regs->fpr + FPR2I(r2));
+    set_rounding_mode(regs->fpc, m3);
 
-    pgm_check = integer_sbfp(&op, m3, regs);
+    get_float32(&op2, regs->fpr + FPR2I(r2));
 
+    op1 = float32_round_to_int(op2);
+
+    pgm_check = float_exception(float_exception_flags, regs);
     if (pgm_check) {
         regs->program_interrupt(regs, pgm_check);
     }
 
-    put_sbfp(&op, regs->fpr + FPR2I(r1));
+    put_float32(&op1, regs->fpr + FPR2I(r1));
 
 } /* end DEF_INST(load_fp_int_bfp_short_reg) */
 
