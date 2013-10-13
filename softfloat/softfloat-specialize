@@ -37,6 +37,17 @@ these four paragraphs for those parts of this code that are retained.
 int8 float_detect_tininess = float_tininess_before_rounding;
 
 /*----------------------------------------------------------------------------
+| Sets the floating-point rounding mode.
+*----------------------------------------------------------------------------*/
+
+void float_set_rounding_mode( int8 mode )
+{
+
+    float_rounding_mode = mode;
+
+}
+
+/*----------------------------------------------------------------------------
 | Raises the exceptions specified by `flags'.  Floating-point traps can be
 | defined here if desired.  It is currently not possible for such a trap to
 | substitute a result value.  If traps are not implemented, this routine
