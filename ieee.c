@@ -2632,6 +2632,7 @@ static int integer_sbfp(float32 *op, int mode, REGS *regs)
 
     set_rounding_mode(regs->fpc, mode);
     result = float32_round_to_int(*op);
+    set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
     code = float_exception(float_exception_flags, regs);
     *op = result;
     return code;
@@ -3066,11 +3067,11 @@ DEF_INST(load_fp_int_bfp_short_reg)
     BFPINST_CHECK(regs);
     BFPRM_CHECK(m3,regs);
 
-    set_rounding_mode(regs->fpc, m3);
-
     get_float32(&op2, regs->fpr + FPR2I(r2));
 
+    set_rounding_mode(regs->fpc, m3);
     op1 = float32_round_to_int(op2);
+    set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
 
     pgm_check = float_exception(float_exception_flags, regs);
     if (pgm_check) {
