@@ -1343,16 +1343,14 @@ static int add_ebfp(float128 *op1, float128 *op2, REGS *regs)
     float128 result;
 
     result = float128_add(*op1, *op2);
-
     code = float_exception(float_exception_flags, regs);
-
     *op1 = result;
-
     regs->psw.cc = float128_is_nan(result) ? 3 :
                    float128_is_zero(result) ? 0 :
                    float128_is_neg(result) ? 1 : 2;
     return code;
-}
+
+} /* end function add_ebfp */
 
 /*-------------------------------------------------------------------*/
 /* B34A AXBR  - ADD (extended BFP)                             [RRE] */
@@ -1378,7 +1376,8 @@ DEF_INST(add_bfp_ext_reg)
     if (pgm_check) {
         regs->program_interrupt(regs, pgm_check);
     }
-}
+
+} /* end DEF_INST(add_bfp_ext_reg) */
 
 /*-------------------------------------------------------------------*/
 /* ADD (long)                                                        */
@@ -4770,16 +4769,14 @@ static int subtract_ebfp(float128 *op1, float128 *op2, REGS *regs)
     float128 result;
 
     result = float128_sub(*op1, *op2);
-
     code = float_exception(float_exception_flags, regs);
-
     *op1 = result;
-
     regs->psw.cc = float128_is_nan(result) ? 3 :
                    float128_is_zero(result) ? 0 :
                    float128_is_neg(result) ? 1 : 2;
     return code;
-}
+
+} /* end function subtract_ebfp */
 
 /*-------------------------------------------------------------------*/
 /* B34B SXBR  - SUBTRACT (extended BFP)                        [RRE] */
@@ -4805,7 +4802,8 @@ DEF_INST(subtract_bfp_ext_reg)
     if (pgm_check) {
         regs->program_interrupt(regs, pgm_check);
     }
-}
+
+} /* end DEF_INST(subtract_bfp_ext_reg) */
 
 /*-------------------------------------------------------------------*/
 /* B31B SDBR  - SUBTRACT (long BFP)                            [RRE] */
