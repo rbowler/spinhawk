@@ -1342,6 +1342,8 @@ static int add_ebfp(float128 *op1, float128 *op2, REGS *regs)
 {
     int code;
     float128 result;
+
+    float_clear_exception_flags();
     result = float128_add(*op1, *op2);
     code = float_exception(regs);
     *op1 = result;
@@ -1511,6 +1513,7 @@ static int add_sbfp(float32 *op1, float32 *op2, REGS *regs)
     int code;
     float32 result;
 
+    float_clear_exception_flags();
     result = float32_add(*op1, *op2);
     code = float_exception(regs);
     *op1 = result;
@@ -2631,6 +2634,7 @@ static int integer_sbfp(float32 *op, int mode, REGS *regs)
     int code;
     float32 result;
 
+    float_clear_exception_flags();
     set_rounding_mode(regs->fpc, mode);
     result = float32_round_to_int(*op);
     set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
@@ -2877,6 +2881,7 @@ static int divide_sbfp(float32 *op1, float32 *op2, REGS *regs)
     int code;
     float32 result;
 
+    float_clear_exception_flags();
     result = float32_div(*op1, *op2);
     code = float_exception(regs);
     *op1 = result;
@@ -3070,6 +3075,7 @@ DEF_INST(load_fp_int_bfp_short_reg)
 
     get_float32(&op2, regs->fpr + FPR2I(r2));
 
+    float_clear_exception_flags();
     set_rounding_mode(regs->fpc, m3);
     op1 = float32_round_to_int(op2);
     set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
@@ -4049,6 +4055,7 @@ static int multiply_sbfp(float32 *op1, float32 *op2, REGS *regs)
     int code;
     float32 result;
 
+    float_clear_exception_flags();
     result = float32_mul(*op1, *op2);
     code = float_exception(regs);
     *op1 = result;
@@ -4287,6 +4294,7 @@ static int subtract_sbfp(float32 *op1, float32 *op2, REGS *regs)
     int code;
     float32 result;
 
+    float_clear_exception_flags();
     result = float32_sub(*op1, *op2);
     code = float_exception(regs);
     *op1 = result;
@@ -4587,6 +4595,8 @@ static int subtract_ebfp(float128 *op1, float128 *op2, REGS *regs)
 {
     int code;
     float128 result;
+
+    float_clear_exception_flags();
     result = float128_sub(*op1, *op2);
     code = float_exception(regs);
     *op1 = result;

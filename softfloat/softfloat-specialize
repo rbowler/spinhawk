@@ -59,6 +59,17 @@ int8 float_get_exception_flags()
 }
 
 /*----------------------------------------------------------------------------
+| Clears the floating-point exception flags.
+*----------------------------------------------------------------------------*/
+
+void float_clear_exception_flags()
+{
+
+    float_exception_flags = 0;
+
+}
+
+/*----------------------------------------------------------------------------
 | Raises the exceptions specified by `flags'.  Floating-point traps can be
 | defined here if desired.  It is currently not possible for such a trap to
 | substitute a result value.  If traps are not implemented, this routine

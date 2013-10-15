@@ -8,6 +8,7 @@ LIBRARY softfloat
 EXPORTS
     float_set_rounding_mode
     float_get_exception_flags
+    float_clear_exception_flags
     float_raise
     int32_to_float32
     int32_to_float64
