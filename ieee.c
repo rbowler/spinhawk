@@ -297,9 +297,10 @@ static inline int ieee_exception(int raised, REGS * regs)
 /*
  * Convert from Softfloat IEEE exception to Pop IEEE exception
  */
-static inline int float_exception(int flags, REGS * regs)
+static inline int float_exception(REGS * regs)
 {
     int dxc = 0;
+    int8 flags = float_get_exception_flags();
 
     if (flags & float_flag_inexact) {
         /*
@@ -1342,7 +1343,7 @@ static int add_ebfp(float128 *op1, float128 *op2, REGS *regs)
     int code;
     float128 result;
     result = float128_add(*op1, *op2);
-    code = float_exception(float_exception_flags, regs);
+    code = float_exception(regs);
     *op1 = result;
     regs->psw.cc = float128_is_nan(result) ? 3 :
                    float128_is_zero(result) ? 0 :
@@ -1511,7 +1512,7 @@ static int add_sbfp(float32 *op1, float32 *op2, REGS *regs)
     float32 result;
 
     result = float32_add(*op1, *op2);
-    code = float_exception(float_exception_flags, regs);
+    code = float_exception(regs);
     *op1 = result;
     regs->psw.cc = float32_is_nan(result) ? 3 :
                    float32_is_zero(result) ? 0 :
@@ -2633,7 +2634,7 @@ static int integer_sbfp(float32 *op, int mode, REGS *regs)
     set_rounding_mode(regs->fpc, mode);
     result = float32_round_to_int(*op);
     set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
-    code = float_exception(float_exception_flags, regs);
+    code = float_exception(regs);
     *op = result;
     return code;
 
@@ -2877,7 +2878,7 @@ static int divide_sbfp(float32 *op1, float32 *op2, REGS *regs)
     float32 result;
 
     result = float32_div(*op1, *op2);
-    code = float_exception(float_exception_flags, regs);
+    code = float_exception(regs);
     *op1 = result;
     return code;
 
@@ -3073,7 +3074,7 @@ DEF_INST(load_fp_int_bfp_short_reg)
     op1 = float32_round_to_int(op2);
     set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
 
-    pgm_check = float_exception(float_exception_flags, regs);
+    pgm_check = float_exception(regs);
     if (pgm_check) {
         regs->program_interrupt(regs, pgm_check);
     }
@@ -4049,7 +4050,7 @@ static int multiply_sbfp(float32 *op1, float32 *op2, REGS *regs)
     float32 result;
 
     result = float32_mul(*op1, *op2);
-    code = float_exception(float_exception_flags, regs);
+    code = float_exception(regs);
     *op1 = result;
     return code;
 
@@ -4287,7 +4288,7 @@ static int subtract_sbfp(float32 *op1, float32 *op2, REGS *regs)
     float32 result;
 
     result = float32_sub(*op1, *op2);
-    code = float_exception(float_exception_flags, regs);
+    code = float_exception(regs);
     *op1 = result;
     regs->psw.cc = float32_is_nan(result) ? 3 :
                    float32_is_zero(result) ? 0 :
@@ -4587,7 +4588,7 @@ static int subtract_ebfp(float128 *op1, float128 *op2, REGS *regs)
     int code;
     float128 result;
     result = float128_sub(*op1, *op2);
-    code = float_exception(float_exception_flags, regs);
+    code = float_exception(regs);
     *op1 = result;
     regs->psw.cc = float128_is_nan(result) ? 3 :
                    float128_is_zero(result) ? 0 :

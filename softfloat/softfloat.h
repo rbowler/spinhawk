@@ -94,6 +94,11 @@ enum {
 void float_set_rounding_mode( int8 );
 
 /*----------------------------------------------------------------------------
+| Routine to get the floating-point exception flags.
+*----------------------------------------------------------------------------*/
+int8 float_get_exception_flags( void );
+
+/*----------------------------------------------------------------------------
 | Routine to raise any or all of the software IEC/IEEE floating-point
 | exception flags.
 *----------------------------------------------------------------------------*/
