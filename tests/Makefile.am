@@ -12,6 +12,7 @@ dist_pkgdata_DATA = \
 
 EXTRA_DIST =        \
     agf.txt         \
+    aebr.txt        \
     alsi.txt        \
     axtr.txt        \
     brc.txt         \
