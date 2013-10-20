@@ -82,6 +82,7 @@ EXTRA_DIST =        \
     rnsbg.txt       \
     rrdtr.txt       \
     rrxtr.txt       \
+    sebr.txt        \
     srdt.txt        \
     tapepos.txt     \
     tbedr.txt       \
