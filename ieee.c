@@ -234,6 +234,12 @@ struct sbfp {
 #define multiply_ebfp ARCH_DEP(multiply_ebfp)
 #define multiply_lbfp ARCH_DEP(multiply_lbfp)
 #define multiply_sbfp ARCH_DEP(multiply_sbfp)
+#define multiply_add_ebfp ARCH_DEP(multiply_add_ebfp)
+#define multiply_add_lbfp ARCH_DEP(multiply_add_lbfp)
+#define multiply_add_sbfp ARCH_DEP(multiply_add_sbfp)
+#define multiply_subtract_ebfp ARCH_DEP(multiply_subtract_ebfp)
+#define multiply_subtract_lbfp ARCH_DEP(multiply_subtract_lbfp)
+#define multiply_subtract_sbfp ARCH_DEP(multiply_subtract_sbfp)
 #define squareroot_ebfp ARCH_DEP(squareroot_ebfp)
 #define squareroot_lbfp ARCH_DEP(squareroot_lbfp)
 #define squareroot_sbfp ARCH_DEP(squareroot_sbfp)
@@ -4172,6 +4178,24 @@ DEF_INST(multiply_add_bfp_long)
 } /* end DEF_INST(multiply_add_bfp_long) */
 
 /*-------------------------------------------------------------------*/
+/* MULTIPLY AND ADD (short)                                          */
+/*-------------------------------------------------------------------*/
+static int multiply_add_sbfp(float32 *op1, float32 *op2, float32 *op3,
+                REGS *regs)
+{
+    int code;
+    float32 product, result;
+
+    float_clear_exception_flags();
+    product = float32_mul(*op2, *op3);
+    result = float32_add(product, *op1);
+    code = float_exception(regs);
+    *op1 = result;
+    return code;
+
+} /* end function multiply_add_sbfp */
+
+/*-------------------------------------------------------------------*/
 /* B30E MAEBR - MULTIPLY AND ADD (short BFP)                   [RRF] */
 /*-------------------------------------------------------------------*/
 DEF_INST(multiply_add_bfp_short_reg)
@@ -4188,14 +4212,14 @@ DEF_INST(multiply_add_bfp_short_reg)
     get_float32(&op2, regs->fpr + FPR2I(r2));
     get_float32(&op3, regs->fpr + FPR2I(r3));
 
-    multiply_sbfp(&op2, &op3, regs);
-    pgm_check = add_sbfp(&op1, &op2, regs);
+    pgm_check = multiply_add_sbfp(&op1, &op2, &op3, regs);
 
     put_float32(&op1, regs->fpr + FPR2I(r1));
 
     if (pgm_check) {
         regs->program_interrupt(regs, pgm_check);
     }
+
 } /* end DEF_INST(multiply_add_bfp_short_reg) */
 
 /*-------------------------------------------------------------------*/
@@ -4216,8 +4240,7 @@ DEF_INST(multiply_add_bfp_short)
     vfetch_float32(&op2, effective_addr2, b2, regs);
     get_float32(&op3, regs->fpr + FPR2I(r3));
 
-    multiply_sbfp(&op2, &op3, regs);
-    pgm_check = add_sbfp(&op1, &op2, regs);
+    pgm_check = multiply_add_sbfp(&op1, &op2, &op3, regs);
 
     put_float32(&op1, regs->fpr + FPR2I(r1));
 
@@ -4287,23 +4310,22 @@ DEF_INST(multiply_subtract_bfp_long)
 } /* end DEF_INST(multiply_subtract_bfp_long) */
 
 /*-------------------------------------------------------------------*/
-/* SUBTRACT (short)                                                  */
+/* MULTIPLY AND SUBTRACT (short)                                     */
 /*-------------------------------------------------------------------*/
-static int subtract_sbfp(float32 *op1, float32 *op2, REGS *regs)
+static int multiply_subtract_sbfp(float32 *op1, float32 *op2,
+                float32 *op3, REGS *regs)
 {
     int code;
-    float32 result;
+    float32 product, result;
 
     float_clear_exception_flags();
-    result = float32_sub(*op1, *op2);
+    product = float32_mul(*op2, *op3);
+    result = float32_sub(product, *op1);
     code = float_exception(regs);
     *op1 = result;
-    regs->psw.cc = float32_is_nan(result) ? 3 :
-                   float32_is_zero(result) ? 0 :
-                   float32_is_neg(result) ? 1 : 2;
     return code;
 
-} /* end function subtract_sbfp */
+} /* end function multiply_subtract_sbfp */
 
 /*-------------------------------------------------------------------*/
 /* B30F MSEBR - MULTIPLY AND SUBTRACT (short BFP)              [RRF] */
@@ -4322,8 +4344,7 @@ DEF_INST(multiply_subtract_bfp_short_reg)
     get_float32(&op2, regs->fpr + FPR2I(r2));
     get_float32(&op3, regs->fpr + FPR2I(r3));
 
-    multiply_sbfp(&op2, &op3, regs);
-    pgm_check = subtract_sbfp(&op1, &op2, regs);
+    pgm_check = multiply_subtract_sbfp(&op1, &op2, &op3, regs);
 
     put_float32(&op1, regs->fpr + FPR2I(r1));
 
@@ -4351,8 +4372,7 @@ DEF_INST(multiply_subtract_bfp_short)
     vfetch_float32(&op2, effective_addr2, b2, regs);
     get_float32(&op3, regs->fpr + FPR2I(r3));
 
-    multiply_sbfp(&op2, &op3, regs);
-    pgm_check = subtract_sbfp(&op1, &op2, regs);
+    pgm_check = multiply_subtract_sbfp(&op1, &op2, &op3, regs);
 
     put_float32(&op1, regs->fpr + FPR2I(r1));
 
@@ -4686,6 +4706,25 @@ DEF_INST(subtract_bfp_long)
         regs->program_interrupt(regs, pgm_check);
     }
 }
+
+/*-------------------------------------------------------------------*/
+/* SUBTRACT (short)                                                  */
+/*-------------------------------------------------------------------*/
+static int subtract_sbfp(float32 *op1, float32 *op2, REGS *regs)
+{
+    int code;
+    float32 result;
+
+    float_clear_exception_flags();
+    result = float32_sub(*op1, *op2);
+    code = float_exception(regs);
+    *op1 = result;
+    regs->psw.cc = float32_is_nan(result) ? 3 :
+                   float32_is_zero(result) ? 0 :
+                   float32_is_neg(result) ? 1 : 2;
+    return code;
+
+} /* end function subtract_sbfp */
 
 /*-------------------------------------------------------------------*/
 /* B30B SEBR  - SUBTRACT (short BFP)                           [RRE] */
