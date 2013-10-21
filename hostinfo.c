@@ -39,7 +39,7 @@ DLL_EXPORT void init_hostinfo ( HOST_INFO* pHostInfo )
   #if defined(HAVE_SYSCONF) && defined(HAVE_DECL__SC_NPROCESSORS_CONF) && HAVE_DECL__SC_NPROCESSORS_CONF
     pHostInfo->num_procs = sysconf(_SC_NPROCESSORS_CONF);
   #else
-    pHostInfo->num_procs = 0;   // (unknown)
+    pHostInfo->num_procs = 1;
   #endif
 #else
     if ( !pHostInfo ) pHostInfo = &hostinfo;
@@ -52,7 +52,7 @@ DLL_EXPORT void init_hostinfo ( HOST_INFO* pHostInfo )
   #if defined(HAVE_SYSCONF) && defined(HAVE_DECL__SC_NPROCESSORS_CONF) && HAVE_DECL__SC_NPROCESSORS_CONF
     pHostInfo->num_procs = sysconf(_SC_NPROCESSORS_CONF);
   #else
-    pHostInfo->num_procs = 0;   // (unknown)
+    pHostInfo->num_procs = 1;
   #endif
 #endif
 }

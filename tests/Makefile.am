@@ -30,6 +30,7 @@ EXTRA_DIST =        \
     cxgtr.txt       \
     cxzt.txt        \
     czxt.txt        \
+    diag204.txt     \
     diag24.txt      \
     dxtr.txt        \
     epsw.txt        \

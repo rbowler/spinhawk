@@ -1,0 +1,28 @@
+* DIAG204 tests $Id$
+sysclear
+archmode esame
+r 1a0=00000001800000000000000000000200 # z/Arch restart PSW
+r 1d0=00020001800000000000000000BADBAD # z/Arch pgm new PSW
+r 1e0=000200018000000000000000DEADBEEF # z/Arch mck new PSW
+r 200=58300310     # L R3,APART        R3 => data area
+r 204=41400004     # LA R4,4           R4 = function code 4
+r 208=83340204     # DIAG X'204'       Store partition information
+r 20C=58400314     # L R4,XFC5         R4 = extended function code 5
+r 210=83340204     # DIAG X'204'       Get length of extended info
+r 214=5050031C     # ST R5,XLEN        Store returned length
+r 218=58300320     # L R3,AXPAR        R3 => data area
+r 21C=58400318     # L R4,XFC6         R4 = extended function code 6
+r 220=83340204     # DIAG X'204'       Get length of extended info
+r 224=82000300     # LPSW WAITPSW      Load enabled wait PSW
+r 300=070A00008000AAAA                 # WAITPSW Enabled wait state PSW
+r 310=00001000     #APART DC A(4096)   Address of partition info area
+r 314=00010005     #XFC5 DC X'0001005' Extended function code 5
+r 318=00010006     #XFC6 DC X'0001006' Extended function code 6
+r 31C=00000000     #XLEN DC A(0)       Length of extended partition info
+r 320=00002000     #AXPAR DC A(8192)   Address of extended partition info
+ostailor null
+restart
+pause 1
+* Display results
+r 1000.50
+r 2000.160

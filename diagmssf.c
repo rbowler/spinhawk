@@ -594,6 +594,7 @@ static BYTE       physical[8] =
         memset(partxinfo, 0, sizeof(DIAG204_PART));
         partxinfo->partnum = 1; /* Hercules partition */
         partxinfo->virtcpu = sysblk.cpus;
+        partxinfo->realcpu = hostinfo.num_procs;
         get_lparname(partxinfo->partname);
         get_sysname(partxinfo->cpcname);
         get_systype(partxinfo->osname);
@@ -642,6 +643,7 @@ static BYTE       physical[8] =
         memset(partxinfo, 0, sizeof(DIAG204_X_PART));
         partxinfo->partnum = 0; /* Physical machine */
         partxinfo->virtcpu = sysblk.cpus;
+        partxinfo->realcpu = hostinfo.num_procs;
         memcpy(partxinfo->partname,physical,sizeof(physical));
 
         /* report all emulated physical cpu's */
