@@ -4396,31 +4396,18 @@ DEF_INST(multiply_subtract_bfp_short)
 /*-------------------------------------------------------------------*/
 /* SQUARE ROOT (extended)                                            */
 /*-------------------------------------------------------------------*/
-static int squareroot_ebfp(struct ebfp *op, REGS *regs)
+static int squareroot_ebfp(float128 *op, REGS *regs)
 {
-    int raised;
+    int code;
+    float128 result;
 
-    switch (ebfpclassify(op)) {
-    case FP_NAN:
-    case FP_INFINITE:
-    case FP_ZERO:
-        break;
-    default:
-        if (op->sign) {
-            return ieee_exception(FE_INVALID, regs);
-        }
-        FECLEAREXCEPT(FE_ALL_EXCEPT);
-        ebfpston(op);
-        op->v = sqrtl(op->v);
-        ebfpntos(op);
-        raised = fetestexcept(FE_ALL_EXCEPT);
-        if (raised) {
-            return ieee_exception(raised, regs);
-        }
-        break;
-    }
-    return 0;
-}
+    float_clear_exception_flags();
+    result = float128_sqrt(*op);
+    code = float_exception(regs);
+    *op = result;
+    return code;
+
+} /* end function squareroot_ebfp */
 
 /*-------------------------------------------------------------------*/
 /* B316 SQXBR - SQUARE ROOT (extended BFP)                     [RRE] */
@@ -4428,7 +4415,7 @@ static int squareroot_ebfp(struct ebfp *op, REGS *regs)
 DEF_INST(squareroot_bfp_ext_reg)
 {
     int r1, r2;
-    struct ebfp op;
+    float128 op;
     int pgm_check;
 
     RRE(inst, regs, r1, r2);
@@ -4436,16 +4423,17 @@ DEF_INST(squareroot_bfp_ext_reg)
     BFPINST_CHECK(regs);
     BFPREGPAIR2_CHECK(r1, r2, regs);
 
-    get_ebfp(&op, regs->fpr + FPR2I(r2));
+    get_float128(&op, regs->fpr + FPR2I(r2));
 
     pgm_check = squareroot_ebfp(&op, regs);
 
-    put_ebfp(&op, regs->fpr + FPR2I(r1));
+    put_float128(&op, regs->fpr + FPR2I(r1));
 
     if (pgm_check) {
         regs->program_interrupt(regs, pgm_check);
     }
-}
+
+} /* end DEF_INST(squareroot_bfp_ext_reg) */
 
 /*-------------------------------------------------------------------*/
 /* SQUARE ROOT (long)                                                */
