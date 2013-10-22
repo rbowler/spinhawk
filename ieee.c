@@ -4587,30 +4587,49 @@ DEF_INST(subtract_bfp_ext_reg)
 } /* end DEF_INST(subtract_bfp_ext_reg) */
 
 /*-------------------------------------------------------------------*/
+/* SUBTRACT (long)                                                   */
+/*-------------------------------------------------------------------*/
+static int subtract_lbfp(float64 *op1, float64 *op2, REGS *regs)
+{
+    int code;
+    float64 result;
+
+    float_clear_exception_flags();
+    result = float64_sub(*op1, *op2);
+    code = float_exception(regs);
+    *op1 = result;
+    regs->psw.cc = float64_is_nan(result) ? 3 :
+                   float64_is_zero(result) ? 0 :
+                   float64_is_neg(result) ? 1 : 2;
+    return code;
+
+} /* end function subtract_lbfp */
+
+/*-------------------------------------------------------------------*/
 /* B31B SDBR  - SUBTRACT (long BFP)                            [RRE] */
 /*-------------------------------------------------------------------*/
 DEF_INST(subtract_bfp_long_reg)
 {
     int r1, r2;
-    struct lbfp op1, op2;
+    float64 op1, op2;
     int pgm_check;
 
     RRE(inst, regs, r1, r2);
     //logmsg("SDBR r1=%d r2=%d\n", r1, r2);
     BFPINST_CHECK(regs);
 
-    get_lbfp(&op1, regs->fpr + FPR2I(r1));
-    get_lbfp(&op2, regs->fpr + FPR2I(r2));
-    op2.sign = !(op2.sign);
+    get_float64(&op1, regs->fpr + FPR2I(r1));
+    get_float64(&op2, regs->fpr + FPR2I(r2));
 
-    pgm_check = add_lbfp(&op1, &op2, regs);
+    pgm_check = subtract_lbfp(&op1, &op2, regs);
 
-    put_lbfp(&op1, regs->fpr + FPR2I(r1));
+    put_float64(&op1, regs->fpr + FPR2I(r1));
 
     if (pgm_check) {
         regs->program_interrupt(regs, pgm_check);
     }
-}
+
+} /* end DEF_INST(subtract_bfp_long_reg) */
 
 /*-------------------------------------------------------------------*/
 /* ED1B SDB   - SUBTRACT (long BFP)                            [RXE] */
@@ -4619,25 +4638,25 @@ DEF_INST(subtract_bfp_long)
 {
     int r1, b2;
     VADR effective_addr2;
-    struct lbfp op1, op2;
+    float64 op1, op2;
     int pgm_check;
 
     RXE(inst, regs, r1, b2, effective_addr2);
     //logmsg("SDB r1=%d b2=%d\n", r1, b2);
     BFPINST_CHECK(regs);
 
-    get_lbfp(&op1, regs->fpr + FPR2I(r1));
-    vfetch_lbfp(&op2, effective_addr2, b2, regs);
-    op2.sign = !(op2.sign);
+    get_float64(&op1, regs->fpr + FPR2I(r1));
+    vfetch_float64(&op2, effective_addr2, b2, regs);
 
-    pgm_check = add_lbfp(&op1, &op2, regs);
+    pgm_check = subtract_lbfp(&op1, &op2, regs);
 
-    put_lbfp(&op1, regs->fpr + FPR2I(r1));
+    put_float64(&op1, regs->fpr + FPR2I(r1));
 
     if (pgm_check) {
         regs->program_interrupt(regs, pgm_check);
     }
-}
+
+} /* end DEF_INST(subtract_bfp_long) */
 
 /*-------------------------------------------------------------------*/
 /* SUBTRACT (short)                                                  */
