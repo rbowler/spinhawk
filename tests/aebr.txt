@@ -11,7 +11,7 @@ r 212=41100800     # LA R1,TEST1       R1=>Test data table
 r 216=41F00900     # LA R15,RES1       R15=>Result table
 r 21A=1B88         # SR R8,R8          Clear CC register
 r 21C=78401000     #A LE R4,0(,R1)     Load R4=TESTn
-r 220=78501004     # L R5,4(,R1)       Load R5=TESTn+4
+r 220=78501004     # LE R5,4(,R1)      Load R5=TESTn+4
 r 224=B30A0045     # AEBR R4,R5        Add R4 and R5
 r 228=B2220080     # IPM R8            R8=Cond code and pgm mask
 r 22C=7040F000     # STE R4,0(,R15)    Store R4 in result table
@@ -37,8 +37,7 @@ r 310=00020001800000000000000000BADBAD # DISWAIT Disabled wait state PSW
 r 320=00040000     # CTLR0             Control register 0 (bit45 AFP control)
 r 324=20000000     # FPCREG            Floating point control register
 r 328=00000000     # COUNT             Error counter
-r 300=07020001800000000000000000AAAAAA # WAITPSW Enabled wait state PSW
-r 310=00020001800000000000000000BADBAD # DISWAIT Disabled wait state PSW
+* Test data
 r 800=4040000040000000                 # TEST1 DC EB'3,2'
 r 808=3F800000C0000000                 # TEST2 DC EB'1,-2'
 r 810=3F800000BF800000                 # TEST3 DC EB'1,-1'
