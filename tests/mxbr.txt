@@ -1,0 +1,65 @@
+* MXBR test $Id$
+sysclear
+archmode esame
+r 1a0=00000001800000000000000000000200 # z/Arch restart PSW
+r 1d0=00000001800000000000000000000262 # z/Arch pgm new PSW
+r 200=B7000320     # LCTL R0,R0,CTLR0  Set CR0 bit 45
+r 204=B29D0324     # LFPC FPCREG       Load value into FPC register
+r 208=E54C03280000 # MVHI COUNT,0      Clear error counter
+r 20E=41000005     # LA R0,5           R0=Number of test data
+r 212=41100800     # LA R1,TEST1       R1=>Test data table
+r 216=41F00900     # LA R15,RES1       R15=>Result table
+r 21A=1B88         # SR R8,R8          Clear CC register
+r 21C=68401000     #A LD R4,0(,R1)     Load R4,R6=TESTn
+r 220=68601008     # LD R6,8(,R1)      ...
+r 224=68501010     # LD R5,16(,R1)     Load R5,R7=TESTn+16
+r 228=68701018     # LD R6,24(,R1)     ...
+r 22C=B34C0045     # MXBR R4,R5        Multiply R4,R6 by R5,R7
+r 230=B2220080     # IPM R8            R8=Cond code and pgm mask
+r 234=6040F000     # STD R4,0(,R15)    Store R4,R6 in result table
+r 238=6060F008     # STD R6,8(,R15)    ...
+r 23C=41F0F010     #B LA R15,16(,R15)  R15=>next result table
+r 240=41101020     # LA R1,32(,R1)     R1=>Next TESTn
+r 244=4600021C     # BCT R0,A          Loop to end of TEST table
+r 248=41000900     # LA R0,RES1        R0->Actual results
+r 24C=41100030     # LA R1,3*16        R1=Length of results table
+r 250=41200C00     # LA R2,EXP1        R2->Expected results
+r 254=41300030     # LA R3,3*16        R3=Length of results table
+r 258=0F02         # CLCL R0,R2        Compare with expected results
+r 25A=477002FC     # BNE DIE           Error if not equal
+r 25E=B2B20300     # LPSWE WAITPSW     Load enabled wait PSW
+r 262=B29C0324     #PGM STFPC FPCREG   Save FPC register
+r 266=D203F000032C # MVC 0(4,R15),EYE  Move eye-catcher to result table
+r 26C=92DCF004     # MVI 4(R15),X'DC'  Indicate program check
+r 270=D200F0050326 # MVC 5(1,R15),FPCREG+2  Save DXC in result table
+r 276=D201F006008E # MVC 6(2,R15),PGMINT+2  Save interrupt code in result table
+r 27C=D703F008F008 # XC 8(3,R15),8(R15)  Clear unused word in result table
+r 282=D203F00C032C # MVC 12(4,R15),EYE  Move eye-catcher to result table
+r 288=47F0023C     # B B               Continue to next test
+r 2FC=B2B20310     #DIE LPSWE DISWAIT  Load disabled wait PSW
+r 300=07020001800000000000000000AAAAAA # WAITPSW Enabled wait state PSW
+r 310=00020001800000000000000000BADBAD # DISWAIT Disabled wait state PSW
+r 320=00040000     # CTLR0             Control register 0 (bit45 AFP control)
+r 324=20000000     # FPCREG            Floating point control register
+r 328=00000000     # COUNT             Error counter
+r 32C=FEEDBEEF     # EYE               Eye-catcher
+* Test data
+r 800=40000000000000000000000000000000 # TEST1 DC LB'2'
+r 810=C0000000000000000000000000000000 #       DC LB'-2'
+r 820=7FFED96255DAFEB0EBC2CB70ADCB8634 # TEST2 DC LB'1.1E+4932'
+r 830=7FFED96255DAFEB0EBC2CB70ADCB8634 #       DC LB'1.1E+4932'
+r 840=3FFF6A09E667F3BCC908B2FB1366EA95 # TEST3 DC LB'1.41421356237...'
+r 850=3FFF6A09E667F3BCC908B2FB1366EA95 #       DC LB'1.41421356237...'
+* Expected results or DXC codes
+r C00=C0010000000000000000000000000000 # EXP1 DC LB'-4'
+r C10=FEEDBEEFDC20000700000000FEEDBEEF # EXP2 DC F'EYE',X'DC',X'20',X'0007',F'0,EYE' IEEE-OVERFLOW
+r C20=3FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF # EXP3 DC LB'1.9999...'
+pgmtrace +7
+restart
+pause 1
+* Display test data
+r 800.60
+* Display expected results
+r C00.30
+* Display actual results
+r 900.30
