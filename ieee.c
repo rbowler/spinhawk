@@ -3101,22 +3101,26 @@ DEF_INST(load_fp_int_bfp_short_reg)
 DEF_INST(load_fp_int_bfp_long_reg)
 {
     int r1, r2, m3, pgm_check;
-    struct lbfp op;
+    float64 op1, op2;
 
     RRF_M(inst, regs, r1, r2, m3);
     //logmsg("FIDBR r1=%d, r2=%d\n", r1, r2);
     BFPINST_CHECK(regs);
     BFPRM_CHECK(m3,regs);
 
-    get_lbfp(&op, regs->fpr + FPR2I(r2));
+    get_float64(&op2, regs->fpr + FPR2I(r2));
 
-    pgm_check = integer_lbfp(&op, m3, regs);
+    float_clear_exception_flags();
+    set_rounding_mode(regs->fpc, m3);
+    op1 = float64_round_to_int(op2);
+    set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
 
+    pgm_check = float_exception(regs);
     if (pgm_check) {
         regs->program_interrupt(regs, pgm_check);
     }
 
-    put_lbfp(&op, regs->fpr + FPR2I(r1));
+    put_float64(&op1, regs->fpr + FPR2I(r1));
 
 } /* end DEF_INST(load_fp_int_bfp_long_reg) */
 
@@ -3126,7 +3130,7 @@ DEF_INST(load_fp_int_bfp_long_reg)
 DEF_INST(load_fp_int_bfp_ext_reg)
 {
     int r1, r2, m3, pgm_check;
-    struct ebfp op;
+    float128 op1, op2;
 
     RRF_M(inst, regs, r1, r2, m3);
     //logmsg("FIXBR r1=%d, r2=%d\n", r1, r2);
@@ -3134,15 +3138,19 @@ DEF_INST(load_fp_int_bfp_ext_reg)
     BFPREGPAIR2_CHECK(r1, r2, regs);
     BFPRM_CHECK(m3,regs);
 
-    get_ebfp(&op, regs->fpr + FPR2I(r2));
+    get_float128(&op2, regs->fpr + FPR2I(r2));
 
-    pgm_check = integer_ebfp(&op, m3, regs);
+    float_clear_exception_flags();
+    set_rounding_mode(regs->fpc, m3);
+    op1 = float128_round_to_int(op2);
+    set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
 
+    pgm_check = float_exception(regs);
     if (pgm_check) {
         regs->program_interrupt(regs, pgm_check);
     }
 
-    put_ebfp(&op, regs->fpr + FPR2I(r1));
+    put_float128(&op1, regs->fpr + FPR2I(r1));
 
 } /* end DEF_INST(load_fp_int_bfp_ext_reg) */
 
