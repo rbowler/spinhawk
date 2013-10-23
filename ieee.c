@@ -2573,78 +2573,18 @@ static int integer_sbfp(float32 *op, int mode, REGS *regs)
 /*-------------------------------------------------------------------*/
 /* DIVIDE (extended)                                                 */
 /*-------------------------------------------------------------------*/
-static int divide_ebfp(struct ebfp *op1, struct ebfp *op2, REGS *regs)
+static int divide_ebfp(float128 *op1, float128 *op2, REGS *regs)
 {
-    int r, cl1, cl2, raised;
+    int code;
+    float128 result;
 
-    if (ebfpissnan(op1) || ebfpissnan(op2)) {
-        r = ieee_exception(FE_INVALID, regs);
-        if (r) {
-            return r;
-        }
-    }
+    float_clear_exception_flags();
+    result = float128_div(*op1, *op2);
+    code = float_exception(regs);
+    *op1 = result;
+    return code;
 
-    cl1 = ebfpclassify(op1);
-    cl2 = ebfpclassify(op2);
-
-    if (cl1 == FP_NAN) {
-        if (ebfpissnan(op1)) {
-            ebfpstoqnan(op1);
-        } else if (ebfpissnan(op2)) {
-            *op1 = *op2;
-            ebfpstoqnan(op1);
-        }
-    } else if (cl2 == FP_NAN) {
-        if (ebfpissnan(op2)) {
-            *op1 = *op2;
-            ebfpstoqnan(op1);
-        } else {
-            *op1 = *op2;
-        }
-    } else if (cl1 == FP_INFINITE && cl2 == FP_INFINITE) {
-        r = ieee_exception(FE_INVALID, regs);
-        if (r) {
-            return r;
-        }
-        ebfpdnan(op1);
-    } else if (cl1 == FP_INFINITE) {
-        if (op2->sign) {
-            op1->sign = !(op1->sign);
-        }
-    } else if (cl2 == FP_INFINITE) {
-        ebfpzero(op1, op2->sign ? !(op1->sign) : op1->sign);
-    } else if (cl1 == FP_ZERO) {
-        if (cl2 == FP_ZERO) {
-            r = ieee_exception(FE_INVALID, regs);
-            if (r) {
-                return r;
-            }
-            ebfpdnan(op1);
-        } else {
-            ebfpzero(op1, op2->sign ? !(op1->sign) : op1->sign);
-        }
-    } else if (cl2 == FP_ZERO) {
-        r = ieee_exception(FE_DIVBYZERO, regs);
-        if (r) {
-            return r;
-        }
-        ebfpinfinity(op1, op2->sign ? !(op1->sign) : op1->sign);
-    } else {
-        FECLEAREXCEPT(FE_ALL_EXCEPT);
-        ebfpston(op1);
-        ebfpston(op2);
-        op1->v /= op2->v;
-        ebfpntos(op1);
-        raised = fetestexcept(FE_ALL_EXCEPT);
-        if (raised) {
-            r = ieee_exception(raised, regs);
-            if (r) {
-                return r;
-            }
-        }
-    }
-    return 0;
-}
+} /* end function divide_ebfp */
 
 /*-------------------------------------------------------------------*/
 /* B34D DXBR  - DIVIDE (extended BFP)                          [RRE] */
@@ -2652,7 +2592,7 @@ static int divide_ebfp(struct ebfp *op1, struct ebfp *op2, REGS *regs)
 DEF_INST(divide_bfp_ext_reg)
 {
     int r1, r2;
-    struct ebfp op1, op2;
+    float128 op1, op2;
     int pgm_check;
 
     RRE(inst, regs, r1, r2);
@@ -2660,17 +2600,18 @@ DEF_INST(divide_bfp_ext_reg)
     BFPINST_CHECK(regs);
     BFPREGPAIR2_CHECK(r1, r2, regs);
 
-    get_ebfp(&op1, regs->fpr + FPR2I(r1));
-    get_ebfp(&op2, regs->fpr + FPR2I(r2));
+    get_float128(&op1, regs->fpr + FPR2I(r1));
+    get_float128(&op2, regs->fpr + FPR2I(r2));
 
     pgm_check = divide_ebfp(&op1, &op2, regs);
 
-    put_ebfp(&op1, regs->fpr + FPR2I(r1));
+    put_float128(&op1, regs->fpr + FPR2I(r1));
 
     if (pgm_check) {
         regs->program_interrupt(regs, pgm_check);
     }
-}
+
+} /* end DEF_INST(divide_bfp_ext_reg) */
 
 /*-------------------------------------------------------------------*/
 /* DIVIDE (long)                                                     */
