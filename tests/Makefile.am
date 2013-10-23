@@ -74,6 +74,7 @@ EXTRA_DIST =        \
     lxdtr.txt       \
     maer.txt        \
     mvcos.txt       \
+    mxbr.txt        \
     mxtr.txt        \
     pfmf.txt        \
     pcc.txt         \
@@ -83,6 +84,7 @@ EXTRA_DIST =        \
     rrdtr.txt       \
     rrxtr.txt       \
     sebr.txt        \
+    sqxbr.txt       \
     srdt.txt        \
     tapepos.txt     \
     tbedr.txt       \
