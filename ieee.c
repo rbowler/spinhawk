@@ -3617,7 +3617,7 @@ DEF_INST(multiply_bfp_long_to_ext)
     vfetch_float64(&op2, effective_addr2, b2, regs);
 
     eb1 = float64_to_float128(op1);
-    eb1 = float64_to_float128(op2);
+    eb2 = float64_to_float128(op2);
 
     pgm_check = multiply_ebfp(&eb1, &eb2, regs);
 
