@@ -2968,19 +2968,20 @@ DEF_INST(load_fp_int_bfp_ext_reg)
 DEF_INST(load_lengthened_bfp_short_to_long_reg)
 {
     int r1, r2;
-    struct lbfp op1;
-    struct sbfp op2;
+    float64 op1;
+    float32 op2;
 
     RRE(inst, regs, r1, r2);
     //logmsg("LDEBR r1=%d r2=%d\n", r1, r2);
     BFPINST_CHECK(regs);
 
-    get_sbfp(&op2, regs->fpr + FPR2I(r2));
+    get_float32(&op2, regs->fpr + FPR2I(r2));
 
-    lengthen_short_to_long(&op2, &op1, regs);
+    op1 = float32_to_float64(op2);
 
-    put_lbfp(&op1, regs->fpr + FPR2I(r1));
-}
+    put_float64(&op1, regs->fpr + FPR2I(r1));
+
+} /* end DEF_INST(load_lengthened_bfp_short_to_long_reg) */
 
 /*-------------------------------------------------------------------*/
 /* ED04 LDEB  - LOAD LENGTHENED (short to long BFP)            [RXE] */
@@ -2989,19 +2990,20 @@ DEF_INST(load_lengthened_bfp_short_to_long)
 {
     int r1, b2;
     VADR effective_addr2;
-    struct lbfp op1;
-    struct sbfp op2;
+    float64 op1;
+    float32 op2;
 
     RXE(inst, regs, r1, b2, effective_addr2);
     //logmsg("LDEB r1=%d b2=%d\n", r1, b2);
     BFPINST_CHECK(regs);
 
-    vfetch_sbfp(&op2, effective_addr2, b2, regs);
+    vfetch_float32(&op2, effective_addr2, b2, regs);
 
-    lengthen_short_to_long(&op2, &op1, regs);
+    op1 = float32_to_float64(op2);
 
-    put_lbfp(&op1, regs->fpr + FPR2I(r1));
-}
+    put_float64(&op1, regs->fpr + FPR2I(r1));
+
+} /* end DEF_INST(load_lengthened_bfp_short_to_long) */
 
 /*-------------------------------------------------------------------*/
 /* B305 LXDBR - LOAD LENGTHENED (long to extended BFP)         [RRE] */
@@ -3009,20 +3011,21 @@ DEF_INST(load_lengthened_bfp_short_to_long)
 DEF_INST(load_lengthened_bfp_long_to_ext_reg)
 {
     int r1, r2;
-    struct ebfp op1;
-    struct lbfp op2;
+    float128 op1;
+    float64 op2;
 
     RRE(inst, regs, r1, r2);
     //logmsg("LXDBR r1=%d r2=%d\n", r1, r2);
     BFPINST_CHECK(regs);
     BFPREGPAIR_CHECK(r1, regs);
 
-    get_lbfp(&op2, regs->fpr + FPR2I(r2));
+    get_float64(&op2, regs->fpr + FPR2I(r2));
 
-    lengthen_long_to_ext(&op2, &op1, regs);
+    op1 = float64_to_float128(op2);
 
-    put_ebfp(&op1, regs->fpr + FPR2I(r1));
-}
+    put_float128(&op1, regs->fpr + FPR2I(r1));
+
+} /* end DEF_INST(load_lengthened_bfp_long_to_ext_reg) */
 
 /*-------------------------------------------------------------------*/
 /* ED05 LXDB  - LOAD LENGTHENED (long to extended BFP)         [RXE] */
@@ -3031,20 +3034,21 @@ DEF_INST(load_lengthened_bfp_long_to_ext)
 {
     int r1, b2;
     VADR effective_addr2;
-    struct ebfp op1;
-    struct lbfp op2;
+    float128 op1;
+    float64 op2;
 
     RXE(inst, regs, r1, b2, effective_addr2);
     //logmsg("LXDB r1=%d b2=%d\n", r1, b2);
     BFPINST_CHECK(regs);
     BFPREGPAIR_CHECK(r1, regs);
 
-    vfetch_lbfp(&op2, effective_addr2, b2, regs);
+    vfetch_float64(&op2, effective_addr2, b2, regs);
 
-    lengthen_long_to_ext(&op2, &op1, regs);
+    op1 = float64_to_float128(op2);
 
-    put_ebfp(&op1, regs->fpr + FPR2I(r1));
-}
+    put_float128(&op1, regs->fpr + FPR2I(r1));
+
+} /* end DEF_INST(load_lengthened_bfp_long_to_ext) */
 
 /*-------------------------------------------------------------------*/
 /* B306 LXEBR - LOAD LENGTHENED (short to extended BFP)        [RRE] */
@@ -3052,20 +3056,21 @@ DEF_INST(load_lengthened_bfp_long_to_ext)
 DEF_INST(load_lengthened_bfp_short_to_ext_reg)
 {
     int r1, r2;
-    struct ebfp op1;
-    struct sbfp op2;
+    float128 op1;
+    float32 op2;
 
     RRE(inst, regs, r1, r2);
     //logmsg("LXEBR r1=%d r2=%d\n", r1, r2);
     BFPINST_CHECK(regs);
     BFPREGPAIR_CHECK(r1, regs);
 
-    get_sbfp(&op2, regs->fpr + FPR2I(r2));
+    get_float32(&op2, regs->fpr + FPR2I(r2));
 
-    lengthen_short_to_ext(&op2, &op1, regs);
+    op1 = float32_to_float128(op2);
 
-    put_ebfp(&op1, regs->fpr + FPR2I(r1));
-}
+    put_float128(&op1, regs->fpr + FPR2I(r1));
+
+} /* end DEF_INST(load_lengthened_bfp_short_to_ext_reg) */
 
 /*-------------------------------------------------------------------*/
 /* ED06 LXEB  - LOAD LENGTHENED (short to extended BFP)        [RXE] */
@@ -3074,20 +3079,21 @@ DEF_INST(load_lengthened_bfp_short_to_ext)
 {
     int r1, b2;
     VADR effective_addr2;
-    struct ebfp op1;
-    struct sbfp op2;
+    float128 op1;
+    float32 op2;
 
     RXE(inst, regs, r1, b2, effective_addr2);
     //logmsg("LXEB r1=%d b2=%d\n", r1, b2);
     BFPINST_CHECK(regs);
     BFPREGPAIR_CHECK(r1, regs);
 
-    vfetch_sbfp(&op2, effective_addr2, b2, regs);
+    vfetch_float32(&op2, effective_addr2, b2, regs);
 
-    lengthen_short_to_ext(&op2, &op1, regs);
+    op1 = float32_to_float128(op2);
 
-    put_ebfp(&op1, regs->fpr + FPR2I(r1));
-}
+    put_float128(&op1, regs->fpr + FPR2I(r1));
+
+} /* end DEF_INST(load_lengthened_bfp_short_to_ext) */
 
 /*-------------------------------------------------------------------*/
 /* B341 LNXBR - LOAD NEGATIVE (extended BFP)                   [RRE] */
