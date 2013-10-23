@@ -4229,31 +4229,18 @@ DEF_INST(squareroot_bfp_ext_reg)
 /*-------------------------------------------------------------------*/
 /* SQUARE ROOT (long)                                                */
 /*-------------------------------------------------------------------*/
-static int squareroot_lbfp(struct lbfp *op, REGS *regs)
+static int squareroot_lbfp(float64 *op, REGS *regs)
 {
-    int raised;
+    int code;
+    float64 result;
 
-    switch (lbfpclassify(op)) {
-    case FP_NAN:
-    case FP_INFINITE:
-    case FP_ZERO:
-        break;
-    default:
-        if (op->sign) {
-            return ieee_exception(FE_INVALID, regs);
-        }
-        FECLEAREXCEPT(FE_ALL_EXCEPT);
-        lbfpston(op);
-        op->v = sqrtl(op->v);
-        lbfpntos(op);
-        raised = fetestexcept(FE_ALL_EXCEPT);
-        if (raised) {
-            return ieee_exception(raised, regs);
-        }
-        break;
-    }
-    return 0;
-}
+    float_clear_exception_flags();
+    result = float64_sqrt(*op);
+    code = float_exception(regs);
+    *op = result;
+    return code;
+
+} /* end function squareroot_lbfp */
 
 /*-------------------------------------------------------------------*/
 /* B315 SQDBR - SQUARE ROOT (long BFP)                         [RRE] */
@@ -4261,23 +4248,24 @@ static int squareroot_lbfp(struct lbfp *op, REGS *regs)
 DEF_INST(squareroot_bfp_long_reg)
 {
     int r1, r2;
-    struct lbfp op;
+    float64 op;
     int pgm_check;
 
     RRE(inst, regs, r1, r2);
     //logmsg("SQDBR r1=%d r2=%d\n", r1, r2);
     BFPINST_CHECK(regs);
 
-    get_lbfp(&op, regs->fpr + FPR2I(r2));
+    get_float64(&op, regs->fpr + FPR2I(r2));
 
     pgm_check = squareroot_lbfp(&op, regs);
 
-    put_lbfp(&op, regs->fpr + FPR2I(r1));
+    put_float64(&op, regs->fpr + FPR2I(r1));
 
     if (pgm_check) {
         regs->program_interrupt(regs, pgm_check);
     }
-}
+ 
+} /* end DEF_INST(squareroot_bfp_long_reg) */
 
 /*-------------------------------------------------------------------*/
 /* ED15 SQDB  - SQUARE ROOT (long BFP)                         [RXE] */
@@ -4286,52 +4274,40 @@ DEF_INST(squareroot_bfp_long)
 {
     int r1, b2;
     VADR effective_addr2;
-    struct lbfp op;
+    float64 op;
     int pgm_check;
 
     RXE(inst, regs, r1, b2, effective_addr2);
     //logmsg("SQDB r1=%d b2=%d\n", r1, b2);
     BFPINST_CHECK(regs);
 
-    vfetch_lbfp(&op, effective_addr2, b2, regs);
+    vfetch_float64(&op, effective_addr2, b2, regs);
 
     pgm_check = squareroot_lbfp(&op, regs);
 
-    put_lbfp(&op, regs->fpr + FPR2I(r1));
+    put_float64(&op, regs->fpr + FPR2I(r1));
 
     if (pgm_check) {
         regs->program_interrupt(regs, pgm_check);
     }
-}
+ 
+} /* end DEF_INST(squareroot_bfp_long) */
 
 /*-------------------------------------------------------------------*/
 /* SQUARE ROOT (short)                                               */
 /*-------------------------------------------------------------------*/
-static int squareroot_sbfp(struct sbfp *op, REGS *regs)
+static int squareroot_sbfp(float32 *op, REGS *regs)
 {
-    int raised;
+    int code;
+    float64 result;
 
-    switch (sbfpclassify(op)) {
-    case FP_NAN:
-    case FP_INFINITE:
-    case FP_ZERO:
-        break;
-    default:
-        if (op->sign) {
-            return ieee_exception(FE_INVALID, regs);
-        }
-        FECLEAREXCEPT(FE_ALL_EXCEPT);
-        sbfpston(op);
-        op->v = sqrtl(op->v);
-        sbfpntos(op);
-        raised = fetestexcept(FE_ALL_EXCEPT);
-        if (raised) {
-            return ieee_exception(raised, regs);
-        }
-        break;
-    }
-    return 0;
-}
+    float_clear_exception_flags();
+    result = float64_sqrt(*op);
+    code = float_exception(regs);
+    *op = result;
+    return code;
+
+} /* end function squareroot_sbfp */
 
 /*-------------------------------------------------------------------*/
 /* B314 SQEBR - SQUARE ROOT (short BFP)                        [RRE] */
@@ -4339,23 +4315,24 @@ static int squareroot_sbfp(struct sbfp *op, REGS *regs)
 DEF_INST(squareroot_bfp_short_reg)
 {
     int r1, r2;
-    struct sbfp op;
+    float32 op;
     int pgm_check;
 
     RRE(inst, regs, r1, r2);
     //logmsg("SQEBR r1=%d r2=%d\n", r1, r2);
     BFPINST_CHECK(regs);
 
-    get_sbfp(&op, regs->fpr + FPR2I(r2));
+    get_float32(&op, regs->fpr + FPR2I(r2));
 
     pgm_check = squareroot_sbfp(&op, regs);
 
-    put_sbfp(&op, regs->fpr + FPR2I(r1));
+    put_float32(&op, regs->fpr + FPR2I(r1));
 
     if (pgm_check) {
         regs->program_interrupt(regs, pgm_check);
     }
-}
+ 
+} /* end DEF_INST(squareroot_bfp_short_reg) */
 
 /*-------------------------------------------------------------------*/
 /* ED14 SQEB  - SQUARE ROOT (short BFP)                        [RXE] */
@@ -4364,23 +4341,24 @@ DEF_INST(squareroot_bfp_short)
 {
     int r1, b2;
     VADR effective_addr2;
-    struct sbfp op;
+    float32 op;
     int pgm_check;
 
     RXE(inst, regs, r1, b2, effective_addr2);
     //logmsg("SQEB r1=%d b2=%d\n", r1, b2);
     BFPINST_CHECK(regs);
 
-    vfetch_sbfp(&op, effective_addr2, b2, regs);
+    vfetch_float32(&op, effective_addr2, b2, regs);
 
     pgm_check = squareroot_sbfp(&op, regs);
 
-    put_sbfp(&op, regs->fpr + FPR2I(r1));
+    put_float32(&op, regs->fpr + FPR2I(r1));
 
     if (pgm_check) {
         regs->program_interrupt(regs, pgm_check);
     }
-}
+ 
+} /* end DEF_INST(squareroot_bfp_short) */
 
 /*-------------------------------------------------------------------*/
 /* B29C STFPC - STORE FPC                                        [S] */
