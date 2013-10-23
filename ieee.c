@@ -2589,46 +2589,18 @@ static int integer_ebfp(struct ebfp *op, int mode, REGS *regs)
 /*-------------------------------------------------------------------*/
 /* FP INTEGER (long)                                                 */
 /*-------------------------------------------------------------------*/
-static int integer_lbfp(struct lbfp *op, int mode, REGS *regs)
+static int integer_lbfp(float64 *op, int mode, REGS *regs)
 {
-    int r, raised;
-    UNREFERENCED(mode);
+    int code;
+    float64 result;
 
-    switch(lbfpclassify(op)) {
-    case FP_NAN:
-        if (lbfpissnan(op)) {
-            if (regs->fpc & FPC_MASK_IMI) {
-                lbfpstoqnan(op);
-                ieee_exception(FE_INEXACT, regs);
-            } else {
-                ieee_exception(FE_INVALID, regs);
-            }
-        }
-        break;
-    case FP_ZERO:
-    case FP_INFINITE:
-        break;
-    default:
-        FECLEAREXCEPT(FE_ALL_EXCEPT);
-        lbfpston(op);
-        set_rounding_mode(regs->fpc, mode);
-        op->v = rint(op->v);
-        if (regs->fpc & FPC_MASK_IMX) {
-            ieee_exception(FE_INEXACT, regs);
-        } else {
-            ieee_exception(FE_INVALID, regs);
-        }
-        lbfpntos(op);
-
-        raised = fetestexcept(FE_ALL_EXCEPT);
-        if (raised) {
-            r = ieee_exception(raised, regs);
-            if (r) {
-                return r;
-            }
-        }
-    } /* end switch */
-    return 0;
+    float_clear_exception_flags();
+    set_rounding_mode(regs->fpc, mode);
+    result = float64_round_to_int(*op);
+    set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
+    code = float_exception(regs);
+    *op = result;
+    return code;
 
 } /* end function integer_lbfp */
 
@@ -2755,78 +2727,18 @@ DEF_INST(divide_bfp_ext_reg)
 /*-------------------------------------------------------------------*/
 /* DIVIDE (long)                                                     */
 /*-------------------------------------------------------------------*/
-static int divide_lbfp(struct lbfp *op1, struct lbfp *op2, REGS *regs)
+static int divide_lbfp(float64 *op1, float64 *op2, REGS *regs)
 {
-    int r, cl1, cl2, raised;
+    int code;
+    float64 result;
 
-    if (lbfpissnan(op1) || lbfpissnan(op2)) {
-        r = ieee_exception(FE_INVALID, regs);
-        if (r) {
-            return r;
-        }
-    }
+    float_clear_exception_flags();
+    result = float64_div(*op1, *op2);
+    code = float_exception(regs);
+    *op1 = result;
+    return code;
 
-    cl1 = lbfpclassify(op1);
-    cl2 = lbfpclassify(op2);
-
-    if (cl1 == FP_NAN) {
-        if (lbfpissnan(op1)) {
-            lbfpstoqnan(op1);
-        } else if (lbfpissnan(op2)) {
-            *op1 = *op2;
-            lbfpstoqnan(op1);
-        }
-    } else if (cl2 == FP_NAN) {
-        if (lbfpissnan(op2)) {
-            *op1 = *op2;
-            lbfpstoqnan(op1);
-        } else {
-            *op1 = *op2;
-        }
-    } else if (cl1 == FP_INFINITE && cl2 == FP_INFINITE) {
-        r = ieee_exception(FE_INVALID, regs);
-        if (r) {
-            return r;
-        }
-        lbfpdnan(op1);
-    } else if (cl1 == FP_INFINITE) {
-        if (op2->sign) {
-            op1->sign = !(op1->sign);
-        }
-    } else if (cl2 == FP_INFINITE) {
-        lbfpzero(op1, op2->sign ? !(op1->sign) : op1->sign);
-    } else if (cl1 == FP_ZERO) {
-        if (cl2 == FP_ZERO) {
-            r = ieee_exception(FE_INVALID, regs);
-            if (r) {
-                return r;
-            }
-            lbfpdnan(op1);
-        } else {
-            lbfpzero(op1, op2->sign ? !(op1->sign) : op1->sign);
-        }
-    } else if (cl2 == FP_ZERO) {
-        r = ieee_exception(FE_DIVBYZERO, regs);
-        if (r) {
-            return r;
-        }
-        lbfpinfinity(op1, op2->sign ? !(op1->sign) : op1->sign);
-    } else {
-        FECLEAREXCEPT(FE_ALL_EXCEPT);
-        lbfpston(op1);
-        lbfpston(op2);
-        op1->v /= op2->v;
-        lbfpntos(op1);
-        raised = fetestexcept(FE_ALL_EXCEPT);
-        if (raised) {
-            r = ieee_exception(raised, regs);
-            if (r) {
-                return r;
-            }
-        }
-    }
-    return 0;
-}
+} /* end function divide_lbfp */
 
 /*-------------------------------------------------------------------*/
 /* B31D DDBR  - DIVIDE (long BFP)                              [RRE] */
@@ -2834,24 +2746,25 @@ static int divide_lbfp(struct lbfp *op1, struct lbfp *op2, REGS *regs)
 DEF_INST(divide_bfp_long_reg)
 {
     int r1, r2;
-    struct lbfp op1, op2;
+    float64 op1, op2;
     int pgm_check;
 
     RRE(inst, regs, r1, r2);
     //logmsg("DDBR r1=%d r2=%d\n", r1, r2);
     BFPINST_CHECK(regs);
 
-    get_lbfp(&op1, regs->fpr + FPR2I(r1));
-    get_lbfp(&op2, regs->fpr + FPR2I(r2));
+    get_float64(&op1, regs->fpr + FPR2I(r1));
+    get_float64(&op2, regs->fpr + FPR2I(r2));
 
     pgm_check = divide_lbfp(&op1, &op2, regs);
 
-    put_lbfp(&op1, regs->fpr + FPR2I(r1));
+    put_float64(&op1, regs->fpr + FPR2I(r1));
 
     if (pgm_check) {
         regs->program_interrupt(regs, pgm_check);
     }
-}
+
+} /* end DEF_INST(divide_bfp_long_reg) */
 
 /*-------------------------------------------------------------------*/
 /* ED1D DDB   - DIVIDE (long BFP)                              [RXE] */
@@ -2860,24 +2773,25 @@ DEF_INST(divide_bfp_long)
 {
     int r1, b2;
     VADR effective_addr2;
-    struct lbfp op1, op2;
+    float64 op1, op2;
     int pgm_check;
 
     RXE(inst, regs, r1, b2, effective_addr2);
     //logmsg("DDB r1=%d b2=%d\n", r1, b2);
     BFPINST_CHECK(regs);
 
-    get_lbfp(&op1, regs->fpr + FPR2I(r1));
-    vfetch_lbfp(&op2, effective_addr2, b2, regs);
+    get_float64(&op1, regs->fpr + FPR2I(r1));
+    vfetch_float64(&op2, effective_addr2, b2, regs);
 
     pgm_check = divide_lbfp(&op1, &op2, regs);
 
-    put_lbfp(&op1, regs->fpr + FPR2I(r1));
+    put_float64(&op1, regs->fpr + FPR2I(r1));
 
     if (pgm_check) {
         regs->program_interrupt(regs, pgm_check);
     }
-}
+
+} /* end DEF_INST(divide_bfp_long) */
 
 /*-------------------------------------------------------------------*/
 /* DIVIDE (short)                                                    */
@@ -3823,77 +3737,18 @@ DEF_INST(multiply_bfp_long_to_ext)
 /*-------------------------------------------------------------------*/
 /* MULTIPLY (long)                                                   */
 /*-------------------------------------------------------------------*/
-static int multiply_lbfp(struct lbfp *op1, struct lbfp *op2, REGS *regs)
+static int multiply_lbfp(float64 *op1, float64 *op2, REGS *regs)
 {
-    int r, cl1, cl2, raised;
+    int code;
+    float64 result;
 
-    if (lbfpissnan(op1) || lbfpissnan(op2)) {
-        r = ieee_exception(FE_INVALID, regs);
-        if (r) {
-            return r;
-        }
-    }
+    float_clear_exception_flags();
+    result = float64_mul(*op1, *op2);
+    code = float_exception(regs);
+    *op1 = result;
+    return code;
 
-    cl1 = lbfpclassify(op1);
-    cl2 = lbfpclassify(op2);
-
-    if (cl1 == FP_NAN) {
-        if (lbfpissnan(op1)) {
-            lbfpstoqnan(op1);
-        } else if (lbfpissnan(op2)) {
-            *op1 = *op2;
-            lbfpstoqnan(op1);
-        }
-    } else if (cl2 == FP_NAN) {
-        if (lbfpissnan(op2)) {
-            *op1 = *op2;
-            lbfpstoqnan(op1);
-        } else {
-            *op1 = *op2;
-        }
-    } else if (cl1 == FP_INFINITE) {
-        if (cl2 == FP_ZERO) {
-            r = ieee_exception(FE_INVALID, regs);
-            if (r) {
-                return r;
-            }
-            lbfpdnan(op1);
-        } else {
-            if (op2->sign) {
-                op1->sign = !(op1->sign);
-            }
-        }
-    } else if (cl2 == FP_INFINITE) {
-        if (cl1 == FP_ZERO) {
-            r = ieee_exception(FE_INVALID, regs);
-            if (r) {
-                return r;
-            }
-            lbfpdnan(op1);
-        } else {
-            if (op1->sign) {
-                op2->sign = !(op2->sign);
-            }
-            *op1 = *op2;
-        }
-    } else if (cl1 == FP_ZERO || cl2 == FP_ZERO) {
-        lbfpzero(op1, op1->sign != op2->sign);
-    } else {
-        FECLEAREXCEPT(FE_ALL_EXCEPT);
-        lbfpston(op1);
-        lbfpston(op2);
-        op1->v *= op2->v;
-        lbfpntos(op1);
-        raised = fetestexcept(FE_ALL_EXCEPT);
-        if (raised) {
-            r = ieee_exception(raised, regs);
-            if (r) {
-                return r;
-            }
-        }
-    }
-    return 0;
-}
+} /* end function multiply_lbfp */
 
 /*-------------------------------------------------------------------*/
 /* B31C MDBR  - MULTIPLY (long BFP)                            [RRE] */
@@ -3901,24 +3756,25 @@ static int multiply_lbfp(struct lbfp *op1, struct lbfp *op2, REGS *regs)
 DEF_INST(multiply_bfp_long_reg)
 {
     int r1, r2;
-    struct lbfp op1, op2;
+    float64 op1, op2;
     int pgm_check;
 
     RRE(inst, regs, r1, r2);
     //logmsg("MDBR r1=%d r2=%d\n", r1, r2);
     BFPINST_CHECK(regs);
 
-    get_lbfp(&op1, regs->fpr + FPR2I(r1));
-    get_lbfp(&op2, regs->fpr + FPR2I(r2));
+    get_float64(&op1, regs->fpr + FPR2I(r1));
+    get_float64(&op2, regs->fpr + FPR2I(r2));
 
     pgm_check = multiply_lbfp(&op1, &op2, regs);
 
-    put_lbfp(&op1, regs->fpr + FPR2I(r1));
+    put_float64(&op1, regs->fpr + FPR2I(r1));
 
     if (pgm_check) {
         regs->program_interrupt(regs, pgm_check);
     }
-}
+
+} /* end DEF_INST(multiply_bfp_long_reg) */
 
 /*-------------------------------------------------------------------*/
 /* ED1C MDB   - MULTIPLY (long BFP)                            [RXE] */
@@ -3927,24 +3783,25 @@ DEF_INST(multiply_bfp_long)
 {
     int r1, b2;
     VADR effective_addr2;
-    struct lbfp op1, op2;
+    float64 op1, op2;
     int pgm_check;
 
     RXE(inst, regs, r1, b2, effective_addr2);
     //logmsg("MDB r1=%d b2=%d\n", r1, b2);
     BFPINST_CHECK(regs);
 
-    get_lbfp(&op1, regs->fpr + FPR2I(r1));
-    vfetch_lbfp(&op2, effective_addr2, b2, regs);
+    get_float64(&op1, regs->fpr + FPR2I(r1));
+    vfetch_float64(&op2, effective_addr2, b2, regs);
 
     pgm_check = multiply_lbfp(&op1, &op2, regs);
 
-    put_lbfp(&op1, regs->fpr + FPR2I(r1));
+    put_float64(&op1, regs->fpr + FPR2I(r1));
 
     if (pgm_check) {
         regs->program_interrupt(regs, pgm_check);
     }
-}
+
+} /* end DEF_INST(multiply_bfp_long) */
 
 /*-------------------------------------------------------------------*/
 /* B30C MDEBR - MULTIPLY (short to long BFP)                   [RRE] */
@@ -3952,27 +3809,28 @@ DEF_INST(multiply_bfp_long)
 DEF_INST(multiply_bfp_short_to_long_reg)
 {
     int r1, r2;
-    struct sbfp op1, op2;
-    struct lbfp lb1, lb2;
+    float32 op1, op2;
+    float64 lb1, lb2;
     int pgm_check;
 
     RRE(inst, regs, r1, r2);
     //logmsg("MDEBR r1=%d r2=%d\n", r1, r2);
     BFPINST_CHECK(regs);
 
-    get_sbfp(&op1, regs->fpr + FPR2I(r1));
-    get_sbfp(&op2, regs->fpr + FPR2I(r2));
+    get_float32(&op1, regs->fpr + FPR2I(r1));
+    get_float32(&op2, regs->fpr + FPR2I(r2));
 
-    lengthen_short_to_long(&op1, &lb1, regs);
-    lengthen_short_to_long(&op2, &lb2, regs);
+    lb1 = float32_to_float64(op1);
+    lb2 = float32_to_float64(op2);
 
     pgm_check = multiply_lbfp(&lb1, &lb2, regs);
 
-    put_lbfp(&lb1, regs->fpr + FPR2I(r1));
+    put_float64(&lb1, regs->fpr + FPR2I(r1));
 
     if (pgm_check) {
         regs->program_interrupt(regs, pgm_check);
     }
+
 } /* end DEF_INST(multiply_bfp_short_to_long_reg) */
 
 /*-------------------------------------------------------------------*/
@@ -3982,27 +3840,28 @@ DEF_INST(multiply_bfp_short_to_long)
 {
     int r1, b2;
     VADR effective_addr2;
-    struct sbfp op1, op2;
-    struct lbfp lb1, lb2;
+    float32 op1, op2;
+    float64 lb1, lb2;
     int pgm_check;
 
     RXE(inst, regs, r1, b2, effective_addr2);
     //logmsg("MDEB r1=%d b2=%d\n", r1, b2);
     BFPINST_CHECK(regs);
 
-    get_sbfp(&op1, regs->fpr + FPR2I(r1));
-    vfetch_sbfp(&op2, effective_addr2, b2, regs);
+    get_float32(&op1, regs->fpr + FPR2I(r1));
+    vfetch_float32(&op2, effective_addr2, b2, regs);
 
-    lengthen_short_to_long(&op1, &lb1, regs);
-    lengthen_short_to_long(&op2, &lb2, regs);
+    lb1 = float32_to_float64(op1);
+    lb2 = float32_to_float64(op2);
 
     pgm_check = multiply_lbfp(&lb1, &lb2, regs);
 
-    put_lbfp(&lb1, regs->fpr + FPR2I(r1));
+    put_float64(&lb1, regs->fpr + FPR2I(r1));
 
     if (pgm_check) {
         regs->program_interrupt(regs, pgm_check);
     }
+
 } /* end DEF_INST(multiply_bfp_short_to_long) */
 
 /*-------------------------------------------------------------------*/
@@ -4075,30 +3934,48 @@ DEF_INST(multiply_bfp_short)
 } /* end DEF_INST(multiply_bfp_short) */
 
 /*-------------------------------------------------------------------*/
+/* MULTIPLY AND ADD (long)                                           */
+/*-------------------------------------------------------------------*/
+static int multiply_add_lbfp(float64 *op1, float64 *op2, float64 *op3,
+                REGS *regs)
+{
+    int code;
+    float64 product, result;
+
+    float_clear_exception_flags();
+    product = float64_mul(*op2, *op3);
+    result = float64_add(product, *op1);
+    code = float_exception(regs);
+    *op1 = result;
+    return code;
+
+} /* end function multiply_add_lbfp */
+
+/*-------------------------------------------------------------------*/
 /* B31E MADBR - MULTIPLY AND ADD (long BFP)                    [RRF] */
 /*-------------------------------------------------------------------*/
 DEF_INST(multiply_add_bfp_long_reg)
 {
     int r1, r2, r3;
-    struct lbfp op1, op2, op3;
+    float64 op1, op2, op3;
     int pgm_check;
 
     RRF_R(inst, regs, r1, r2, r3);
     //logmsg("MADBR r1=%d r3=%d r2=%d\n", r1, r3, r2);
     BFPINST_CHECK(regs);
 
-    get_lbfp(&op1, regs->fpr + FPR2I(r1));
-    get_lbfp(&op2, regs->fpr + FPR2I(r2));
-    get_lbfp(&op3, regs->fpr + FPR2I(r3));
+    get_float64(&op1, regs->fpr + FPR2I(r1));
+    get_float64(&op2, regs->fpr + FPR2I(r2));
+    get_float64(&op3, regs->fpr + FPR2I(r3));
 
-    multiply_lbfp(&op2, &op3, regs);
-    pgm_check = add_lbfp(&op1, &op2, regs);
+    pgm_check = multiply_add_lbfp(&op1, &op2, &op3, regs);
 
-    put_lbfp(&op1, regs->fpr + FPR2I(r1));
+    put_float64(&op1, regs->fpr + FPR2I(r1));
 
     if (pgm_check) {
         regs->program_interrupt(regs, pgm_check);
     }
+
 } /* end DEF_INST(multiply_add_bfp_long_reg) */
 
 /*-------------------------------------------------------------------*/
@@ -4108,25 +3985,25 @@ DEF_INST(multiply_add_bfp_long)
 {
     int r1, r3, b2;
     VADR effective_addr2;
-    struct lbfp op1, op2, op3;
+    float64 op1, op2, op3;
     int pgm_check;
 
     RXF(inst, regs, r1, r3, b2, effective_addr2);
     //logmsg("MADB r1=%d r3=%d b2=%d\n", r1, r3, b2);
     BFPINST_CHECK(regs);
 
-    get_lbfp(&op1, regs->fpr + FPR2I(r1));
-    vfetch_lbfp(&op2, effective_addr2, b2, regs);
-    get_lbfp(&op3, regs->fpr + FPR2I(r3));
+    get_float64(&op1, regs->fpr + FPR2I(r1));
+    vfetch_float64(&op2, effective_addr2, b2, regs);
+    get_float64(&op3, regs->fpr + FPR2I(r3));
 
-    multiply_lbfp(&op2, &op3, regs);
-    pgm_check = add_lbfp(&op1, &op2, regs);
+    pgm_check = multiply_add_lbfp(&op1, &op2, &op3, regs);
 
-    put_lbfp(&op1, regs->fpr + FPR2I(r1));
+    put_float64(&op1, regs->fpr + FPR2I(r1));
 
     if (pgm_check) {
         regs->program_interrupt(regs, pgm_check);
     }
+
 } /* end DEF_INST(multiply_add_bfp_long) */
 
 /*-------------------------------------------------------------------*/
@@ -4203,27 +4080,43 @@ DEF_INST(multiply_add_bfp_short)
 } /* end DEF_INST(multiply_add_bfp_short) */
 
 /*-------------------------------------------------------------------*/
+/* MULTIPLY AND SUBTRACT (long)                                      */
+/*-------------------------------------------------------------------*/
+static int multiply_subtract_lbfp(float64 *op1, float64 *op2,
+                float64 *op3, REGS *regs)
+{
+    int code;
+    float64 product, result;
+
+    float_clear_exception_flags();
+    product = float64_mul(*op2, *op3);
+    result = float64_sub(product, *op1);
+    code = float_exception(regs);
+    *op1 = result;
+    return code;
+
+} /* end function multiply_subtract_lbfp */
+
+/*-------------------------------------------------------------------*/
 /* B31F MSDBR - MULTIPLY AND SUBTRACT (long BFP)               [RRF] */
 /*-------------------------------------------------------------------*/
 DEF_INST(multiply_subtract_bfp_long_reg)
 {
     int r1, r2, r3;
-    struct lbfp op1, op2, op3;
+    float64 op1, op2, op3;
     int pgm_check;
 
     RRF_R(inst, regs, r1, r2, r3);
     //logmsg("MSDBR r1=%d r3=%d r2=%d\n", r1, r3, r2);
     BFPINST_CHECK(regs);
 
-    get_lbfp(&op1, regs->fpr + FPR2I(r1));
-    get_lbfp(&op2, regs->fpr + FPR2I(r2));
-    get_lbfp(&op3, regs->fpr + FPR2I(r3));
+    get_float64(&op1, regs->fpr + FPR2I(r1));
+    get_float64(&op2, regs->fpr + FPR2I(r2));
+    get_float64(&op3, regs->fpr + FPR2I(r3));
 
-    multiply_lbfp(&op2, &op3, regs);
-    op1.sign = !(op1.sign);
-    pgm_check = add_lbfp(&op1, &op2, regs);
+    pgm_check = multiply_subtract_lbfp(&op1, &op2, &op3, regs);
 
-    put_lbfp(&op1, regs->fpr + FPR2I(r1));
+    put_float64(&op1, regs->fpr + FPR2I(r1));
 
     if (pgm_check) {
         regs->program_interrupt(regs, pgm_check);
@@ -4238,22 +4131,20 @@ DEF_INST(multiply_subtract_bfp_long)
 {
     int r1, r3, b2;
     VADR effective_addr2;
-    struct lbfp op1, op2, op3;
+    float64 op1, op2, op3;
     int pgm_check;
 
     RXF(inst, regs, r1, r3, b2, effective_addr2);
     //logmsg("MSDB r1=%d r3=%d b2=%d\n", r1, r3, b2);
     BFPINST_CHECK(regs);
 
-    get_lbfp(&op1, regs->fpr + FPR2I(r1));
-    vfetch_lbfp(&op2, effective_addr2, b2, regs);
-    get_lbfp(&op3, regs->fpr + FPR2I(r3));
+    get_float64(&op1, regs->fpr + FPR2I(r1));
+    vfetch_float64(&op2, effective_addr2, b2, regs);
+    get_float64(&op3, regs->fpr + FPR2I(r3));
 
-    multiply_lbfp(&op2, &op3, regs);
-    op1.sign = !(op1.sign);
-    pgm_check = add_lbfp(&op1, &op2, regs);
+    pgm_check = multiply_subtract_lbfp(&op1, &op2, &op3, regs);
 
-    put_lbfp(&op1, regs->fpr + FPR2I(r1));
+    put_float64(&op1, regs->fpr + FPR2I(r1));
 
     if (pgm_check) {
         regs->program_interrupt(regs, pgm_check);
@@ -4868,8 +4759,8 @@ DEF_INST(test_data_class_bfp_ext)
 /*-------------------------------------------------------------------*/
 /* DIVIDE TO INTEGER (long)                                          */
 /*-------------------------------------------------------------------*/
-static int divint_lbfp(struct lbfp *op1, struct lbfp *op2,
-                        struct lbfp *op3, int mode, REGS *regs)
+static int divint_lbfp(float64 *op1, float64 *op2,
+                        float64 *op3, int mode, REGS *regs)
 {
     int r;
 
@@ -4883,13 +4774,12 @@ static int divint_lbfp(struct lbfp *op1, struct lbfp *op2,
     r = multiply_lbfp(op2, op3, regs);
     if (r) return r;
 
-    op2->sign = !(op2->sign);
-    r = add_lbfp(op1, op2, regs);
-    op2->sign = !(op2->sign);
+    r = subtract_lbfp(op1, op2, regs);
     if (r) return r;
 
     regs->psw.cc = 0;
     return 0;
+
 } /* end function divint_lbfp */
 
 /*-------------------------------------------------------------------*/
@@ -4898,7 +4788,7 @@ static int divint_lbfp(struct lbfp *op1, struct lbfp *op2,
 DEF_INST(divide_integer_bfp_long_reg)
 {
     int r1, r2, r3, m4;
-    struct lbfp op1, op2, op3;
+    float64 op1, op2, op3;
     int pgm_check;
 
     RRF_RM(inst, regs, r1, r2, r3, m4);
@@ -4909,17 +4799,18 @@ DEF_INST(divide_integer_bfp_long_reg)
     }
     BFPRM_CHECK(m4,regs);
 
-    get_lbfp(&op1, regs->fpr + FPR2I(r1));
-    get_lbfp(&op2, regs->fpr + FPR2I(r2));
+    get_float64(&op1, regs->fpr + FPR2I(r1));
+    get_float64(&op2, regs->fpr + FPR2I(r2));
 
     pgm_check = divint_lbfp(&op1, &op2, &op3, m4, regs);
 
-    put_lbfp(&op1, regs->fpr + FPR2I(r1));
-    put_lbfp(&op3, regs->fpr + FPR2I(r3));
+    put_float64(&op1, regs->fpr + FPR2I(r1));
+    put_float64(&op3, regs->fpr + FPR2I(r3));
 
     if (pgm_check) {
         regs->program_interrupt(regs, pgm_check);
     }
+
 } /* end DEF_INST(divide_integer_bfp_long_reg) */
 
 /*-------------------------------------------------------------------*/
