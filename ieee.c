@@ -1390,75 +1390,21 @@ DEF_INST(add_bfp_ext_reg)
 /*-------------------------------------------------------------------*/
 /* ADD (long)                                                        */
 /*-------------------------------------------------------------------*/
-static int add_lbfp(struct lbfp *op1, struct lbfp *op2, REGS *regs)
+static int add_lbfp(float64 *op1, float64 *op2, REGS *regs)
 {
-    int r, cl1, cl2, raised;
+    int code;
+    float64 result;
 
-    if (lbfpissnan(op1) || lbfpissnan(op2)) {
-        r = ieee_exception(FE_INVALID, regs);
-        if (r) {
-            return r;
-        }
-    }
+    float_clear_exception_flags();
+    result = float64_add(*op1, *op2);
+    code = float_exception(regs);
+    *op1 = result;
+    regs->psw.cc = float64_is_nan(result) ? 3 :
+                   float64_is_zero(result) ? 0 :
+                   float64_is_neg(result) ? 1 : 2;
+    return code;
 
-    cl1 = lbfpclassify(op1);
-    cl2 = lbfpclassify(op2);
-
-    if (cl1 == FP_NAN) {
-        if (lbfpissnan(op1)) {
-            lbfpstoqnan(op1);
-        } else if (lbfpissnan(op2)) {
-            *op1 = *op2;
-            lbfpstoqnan(op1);
-        }
-        regs->psw.cc = 3;
-        return 0;
-    } else if (cl2 == FP_NAN) {
-        if (lbfpissnan(op2)) {
-            *op1 = *op2;
-            lbfpstoqnan(op1);
-        } else {
-            *op1 = *op2;
-        }
-        regs->psw.cc = 3;
-        return 0;
-    } else if (cl1 == FP_INFINITE && cl2 == FP_INFINITE
-            && op1->sign != op2->sign) {
-        r = ieee_exception(FE_INVALID, regs);
-        if (r) {
-            return r;
-        }
-        lbfpdnan(op1);
-        regs->psw.cc = 3;
-        return 0;
-    } else if (cl1 == FP_INFINITE) {
-        /* result is first operand */
-    } else if (cl2 == FP_INFINITE) {
-        *op1 = *op2;
-        cl1 = cl2;
-    } else if (cl1 == FP_ZERO) {
-        *op1 = *op2;
-        cl1 = cl2;
-    } else if (cl2 == FP_ZERO) {
-        /* result is first operand */
-    } else {
-        FECLEAREXCEPT(FE_ALL_EXCEPT);
-        lbfpston(op1);
-        lbfpston(op2);
-        op1->v += op2->v;
-        lbfpntos(op1);
-        raised = fetestexcept(FE_ALL_EXCEPT);
-        if (raised) {
-            r = ieee_exception(raised, regs);
-            if (r) {
-                return r;
-            }
-        }
-        cl1 = lbfpclassify(op1);
-    }
-    regs->psw.cc = cl1 == FP_ZERO ? 0 : op1->sign ? 1 : 2;
-    return 0;
-}
+} /* end function add_lbfp */
 
 /*-------------------------------------------------------------------*/
 /* B31A ADBR  - ADD (long BFP)                                 [RRE] */
@@ -1466,24 +1412,25 @@ static int add_lbfp(struct lbfp *op1, struct lbfp *op2, REGS *regs)
 DEF_INST(add_bfp_long_reg)
 {
     int r1, r2;
-    struct lbfp op1, op2;
+    float64 op1, op2;
     int pgm_check;
 
     RRE(inst, regs, r1, r2);
     //logmsg("ADBR r1=%d r2=%d\n", r1, r2);
     BFPINST_CHECK(regs);
 
-    get_lbfp(&op1, regs->fpr + FPR2I(r1));
-    get_lbfp(&op2, regs->fpr + FPR2I(r2));
+    get_float64(&op1, regs->fpr + FPR2I(r1));
+    get_float64(&op2, regs->fpr + FPR2I(r2));
 
     pgm_check = add_lbfp(&op1, &op2, regs);
 
-    put_lbfp(&op1, regs->fpr + FPR2I(r1));
+    put_float64(&op1, regs->fpr + FPR2I(r1));
 
     if (pgm_check) {
         regs->program_interrupt(regs, pgm_check);
     }
-}
+
+} /* end DEF_INST(add_bfp_long_reg) */
 
 /*-------------------------------------------------------------------*/
 /* ED1A ADB   - ADD (long BFP)                                 [RXE] */
@@ -1492,24 +1439,25 @@ DEF_INST(add_bfp_long)
 {
     int r1, b2;
     VADR effective_addr2;
-    struct lbfp op1, op2;
+    float64 op1, op2;
     int pgm_check;
 
     RXE(inst, regs, r1, b2, effective_addr2);
     //logmsg("ADB r1=%d b2=%d\n", r1, b2);
     BFPINST_CHECK(regs);
 
-    get_lbfp(&op1, regs->fpr + FPR2I(r1));
-    vfetch_lbfp(&op2, effective_addr2, b2, regs);
+    get_float64(&op1, regs->fpr + FPR2I(r1));
+    vfetch_float64(&op2, effective_addr2, b2, regs);
 
     pgm_check = add_lbfp(&op1, &op2, regs);
 
-    put_lbfp(&op1, regs->fpr + FPR2I(r1));
+    put_float64(&op1, regs->fpr + FPR2I(r1));
 
     if (pgm_check) {
         regs->program_interrupt(regs, pgm_check);
     }
-}
+
+} /* end DEF_INST(add_bfp_long) */
 
 /*-------------------------------------------------------------------*/
 /* ADD (short)                                                       */
