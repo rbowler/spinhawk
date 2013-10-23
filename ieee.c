@@ -4211,7 +4211,7 @@ DEF_INST(squareroot_bfp_long_reg)
     if (pgm_check) {
         regs->program_interrupt(regs, pgm_check);
     }
- 
+
 } /* end DEF_INST(squareroot_bfp_long_reg) */
 
 /*-------------------------------------------------------------------*/
@@ -4237,7 +4237,7 @@ DEF_INST(squareroot_bfp_long)
     if (pgm_check) {
         regs->program_interrupt(regs, pgm_check);
     }
- 
+
 } /* end DEF_INST(squareroot_bfp_long) */
 
 /*-------------------------------------------------------------------*/
@@ -4246,10 +4246,10 @@ DEF_INST(squareroot_bfp_long)
 static int squareroot_sbfp(float32 *op, REGS *regs)
 {
     int code;
-    float64 result;
+    float32 result;
 
     float_clear_exception_flags();
-    result = float64_sqrt(*op);
+    result = float32_sqrt(*op);
     code = float_exception(regs);
     *op = result;
     return code;
@@ -4278,7 +4278,7 @@ DEF_INST(squareroot_bfp_short_reg)
     if (pgm_check) {
         regs->program_interrupt(regs, pgm_check);
     }
- 
+
 } /* end DEF_INST(squareroot_bfp_short_reg) */
 
 /*-------------------------------------------------------------------*/
@@ -4304,7 +4304,7 @@ DEF_INST(squareroot_bfp_short)
     if (pgm_check) {
         regs->program_interrupt(regs, pgm_check);
     }
- 
+
 } /* end DEF_INST(squareroot_bfp_short) */
 
 /*-------------------------------------------------------------------*/
