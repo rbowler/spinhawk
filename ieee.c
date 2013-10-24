@@ -2970,16 +2970,23 @@ DEF_INST(load_lengthened_bfp_short_to_long_reg)
     int r1, r2;
     float64 op1;
     float32 op2;
+    int pgm_check;
 
     RRE(inst, regs, r1, r2);
     //logmsg("LDEBR r1=%d r2=%d\n", r1, r2);
     BFPINST_CHECK(regs);
 
+    float_clear_exception_flags();
     get_float32(&op2, regs->fpr + FPR2I(r2));
 
     op1 = float32_to_float64(op2);
+    pgm_check = float_exception(regs);
 
     put_float64(&op1, regs->fpr + FPR2I(r1));
+
+    if (pgm_check) {
+        regs->program_interrupt(regs, pgm_check);
+    }
 
 } /* end DEF_INST(load_lengthened_bfp_short_to_long_reg) */
 
@@ -2992,16 +2999,23 @@ DEF_INST(load_lengthened_bfp_short_to_long)
     VADR effective_addr2;
     float64 op1;
     float32 op2;
+    int pgm_check;
 
     RXE(inst, regs, r1, b2, effective_addr2);
     //logmsg("LDEB r1=%d b2=%d\n", r1, b2);
     BFPINST_CHECK(regs);
 
+    float_clear_exception_flags();
     vfetch_float32(&op2, effective_addr2, b2, regs);
 
     op1 = float32_to_float64(op2);
+    pgm_check = float_exception(regs);
 
     put_float64(&op1, regs->fpr + FPR2I(r1));
+
+    if (pgm_check) {
+        regs->program_interrupt(regs, pgm_check);
+    }
 
 } /* end DEF_INST(load_lengthened_bfp_short_to_long) */
 
@@ -3013,17 +3027,24 @@ DEF_INST(load_lengthened_bfp_long_to_ext_reg)
     int r1, r2;
     float128 op1;
     float64 op2;
+    int pgm_check;
 
     RRE(inst, regs, r1, r2);
     //logmsg("LXDBR r1=%d r2=%d\n", r1, r2);
     BFPINST_CHECK(regs);
     BFPREGPAIR_CHECK(r1, regs);
 
+    float_clear_exception_flags();
     get_float64(&op2, regs->fpr + FPR2I(r2));
 
     op1 = float64_to_float128(op2);
+    pgm_check = float_exception(regs);
 
     put_float128(&op1, regs->fpr + FPR2I(r1));
+
+    if (pgm_check) {
+        regs->program_interrupt(regs, pgm_check);
+    }
 
 } /* end DEF_INST(load_lengthened_bfp_long_to_ext_reg) */
 
@@ -3036,17 +3057,24 @@ DEF_INST(load_lengthened_bfp_long_to_ext)
     VADR effective_addr2;
     float128 op1;
     float64 op2;
+    int pgm_check;
 
     RXE(inst, regs, r1, b2, effective_addr2);
     //logmsg("LXDB r1=%d b2=%d\n", r1, b2);
     BFPINST_CHECK(regs);
     BFPREGPAIR_CHECK(r1, regs);
 
+    float_clear_exception_flags();
     vfetch_float64(&op2, effective_addr2, b2, regs);
 
     op1 = float64_to_float128(op2);
+    pgm_check = float_exception(regs);
 
     put_float128(&op1, regs->fpr + FPR2I(r1));
+
+    if (pgm_check) {
+        regs->program_interrupt(regs, pgm_check);
+    }
 
 } /* end DEF_INST(load_lengthened_bfp_long_to_ext) */
 
@@ -3058,17 +3086,24 @@ DEF_INST(load_lengthened_bfp_short_to_ext_reg)
     int r1, r2;
     float128 op1;
     float32 op2;
+    int pgm_check;
 
     RRE(inst, regs, r1, r2);
     //logmsg("LXEBR r1=%d r2=%d\n", r1, r2);
     BFPINST_CHECK(regs);
     BFPREGPAIR_CHECK(r1, regs);
 
+    float_clear_exception_flags();
     get_float32(&op2, regs->fpr + FPR2I(r2));
+    pgm_check = float_exception(regs);
 
     op1 = float32_to_float128(op2);
 
     put_float128(&op1, regs->fpr + FPR2I(r1));
+
+    if (pgm_check) {
+        regs->program_interrupt(regs, pgm_check);
+    }
 
 } /* end DEF_INST(load_lengthened_bfp_short_to_ext_reg) */
 
@@ -3081,17 +3116,24 @@ DEF_INST(load_lengthened_bfp_short_to_ext)
     VADR effective_addr2;
     float128 op1;
     float32 op2;
+    int pgm_check;
 
     RXE(inst, regs, r1, b2, effective_addr2);
     //logmsg("LXEB r1=%d b2=%d\n", r1, b2);
     BFPINST_CHECK(regs);
     BFPREGPAIR_CHECK(r1, regs);
 
+    float_clear_exception_flags();
     vfetch_float32(&op2, effective_addr2, b2, regs);
+    pgm_check = float_exception(regs);
 
     op1 = float32_to_float128(op2);
 
     put_float128(&op1, regs->fpr + FPR2I(r1));
+
+    if (pgm_check) {
+        regs->program_interrupt(regs, pgm_check);
+    }
 
 } /* end DEF_INST(load_lengthened_bfp_short_to_ext) */
 
