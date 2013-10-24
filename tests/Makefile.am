@@ -65,6 +65,7 @@ EXTRA_DIST =        \
     kmc20.txt       \
     kmc3.txt        \
     kmc67.txt       \
+    ldebr.txt       \
     ldetr.txt       \
     ldxtr.txt       \
     ledtr.txt       \
