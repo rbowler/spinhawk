@@ -145,6 +145,28 @@ flag float32_is_zero( float32 a )
 }
 
 /*----------------------------------------------------------------------------
+| Returns the single-precision floating-point value `a' with positive sign.
+*----------------------------------------------------------------------------*/
+
+float32 float32_pos( float32 a )
+{
+
+    return ( a & 0x7FFFFFFF );
+
+}
+
+/*----------------------------------------------------------------------------
+| Returns the single-precision floating-point value `a' with negative sign.
+*----------------------------------------------------------------------------*/
+
+float32 float32_neg( float32 a )
+{
+
+    return ( a | 0x80000000 );
+
+}
+
+/*----------------------------------------------------------------------------
 | Returns the result of converting the single-precision floating-point NaN
 | `a' to the canonical NaN format.  If `a' is a signaling NaN, the invalid
 | exception is raised.
@@ -252,6 +274,28 @@ flag float64_is_zero( float64 a )
 {
 
     return ( ( a & LIT64( 0x7FFFFFFFFFFFFFFF ) ) == 0);
+
+}
+
+/*----------------------------------------------------------------------------
+| Returns the double-precision floating-point value `a' with positive sign.
+*----------------------------------------------------------------------------*/
+
+float64 float64_pos( float64 a )
+{
+
+    return ( a & LIT64( 0x7FFFFFFFFFFFFFFF ) );
+
+}
+
+/*----------------------------------------------------------------------------
+| Returns the double-precision floating-point value `a' with negative sign.
+*----------------------------------------------------------------------------*/
+
+float64 float64_neg( float64 a )
+{
+
+    return ( a | LIT64( 0x8000000000000000 ) );
 
 }
 
@@ -472,6 +516,34 @@ flag float128_is_zero( float128 a )
 {
 
     return ( a.low == 0 && ( a.high & LIT64( 0x7FFFFFFFFFFFFFFF ) ) == 0 );
+
+}
+
+/*----------------------------------------------------------------------------
+| Returns the quadruple-precision floating-point value `a' with positive sign.
+*----------------------------------------------------------------------------*/
+
+float128 float128_pos( float128 a )
+{
+    float128 result;
+
+    result.high = ( a.high & LIT64( 0x7FFFFFFFFFFFFFFF ) );
+    result.low = a.low;
+    return result;
+
+}
+
+/*----------------------------------------------------------------------------
+| Returns the quadruple-precision floating-point value `a' with negative sign.
+*----------------------------------------------------------------------------*/
+
+float128 float128_neg( float128 a )
+{
+    float128 result;                                      
+
+    result.high = ( a.high | LIT64( 0x8000000000000000 ) );
+    result.low = a.low;
+    return result;
 
 }
 
