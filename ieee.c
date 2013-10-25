@@ -3213,31 +3213,24 @@ DEF_INST(load_negative_bfp_short_reg)
 DEF_INST(load_complement_bfp_ext_reg)
 {
     int r1, r2;
-    struct ebfp op;
+    float128 op1, op2;
 
     RRE(inst, regs, r1, r2);
     //logmsg("LCXBR r1=%d r2=%d\n", r1, r2);
     BFPINST_CHECK(regs);
     BFPREGPAIR2_CHECK(r1, r2, regs);
 
-    get_ebfp(&op, regs->fpr + FPR2I(r2));
+    get_float128(&op2, regs->fpr + FPR2I(r2));
 
-    op.sign = !op.sign;
+    op1 = float128_is_neg(op2) ? float128_pos(op2) : float128_neg(op2);
 
-    switch (ebfpclassify(&op)) {
-    case FP_ZERO:
-        regs->psw.cc = 0;
-        break;
-    case FP_NAN:
-        regs->psw.cc = 3;
-        break;
-    default:
-        regs->psw.cc = op.sign ? 1 : 2;
-        break;
-    }
+    regs->psw.cc = float128_is_nan(op1) ? 3 :
+                   float128_is_zero(op1) ? 0 :
+                   float128_is_neg(op1) ? 1 : 2;
 
-    put_ebfp(&op, regs->fpr + FPR2I(r1));
-}
+    put_float128(&op1, regs->fpr + FPR2I(r1));
+
+} /* end DEF_INST(load_complement_bfp_ext_reg) */
 
 /*-------------------------------------------------------------------*/
 /* B313 LCDBR - LOAD COMPLEMENT (long BFP)                     [RRE] */
@@ -3245,30 +3238,23 @@ DEF_INST(load_complement_bfp_ext_reg)
 DEF_INST(load_complement_bfp_long_reg)
 {
     int r1, r2;
-    struct lbfp op;
+    float64 op1, op2;
 
     RRE(inst, regs, r1, r2);
     //logmsg("LCDBR r1=%d r2=%d\n", r1, r2);
     BFPINST_CHECK(regs);
 
-    get_lbfp(&op, regs->fpr + FPR2I(r2));
+    get_float64(&op2, regs->fpr + FPR2I(r2));
 
-    op.sign = !op.sign;
+    op1 = float64_is_neg(op2) ? float64_pos(op2) : float64_neg(op2);
 
-    switch (lbfpclassify(&op)) {
-    case FP_ZERO:
-        regs->psw.cc = 0;
-        break;
-    case FP_NAN:
-        regs->psw.cc = 3;
-        break;
-    default:
-        regs->psw.cc = op.sign ? 1 : 2;
-        break;
-    }
+    regs->psw.cc = float64_is_nan(op1) ? 3 :
+                   float64_is_zero(op1) ? 0 :
+                   float64_is_neg(op1) ? 1 : 2;
 
-    put_lbfp(&op, regs->fpr + FPR2I(r1));
-}
+    put_float64(&op1, regs->fpr + FPR2I(r1));
+
+} /* end DEF_INST(load_complement_bfp_long_reg) */
 
 /*-------------------------------------------------------------------*/
 /* B303 LCEBR - LOAD COMPLEMENT (short BFP)                    [RRE] */
@@ -3276,30 +3262,23 @@ DEF_INST(load_complement_bfp_long_reg)
 DEF_INST(load_complement_bfp_short_reg)
 {
     int r1, r2;
-    struct sbfp op;
+    float32 op1, op2;
 
     RRE(inst, regs, r1, r2);
     //logmsg("LCEBR r1=%d r2=%d\n", r1, r2);
     BFPINST_CHECK(regs);
 
-    get_sbfp(&op, regs->fpr + FPR2I(r2));
+    get_float32(&op2, regs->fpr + FPR2I(r2));
 
-    op.sign = !op.sign;
+    op1 = float32_is_neg(op2) ? float32_pos(op2) : float32_neg(op2);
 
-    switch (sbfpclassify(&op)) {
-    case FP_ZERO:
-        regs->psw.cc = 0;
-        break;
-    case FP_NAN:
-        regs->psw.cc = 3;
-        break;
-    default:
-        regs->psw.cc = op.sign ? 1 : 2;
-        break;
-    }
+    regs->psw.cc = float32_is_nan(op1) ? 3 :
+                   float32_is_zero(op1) ? 0 :
+                   float32_is_neg(op1) ? 1 : 2;
 
-    put_sbfp(&op, regs->fpr + FPR2I(r1));
-}
+    put_float32(&op1, regs->fpr + FPR2I(r1));
+
+} /* end DEF_INST(load_complement_bfp_short_reg) */
 
 /*-------------------------------------------------------------------*/
 /* B340 LPXBR - LOAD POSITIVE (extended BFP)                   [RRE] */
