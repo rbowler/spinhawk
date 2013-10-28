@@ -421,6 +421,9 @@ struct SYSBLK {
         int     cpus;                   /* Number CPUs configured    */
         int     hicpu;                  /* Hi cpu + 1 configured     */
         int     sysepoch;               /* TOD clk epoch (1900/1960) */
+        int     topology;               /* Configuration topology... */
+#define TOPOLOGY_HORIZ  0               /* ...horizontal polarization*/
+#define TOPOLOGY_VERT   1               /* ...vertical polarization  */
         int     topchnge;               /* 1 = Topology Change Report
                                            pending (CPU cfg on/off)  */
         COND    cpucond;                /* CPU config/deconfig cond  */
