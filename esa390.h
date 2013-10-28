@@ -2082,9 +2082,12 @@ typedef struct _TLECPU {                /* CPU TLE                   */
         DW      cpumask;                /* CPU Mask                  */
     }   TLECPU;
 
-#define CPUTLE_FLAG_RESERVED    0xF8
-#define CPUTLE_FLAG_DEDICATED   0x04
-#define CPUTLE_FLAG_VPOLARMASK  0x03
+/* Bit definitions for TLECPU flag byte */
+#define CPUTLE_FLAG_DEDICATED   0x04    /* Dedicated CPU             */
+#define CPUTLE_FLAG_HORIZ       0x00    /* Horizontally polarized    */
+#define CPUTLE_FLAG_VERTLOW     0x01    /* Vertical low entitlement  */
+#define CPUTLE_FLAG_VERTMED     0x02    /* Vertical med entitlement  */
+#define CPUTLE_FLAG_VERTHIGH    0x03    /* Vertical high entitlement */
 
 typedef struct _SYSIBVMDB {             /* Virtual Machine Desc Block*/
         BYTE    resv1[4*1];             /* Reserved                  */
