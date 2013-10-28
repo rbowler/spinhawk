@@ -26,6 +26,7 @@
 /*      ESAME BSA instruction - Roger Bowler                    v209c*/
 /*      ASN-and-LX-reuse facility - Roger Bowler            June 2004*/
 /*      SIGP orders 11,12.2,13,15 - Fish                     Oct 2005*/
+/*      Configuration topology facility fixes by PaoloG      Oct 2013*/
 /*-------------------------------------------------------------------*/
 
 #include "hstdinc.h"
@@ -6851,7 +6852,7 @@ static BYTE hexebcdic[16] = { 0xF0,0xF1,0xF2,0xF3,0xF4,0xF5,0xF6,0xF7,
                 memset(sysib1512, 0x00, sizeof(SYSIB1512));
 
                 sysib1512->mnest = 2;
-                sysib1512->mag[4] = 1;
+                sysib1512->mag[4] = 1; /*added by PaoloG 25-10-13*/
                 sysib1512->mag[5] = MAX_CPU;
 
                 tle = sysib1512->tles;
