@@ -2757,7 +2757,7 @@ DEF_INST(divide_bfp_short)
 DEF_INST(load_and_test_bfp_ext_reg)
 {
     int r1, r2;
-    struct ebfp op;
+    float128 op1, op2;
     int pgm_check = 0;
 
     RRE(inst, regs, r1, r2);
@@ -2765,31 +2765,27 @@ DEF_INST(load_and_test_bfp_ext_reg)
     BFPINST_CHECK(regs);
     BFPREGPAIR2_CHECK(r1, r2, regs);
 
-    get_ebfp(&op, regs->fpr + FPR2I(r2));
+    get_float128(&op2, regs->fpr + FPR2I(r2));
 
-    if (ebfpissnan(&op)) {
-        pgm_check = ieee_exception(FE_INVALID, regs);
-        ebfpstoqnan(&op);
+    if (float128_is_signaling_nan(op2)) {
+        float_raise(float_flag_invalid);
+        pgm_check = float_exception(regs);
+        op1 = float128_snan_to_qnan(op2);
+    } else {
+        op1 = op2;
     }
 
     if (pgm_check) {
         regs->program_interrupt(regs, pgm_check);
     }
 
-    switch (ebfpclassify(&op)) {
-    case FP_ZERO:
-        regs->psw.cc = 0;
-        break;
-    case FP_NAN:
-        regs->psw.cc = 3;
-        break;
-    default:
-        regs->psw.cc = op.sign ? 1 : 2;
-        break;
-    }
+    regs->psw.cc = float128_is_nan(op1) ? 3 :
+                   float128_is_zero(op1) ? 0 :
+                   float128_is_neg(op1) ? 1 : 2;
 
-    put_ebfp(&op, regs->fpr + FPR2I(r1));
-}
+    put_float128(&op1, regs->fpr + FPR2I(r1));
+
+} /* end DEF_INST(load_and_test_bfp_ext_reg) */
 
 /*-------------------------------------------------------------------*/
 /* B312 LTDBR - LOAD AND TEST (long BFP)                       [RRE] */
