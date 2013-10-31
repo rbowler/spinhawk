@@ -167,6 +167,17 @@ float32 float32_neg( float32 a )
 }
 
 /*----------------------------------------------------------------------------
+| Returns the result of converting the single-precision floating-point
+| signaling NaN `a' to a quiet NaN.
+*----------------------------------------------------------------------------*/
+float32 float32_snan_to_qnan( float32 a )
+{
+
+    return ( a | 0x00400000 );
+
+}
+
+/*----------------------------------------------------------------------------
 | Returns the result of converting the single-precision floating-point NaN
 | `a' to the canonical NaN format.  If `a' is a signaling NaN, the invalid
 | exception is raised.
@@ -296,6 +307,17 @@ float64 float64_neg( float64 a )
 {
 
     return ( a | LIT64( 0x8000000000000000 ) );
+
+}
+
+/*----------------------------------------------------------------------------
+| Returns the result of converting the double-precision floating-point
+| signaling NaN `a' to a quiet NaN.
+*----------------------------------------------------------------------------*/
+float64 float64_snan_to_qnan( float64 a )
+{
+
+    return ( a | LIT64( 0x0008000000000000 ) );
 
 }
 
@@ -542,6 +564,20 @@ float128 float128_neg( float128 a )
     float128 result;                                      
 
     result.high = ( a.high | LIT64( 0x8000000000000000 ) );
+    result.low = a.low;
+    return result;
+
+}
+
+/*----------------------------------------------------------------------------
+| Returns the result of converting the quadruple-precision floating-point
+| signaling NaN `a' to a quiet NaN.
+*----------------------------------------------------------------------------*/
+float128 float128_snan_to_qnan( float128 a )
+{
+    float128 result;                                      
+
+    result.high = ( a.high | LIT64( 0x0000800000000000 ) );
     result.low = a.low;
     return result;
 

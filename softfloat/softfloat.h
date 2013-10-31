@@ -166,6 +166,7 @@ flag float32_is_signaling_nan( float32 );
 flag float32_is_zero( float32 );
 float32 float32_pos( float32 );
 float32 float32_neg( float32 );
+float32 float32_snan_to_qnan( float32 );
 
 /*----------------------------------------------------------------------------
 | Software IEC/IEEE double-precision conversion routines.
@@ -204,6 +205,7 @@ flag float64_is_signaling_nan( float64 );
 flag float64_is_zero( float64 );
 float64 float64_pos( float64 );
 float64 float64_neg( float64 );
+float64 float64_snan_to_qnan( float64 );
 
 #ifdef FLOATX80
 
@@ -283,6 +285,7 @@ flag float128_is_signaling_nan( float128 );
 flag float128_is_zero( float128 );
 float128 float128_pos( float128 );
 float128 float128_neg( float128 );
+float128 float128_snan_to_qnan( float128 );
 
 #endif
 
