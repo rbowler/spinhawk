@@ -2794,38 +2794,35 @@ DEF_INST(load_and_test_bfp_ext_reg)
 DEF_INST(load_and_test_bfp_long_reg)
 {
     int r1, r2;
-    struct lbfp op;
+    float64 op1, op2;
     int pgm_check = 0;
 
     RRE(inst, regs, r1, r2);
     //logmsg("LTDBR r1=%d r2=%d\n", r1, r2);
     BFPINST_CHECK(regs);
 
-    get_lbfp(&op, regs->fpr + FPR2I(r2));
+    get_float64(&op2, regs->fpr + FPR2I(r2));
 
-    if (lbfpissnan(&op)) {
-        pgm_check = ieee_exception(FE_INVALID, regs);
-        lbfpstoqnan(&op);
+    float_clear_exception_flags();
+    if (float64_is_signaling_nan(op2)) {
+        float_raise(float_flag_invalid);
+        pgm_check = float_exception(regs);
+        op1 = float64_snan_to_qnan(op2);
+    } else {
+        op1 = op2;
     }
 
     if (pgm_check) {
         regs->program_interrupt(regs, pgm_check);
     }
 
-    switch (lbfpclassify(&op)) {
-    case FP_ZERO:
-        regs->psw.cc = 0;
-        break;
-    case FP_NAN:
-        regs->psw.cc = 3;
-        break;
-    default:
-        regs->psw.cc = op.sign ? 1 : 2;
-        break;
-    }
+    regs->psw.cc = float64_is_nan(op1) ? 3 :
+                   float64_is_zero(op1) ? 0 :
+                   float64_is_neg(op1) ? 1 : 2;
 
-    put_lbfp(&op, regs->fpr + FPR2I(r1));
-}
+    put_float64(&op1, regs->fpr + FPR2I(r1));
+
+} /* end DEF_INST(load_and_test_bfp_long_reg) */
 
 /*-------------------------------------------------------------------*/
 /* B302 LTEBR - LOAD AND TEST (short BFP)                      [RRE] */
@@ -2833,38 +2830,35 @@ DEF_INST(load_and_test_bfp_long_reg)
 DEF_INST(load_and_test_bfp_short_reg)
 {
     int r1, r2;
-    struct sbfp op;
+    float32 op1, op2;
     int pgm_check = 0;
 
     RRE(inst, regs, r1, r2);
     //logmsg("LTEBR r1=%d r2=%d\n", r1, r2);
     BFPINST_CHECK(regs);
 
-    get_sbfp(&op, regs->fpr + FPR2I(r2));
+    get_float32(&op2, regs->fpr + FPR2I(r2));
 
-    if (sbfpissnan(&op)) {
-        pgm_check = ieee_exception(FE_INVALID, regs);
-        sbfpstoqnan(&op);
+    float_clear_exception_flags();
+    if (float32_is_signaling_nan(op2)) {
+        float_raise(float_flag_invalid);
+        pgm_check = float_exception(regs);
+        op1 = float32_snan_to_qnan(op2);
+    } else {
+        op1 = op2;
     }
 
     if (pgm_check) {
         regs->program_interrupt(regs, pgm_check);
     }
 
-    switch (sbfpclassify(&op)) {
-    case FP_ZERO:
-        regs->psw.cc = 0;
-        break;
-    case FP_NAN:
-        regs->psw.cc = 3;
-        break;
-    default:
-        regs->psw.cc = op.sign ? 1 : 2;
-        break;
-    }
+    regs->psw.cc = float32_is_nan(op1) ? 3 :
+                   float32_is_zero(op1) ? 0 :
+                   float32_is_neg(op1) ? 1 : 2;
 
-    put_sbfp(&op, regs->fpr + FPR2I(r1));
-}
+    put_float32(&op1, regs->fpr + FPR2I(r1));
+
+} /* end DEF_INST(load_and_test_bfp_short_reg) */
 
 /*-------------------------------------------------------------------*/
 /* B357 FIEBR - LOAD FP INTEGER (short BFP)                    [RRF] */
