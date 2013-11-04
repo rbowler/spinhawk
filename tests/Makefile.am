@@ -72,6 +72,7 @@ EXTRA_DIST =        \
     lfpc.txt        \
     llhrl.txt       \
     loop.txt        \
+    ltxbr.txt       \
     lxdtr.txt       \
     maer.txt        \
     mvcos.txt       \
