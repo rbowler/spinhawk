@@ -2767,6 +2767,7 @@ DEF_INST(load_and_test_bfp_ext_reg)
 
     get_float128(&op2, regs->fpr + FPR2I(r2));
 
+    float_clear_exception_flags();
     if (float128_is_signaling_nan(op2)) {
         float_raise(float_flag_invalid);
         pgm_check = float_exception(regs);
