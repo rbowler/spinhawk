@@ -4474,39 +4474,35 @@ DEF_INST(test_data_class_bfp_short)
 {
     int r1, b2;
     VADR effective_addr2;
-    struct sbfp op1;
+    float32 op1;
     int bit;
 
-    // parse instruction
     RXE(inst, regs, r1, b2, effective_addr2);
-
     //logmsg("TCEB r1=%d b2=%d\n", r1, b2);
     BFPINST_CHECK(regs);
 
-    // retrieve first operand.
-    get_sbfp(&op1, regs->fpr + FPR2I(r1));
+    get_float32(&op1, regs->fpr + FPR2I(r1));
 
-    switch ( sbfpclassify(&op1) )
-    {
-    case FP_ZERO:
-        bit=20+op1.sign; break;
-    case FP_NORMAL:
-        bit=22+op1.sign; break;
-    case FP_SUBNORMAL:
-        bit=24+op1.sign; break;
-    case FP_INFINITE:
-        bit=26+op1.sign; break;
-    case FP_NAN:
-        if ( !sbfpissnan(&op1) ) bit=28+op1.sign;
-        else                     bit=30+op1.sign;
-        break;
-    default:
-        bit=0; break;
-    }
+    if (float32_is_signaling_nan(op1))
+        bit=30;
+    else if (float32_is_nan(op1))
+        bit=28;
+    else if (float32_is_inf(op1))
+        bit=26;
+    else if (float32_is_subnormal(op1))
+        bit=24;
+    else if (float32_is_zero(op1))
+        bit=20;
+    else
+        bit=22;
+
+    if (float32_is_neg(op1))
+        bit++;
 
     bit=31-bit;
     regs->psw.cc = (effective_addr2>>bit) & 1;
-}
+
+} /* end DEF_INST(test_data_class_bfp_short) */
 
 /*-------------------------------------------------------------------*/
 /* ED11 TCDB  - TEST DATA CLASS (long BFP)                     [RXE] */
@@ -4516,39 +4512,35 @@ DEF_INST(test_data_class_bfp_long)
 {
     int r1, b2;
     VADR effective_addr2;
-    struct lbfp op1;
+    float64 op1;
     int bit;
 
-    // parse instruction
     RXE(inst, regs, r1, b2, effective_addr2);
-
     //logmsg("TCDB r1=%d b2=%d\n", r1, b2);
     BFPINST_CHECK(regs);
 
-    // retrieve first operand.
-    get_lbfp(&op1, regs->fpr + FPR2I(r1));
+    get_float64(&op1, regs->fpr + FPR2I(r1));
 
-    switch ( lbfpclassify(&op1) )
-    {
-    case FP_ZERO:
-        bit=20+op1.sign; break;
-    case FP_NORMAL:
-        bit=22+op1.sign; break;
-    case FP_SUBNORMAL:
-        bit=24+op1.sign; break;
-    case FP_INFINITE:
-        bit=26+op1.sign; break;
-    case FP_NAN:
-        if ( !lbfpissnan(&op1) ) bit=28+op1.sign;
-        else                     bit=30+op1.sign;
-        break;
-    default:
-        bit=0; break;
-    }
+    if (float64_is_signaling_nan(op1))
+        bit=30;
+    else if (float64_is_nan(op1))
+        bit=28;
+    else if (float64_is_inf(op1))
+        bit=26;
+    else if (float64_is_subnormal(op1))
+        bit=24;
+    else if (float64_is_zero(op1))
+        bit=20;
+    else
+        bit=22;
+
+    if (float64_is_neg(op1))
+        bit++;
 
     bit=31-bit;
     regs->psw.cc = (effective_addr2>>bit) & 1;
-}
+
+} /* end DEF_INST(test_data_class_bfp_long) */
 
 /*-------------------------------------------------------------------*/
 /* ED12 TCXB  - TEST DATA CLASS (extended BFP)                 [RXE] */
@@ -4558,40 +4550,36 @@ DEF_INST(test_data_class_bfp_ext)
 {
     int r1, b2;
     VADR effective_addr2;
-    struct ebfp op1;
+    float128 op1;
     int bit;
 
-    // parse instruction
     RXE(inst, regs, r1, b2, effective_addr2);
-
     //logmsg("TCXB r1=%d b2=%d\n", r1, b2);
     BFPINST_CHECK(regs);
     BFPREGPAIR_CHECK(r1, regs);
 
-    // retrieve first operand.
-    get_ebfp(&op1, regs->fpr + FPR2I(r1));
+    get_float128(&op1, regs->fpr + FPR2I(r1));
 
-    switch ( ebfpclassify(&op1) )
-    {
-    case FP_ZERO:
-        bit=20+op1.sign; break;
-    case FP_NORMAL:
-        bit=22+op1.sign; break;
-    case FP_SUBNORMAL:
-        bit=24+op1.sign; break;
-    case FP_INFINITE:
-        bit=26+op1.sign; break;
-    case FP_NAN:
-        if ( !ebfpissnan(&op1) ) bit=28+op1.sign;
-        else                     bit=30+op1.sign;
-        break;
-    default:
-        bit=0; break;
-    }
+    if (float128_is_signaling_nan(op1))
+        bit=30;
+    else if (float128_is_nan(op1))
+        bit=28;
+    else if (float128_is_inf(op1))
+        bit=26;
+    else if (float128_is_subnormal(op1))
+        bit=24;
+    else if (float128_is_zero(op1))
+        bit=20;
+    else
+        bit=22;
+
+    if (float128_is_neg(op1))
+        bit++;
 
     bit=31-bit;
     regs->psw.cc = (effective_addr2>>bit) & 1;
-}
+
+} /* end DEF_INST(test_data_class_bfp_ext) */
 
 /*-------------------------------------------------------------------*/
 /* DIVIDE TO INTEGER (long)                                          */
