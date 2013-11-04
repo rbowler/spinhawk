@@ -97,6 +97,18 @@ typedef struct {
 #define float32_default_nan 0xFFFFFFFF
 
 /*----------------------------------------------------------------------------
+| Returns 1 if the single-precision floating-point value `a' is infinity;
+| otherwise returns 0.
+*----------------------------------------------------------------------------*/
+
+flag float32_is_inf( float32 a )
+{
+
+    return ( 0xFF000000 == (bits32) ( a<<1 ) );
+
+}
+
+/*----------------------------------------------------------------------------
 | Returns 1 if the single-precision floating-point value `a' is a NaN;
 | otherwise returns 0.
 *----------------------------------------------------------------------------*/
@@ -129,6 +141,19 @@ flag float32_is_signaling_nan( float32 a )
 {
 
     return ( ( ( a>>22 ) & 0x1FF ) == 0x1FE ) && ( a & 0x003FFFFF );
+
+}
+
+/*----------------------------------------------------------------------------
+| Returns 1 if the single-precision floating-point value `a' is subnormal;
+| otherwise returns 0.
+*----------------------------------------------------------------------------*/
+
+flag float32_is_subnormal( float32 a )
+{
+
+    return ( ( ( a>>23 ) & 0xFF ) == 0 )
+        && ( a & 0x007FFFFF );
 
 }
 
@@ -239,6 +264,18 @@ static float32 propagateFloat32NaN( float32 a, float32 b )
 #define float64_default_nan LIT64( 0xFFFFFFFFFFFFFFFF )
 
 /*----------------------------------------------------------------------------
+| Returns 1 if the double-precision floating-point value `a' is infinity;
+| otherwise returns 0.
+*----------------------------------------------------------------------------*/
+
+flag float64_is_inf( float64 a )
+{
+
+    return ( LIT64( 0xFFE0000000000000 ) == (bits64) ( a<<1 ) );
+
+}
+
+/*----------------------------------------------------------------------------
 | Returns 1 if the double-precision floating-point value `a' is a NaN;
 | otherwise returns 0.
 *----------------------------------------------------------------------------*/
@@ -273,6 +310,19 @@ flag float64_is_signaling_nan( float64 a )
     return
            ( ( ( a>>51 ) & 0xFFF ) == 0xFFE )
         && ( a & LIT64( 0x0007FFFFFFFFFFFF ) );
+
+}
+
+/*----------------------------------------------------------------------------
+| Returns 1 if the double-precision floating-point value `a' is subnormal;
+| otherwise returns 0.
+*----------------------------------------------------------------------------*/
+
+flag float64_is_subnormal( float64 a )
+{
+
+    return ( ( ( a>>52 ) & 0x7FF ) == 0 )
+        && ( a & LIT64( 0x000FFFFFFFFFFFFF ) );
 
 }
 
@@ -490,6 +540,19 @@ static floatx80 propagateFloatx80NaN( floatx80 a, floatx80 b )
 #define float128_default_nan_low  LIT64( 0xFFFFFFFFFFFFFFFF )
 
 /*----------------------------------------------------------------------------
+| Returns 1 if the quadruple-precision floating-point value `a' is infinity;
+| otherwise returns 0.
+*----------------------------------------------------------------------------*/
+
+flag float128_is_inf( float128 a )
+{
+
+    return ( a.low == 0
+        && ( (bits64) ( a.high<<1 ) == LIT64( 0xFFFE000000000000 ) ) );
+
+}
+
+/*----------------------------------------------------------------------------
 | Returns 1 if the quadruple-precision floating-point value `a' is a NaN;
 | otherwise returns 0.
 *----------------------------------------------------------------------------*/
@@ -526,6 +589,19 @@ flag float128_is_signaling_nan( float128 a )
     return
            ( ( ( a.high>>47 ) & 0xFFFF ) == 0xFFFE )
         && ( a.low || ( a.high & LIT64( 0x00007FFFFFFFFFFF ) ) );
+
+}
+
+/*----------------------------------------------------------------------------
+| Returns 1 if the quadruple-precision floating-point value `a' is subnormal;
+| otherwise returns 0.
+*----------------------------------------------------------------------------*/
+
+flag float128_is_subnormal( float128 a )
+{
+
+    return ( ( ( a.high>>48 ) & 0x7FFF ) == 0 )
+        && ( a.low || ( a.high & LIT64( 0x0000FFFFFFFFFFFF ) ) );
 
 }
 

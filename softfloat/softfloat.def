@@ -35,9 +35,11 @@ EXPORTS
     float32_eq_signaling
     float32_le_quiet
     float32_lt_quiet
+    float32_is_inf
     float32_is_nan
     float32_is_neg
     float32_is_signaling_nan
+    float32_is_subnormal
     float32_is_zero
     float32_pos
     float32_neg
@@ -61,9 +63,11 @@ EXPORTS
     float64_eq_signaling
     float64_le_quiet
     float64_lt_quiet
+    float64_is_inf
     float64_is_nan
     float64_is_neg
     float64_is_signaling_nan
+    float64_is_subnormal
     float64_is_zero
     float64_pos
     float64_neg
@@ -87,9 +91,11 @@ EXPORTS
     float128_eq_signaling
     float128_le_quiet
     float128_lt_quiet
+    float128_is_inf
     float128_is_nan
     float128_is_neg
     float128_is_signaling_nan
+    float128_is_subnormal
     float128_is_zero
     float128_pos
     float128_neg
