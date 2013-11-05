@@ -8,7 +8,7 @@ ACLOCAL_AMFLAGS  = -I m4 -I autoconf
 
 lns=@LN_S@
 
-SUBDIRS = decNumber m4 util html man . crypto softfloat
+SUBDIRS = decNumber softfloat m4 util html man . crypto
 
 LDADD = @LIBS@
 
