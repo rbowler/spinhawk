@@ -1533,57 +1533,27 @@ DEF_INST(add_bfp_short)
 /*-------------------------------------------------------------------*/
 /* COMPARE (extended)                                                */
 /*-------------------------------------------------------------------*/
-static int compare_ebfp(struct ebfp *op1, struct ebfp *op2, int sig, REGS *regs)
+static int compare_ebfp(float128 *op1, float128 *op2, int sig, REGS *regs)
 {
-    int r, cl1, cl2;
+    int code = 0;
 
-    if (ebfpissnan(op1) || ebfpissnan(op2)) {
-        r = ieee_exception(FE_INVALID, regs);
-        if (r) {
-            return r;
+    float_clear_exception_flags();
+    if (float128_is_signaling_nan(*op1) || float128_is_signaling_nan(*op2)
+        || (sig && (float128_is_nan(*op1) || float128_is_nan(*op2)))) {
+        float_raise(float_flag_invalid);
+        code = float_exception(regs);
+        if (code) {
+            return code;
         }
     }
 
-    cl1 = ebfpclassify(op1);
-    cl2 = ebfpclassify(op2);
+    regs->psw.cc = (float128_is_nan(*op1) || float128_is_nan(*op2)) ? 3 :
+        float128_eq(*op1, *op2) ? 0 :
+        float128_lt_quiet(*op1, *op2) ? 1 : 2;
 
-    if (cl1 == FP_NAN || cl2 == FP_NAN) {
-        if (sig && !ebfpissnan(op1) && !ebfpissnan(op2)) {
-            r = ieee_exception(FE_INVALID, regs);
-            if (r) {
-                return r;
-            }
-        }
-        regs->psw.cc = 3;
-    } else if (cl1 == FP_INFINITE) {
-        if (cl2 == FP_INFINITE && op1->sign == op2->sign) {
-            regs->psw.cc = 0;
-        } else {
-            regs->psw.cc = op1->sign ? 1 : 2;
-        }
-    } else if (cl2 == FP_INFINITE) {
-        regs->psw.cc = op2->sign ? 2 : 1;
-    } else if (cl1 == FP_ZERO) {
-        if (cl2 == FP_ZERO) {
-            regs->psw.cc = 0;
-        } else {
-            regs->psw.cc = op2->sign ? 2 : 1;
-        }
-    } else if (cl2 == FP_ZERO) {
-        regs->psw.cc = op1->sign ? 1 : 2;
-    } else if (op1->sign != op2->sign) {
-        regs->psw.cc = op1->sign ? 1 : 2;
-    } else {
-        ebfpston(op1);
-        ebfpston(op2);
-        if (op1->v == op2->v) {
-            regs->psw.cc = 0;
-        } else {
-            regs->psw.cc = op1->v > op2->v ? 2 : 1;
-        }
-    }
-    return 0;
-}
+    return code;
+
+} /* end function compare_ebfp */
 
 /*-------------------------------------------------------------------*/
 /* B349 CXBR  - COMPARE (extended BFP)                         [RRE] */
@@ -1591,7 +1561,7 @@ static int compare_ebfp(struct ebfp *op1, struct ebfp *op2, int sig, REGS *regs)
 DEF_INST(compare_bfp_ext_reg)
 {
     int r1, r2;
-    struct ebfp op1, op2;
+    float128 op1, op2;
     int pgm_check;
 
     RRE(inst, regs, r1, r2);
@@ -1599,70 +1569,41 @@ DEF_INST(compare_bfp_ext_reg)
     BFPINST_CHECK(regs);
     BFPREGPAIR2_CHECK(r1, r2, regs);
 
-    get_ebfp(&op1, regs->fpr + FPR2I(r1));
-    get_ebfp(&op2, regs->fpr + FPR2I(r2));
+    get_float128(&op1, regs->fpr + FPR2I(r1));
+    get_float128(&op2, regs->fpr + FPR2I(r2));
 
     pgm_check = compare_ebfp(&op1, &op2, 0, regs);
 
     if (pgm_check) {
         regs->program_interrupt(regs, pgm_check);
     }
-}
+
+} /* end DEF_INST(compare_bfp_ext_reg) */
 
 /*-------------------------------------------------------------------*/
 /* COMPARE (long)                                                    */
 /*-------------------------------------------------------------------*/
-static int compare_lbfp(struct lbfp *op1, struct lbfp *op2, int sig, REGS *regs)
+static int compare_lbfp(float64 *op1, float64 *op2, int sig, REGS *regs)
 {
-    int r, cl1, cl2;
+    int code = 0;
 
-    if (lbfpissnan(op1) || lbfpissnan(op2)) {
-        r = ieee_exception(FE_INVALID, regs);
-        if (r) {
-            return r;
+    float_clear_exception_flags();
+    if (float64_is_signaling_nan(*op1) || float64_is_signaling_nan(*op2)
+        || (sig && (float64_is_nan(*op1) || float64_is_nan(*op2)))) {
+        float_raise(float_flag_invalid);
+        code = float_exception(regs);
+        if (code) {
+            return code;
         }
     }
 
-    cl1 = lbfpclassify(op1);
-    cl2 = lbfpclassify(op2);
+    regs->psw.cc = (float64_is_nan(*op1) || float64_is_nan(*op2)) ? 3 :
+        float64_eq(*op1, *op2) ? 0 :
+        float64_lt_quiet(*op1, *op2) ? 1 : 2;
 
-    if (cl1 == FP_NAN || cl2 == FP_NAN) {
-        if (sig && !lbfpissnan(op1) && !lbfpissnan(op2)) {
-            r = ieee_exception(FE_INVALID, regs);
-            if (r) {
-                return r;
-            }
-        }
-        regs->psw.cc = 3;
-    } else if (cl1 == FP_INFINITE) {
-        if (cl2 == FP_INFINITE && op1->sign == op2->sign) {
-            regs->psw.cc = 0;
-        } else {
-            regs->psw.cc = op1->sign ? 1 : 2;
-        }
-    } else if (cl2 == FP_INFINITE) {
-        regs->psw.cc = op2->sign ? 2 : 1;
-    } else if (cl1 == FP_ZERO) {
-        if (cl2 == FP_ZERO) {
-            regs->psw.cc = 0;
-        } else {
-            regs->psw.cc = op2->sign ? 2 : 1;
-        }
-    } else if (cl2 == FP_ZERO) {
-        regs->psw.cc = op1->sign ? 1 : 2;
-    } else if (op1->sign != op2->sign) {
-        regs->psw.cc = op1->sign ? 1 : 2;
-    } else {
-        lbfpston(op1);
-        lbfpston(op2);
-        if (op1->v == op2->v) {
-            regs->psw.cc = 0;
-        } else {
-            regs->psw.cc = op1->v > op2->v ? 2 : 1;
-        }
-    }
-    return 0;
-}
+    return code;
+
+} /* end function compare_lbfp */
 
 /*-------------------------------------------------------------------*/
 /* B319 CDBR  - COMPARE (long BFP)                             [RRE] */
@@ -1670,22 +1611,23 @@ static int compare_lbfp(struct lbfp *op1, struct lbfp *op2, int sig, REGS *regs)
 DEF_INST(compare_bfp_long_reg)
 {
     int r1, r2;
-    struct lbfp op1, op2;
+    float64 op1, op2;
     int pgm_check;
 
     RRE(inst, regs, r1, r2);
     //logmsg("CDBR r1=%d r2=%d\n", r1, r2);
     BFPINST_CHECK(regs);
 
-    get_lbfp(&op1, regs->fpr + FPR2I(r1));
-    get_lbfp(&op2, regs->fpr + FPR2I(r2));
+    get_float64(&op1, regs->fpr + FPR2I(r1));
+    get_float64(&op2, regs->fpr + FPR2I(r2));
 
     pgm_check = compare_lbfp(&op1, &op2, 0, regs);
 
     if (pgm_check) {
         regs->program_interrupt(regs, pgm_check);
     }
-}
+
+} /* end DEF_INST(compare_bfp_long_reg) */
 
 /*-------------------------------------------------------------------*/
 /* ED19 CDB   - COMPARE (long BFP)                             [RXE] */
@@ -1694,22 +1636,23 @@ DEF_INST(compare_bfp_long)
 {
     int r1, b2;
     VADR effective_addr2;
-    struct lbfp op1, op2;
+    float64 op1, op2;
     int pgm_check;
 
     RXE(inst, regs, r1, b2, effective_addr2);
     //logmsg("CDB r1=%d b2=%d\n", r1, b2);
     BFPINST_CHECK(regs);
 
-    get_lbfp(&op1, regs->fpr + FPR2I(r1));
-    vfetch_lbfp(&op2, effective_addr2, b2, regs);
+    get_float64(&op1, regs->fpr + FPR2I(r1));
+    vfetch_float64(&op2, effective_addr2, b2, regs);
 
     pgm_check = compare_lbfp(&op1, &op2, 0, regs);
 
     if (pgm_check) {
         regs->program_interrupt(regs, pgm_check);
     }
-}
+
+} /* end DEF_INST(compare_bfp_long) */
 
 /*-------------------------------------------------------------------*/
 /* COMPARE (short)                                                   */
@@ -1791,7 +1734,7 @@ DEF_INST(compare_bfp_short)
 DEF_INST(compare_and_signal_bfp_ext_reg)
 {
     int r1, r2;
-    struct ebfp op1, op2;
+    float128 op1, op2;
     int pgm_check;
 
     RRE(inst, regs, r1, r2);
@@ -1799,15 +1742,16 @@ DEF_INST(compare_and_signal_bfp_ext_reg)
     BFPINST_CHECK(regs);
     BFPREGPAIR2_CHECK(r1, r2, regs);
 
-    get_ebfp(&op1, regs->fpr + FPR2I(r1));
-    get_ebfp(&op2, regs->fpr + FPR2I(r2));
+    get_float128(&op1, regs->fpr + FPR2I(r1));
+    get_float128(&op2, regs->fpr + FPR2I(r2));
 
     pgm_check = compare_ebfp(&op1, &op2, 1, regs);
 
     if (pgm_check) {
         regs->program_interrupt(regs, pgm_check);
     }
-}
+
+} /* end DEF_INST(compare_and_signal_bfp_ext_reg) */
 
 /*-------------------------------------------------------------------*/
 /* B318 KDBR  - COMPARE AND SIGNAL (long BFP)                  [RRE] */
@@ -1815,22 +1759,23 @@ DEF_INST(compare_and_signal_bfp_ext_reg)
 DEF_INST(compare_and_signal_bfp_long_reg)
 {
     int r1, r2;
-    struct lbfp op1, op2;
+    float64 op1, op2;
     int pgm_check;
 
     RRE(inst, regs, r1, r2);
     //logmsg("KDBR r1=%d r2=%d\n", r1, r2);
     BFPINST_CHECK(regs);
 
-    get_lbfp(&op1, regs->fpr + FPR2I(r1));
-    get_lbfp(&op2, regs->fpr + FPR2I(r2));
+    get_float64(&op1, regs->fpr + FPR2I(r1));
+    get_float64(&op2, regs->fpr + FPR2I(r2));
 
     pgm_check = compare_lbfp(&op1, &op2, 1, regs);
 
     if (pgm_check) {
         regs->program_interrupt(regs, pgm_check);
     }
-}
+
+} /* end DEF_INST(compare_and_signal_bfp_long_reg) */
 
 /*-------------------------------------------------------------------*/
 /* ED18 KDB   - COMPARE AND SIGNAL (long BFP)                  [RXE] */
@@ -1839,22 +1784,23 @@ DEF_INST(compare_and_signal_bfp_long)
 {
     int r1, b2;
     VADR effective_addr2;
-    struct lbfp op1, op2;
+    float64 op1, op2;
     int pgm_check;
 
     RXE(inst, regs, r1, b2, effective_addr2);
     //logmsg("KDB r1=%d b2=%d\n", r1, b2);
     BFPINST_CHECK(regs);
 
-    get_lbfp(&op1, regs->fpr + FPR2I(r1));
-    vfetch_lbfp(&op2, effective_addr2, b2, regs);
+    get_float64(&op1, regs->fpr + FPR2I(r1));
+    vfetch_float64(&op2, effective_addr2, b2, regs);
 
     pgm_check = compare_lbfp(&op1, &op2, 1, regs);
 
     if (pgm_check) {
         regs->program_interrupt(regs, pgm_check);
     }
-}
+
+} /* end DEF_INST(compare_and_signal_bfp_long) */
 
 /*-------------------------------------------------------------------*/
 /* B308 KEBR  - COMPARE AND SIGNAL (short BFP)                 [RRE] */
