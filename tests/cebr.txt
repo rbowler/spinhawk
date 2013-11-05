@@ -1,0 +1,72 @@
+* CEBR/KEBR test $Id$
+sysclear
+archmode esame
+r 1a0=00000001800000000000000000000200 # z/Arch restart PSW
+r 1d0=00000001800000000000000000000280 # z/Arch pgm new PSW
+r 200=B7000320     # LCTL R0,R0,CTLR0  Set CR0 bit 45
+r 204=B29D0324     # LFPC FPCREG       Load value into FPC register
+r 208=E54C03280000 # MVHI COUNT,0      Clear error counter
+r 20E=41000008     # LA R0,8           R0=Number of test data
+r 212=41100800     # LA R1,TEST1       R1=>Test data table
+r 216=41F00900     # LA R15,RES1       R15=>Result table
+r 21A=1B88         # SR R8,R8          Clear CC register
+r 21C=78401000     #A LE R4,0(,R1)     Load R4=TESTn
+r 220=78501004     # LE R5,4(,R1)      Load R5=TESTn+4
+r 224=B29D1008     # LFPC 8(1)         Load FPC=TESTn+8 
+r 228=41E00238     # LA R14,B          R14=resume address
+r 22C=B3090045     # CEBR R4,R5        Compare R4 to R5
+r 230=B2220080     # IPM R8            R8=Cond code and pgm mask
+r 234=5080F000     # ST R8,0(,R15)     Store CC in table
+r 238=41F0F004     #B LA R15,4(,R15)   R15=>next result table
+r 23C=41E0024C     # LA R14,C          R14=resume address
+r 240=B3080045     # KEBR R4,R5        Compare and signal R4 to R5
+r 244=B2220080     # IPM R8            R8=Cond code and pgm mask
+r 248=5080F000     # ST R8,0(,R15)     Store CC in table
+r 24C=41F0F004     #C LA R15,4(,R15)   R15=>next result table
+r 250=41101010     # LA R1,16(,R1)     R1=>Next TESTn
+r 254=4600021C     # BCT R0,A          Loop to end of TEST table
+r 258=41000900     # LA R0,RES1        R0->Actual results
+r 25C=41100040     # LA R1,8*8         R1=Length of results table
+r 260=41200C00     # LA R2,EXP1        R2->Expected results
+r 264=41300040     # LA R3,8*8         R3=Length of results table
+r 268=0F02         # CLCL R0,R2        Compare with expected results
+r 26A=477002FC     # BNE DIE           Error if not equal
+r 26E=B2B20300     # LPSWE WAITPSW     Load enabled wait PSW
+r 280=B29C0324     #PGM STFPC FPCREG   Save FPC register
+r 284=92FFF000     # MVI 0(R15),X'FF'  Indicate program check
+r 288=D200F0010326 # MVC 1(1,R15),FPCREG+2  Save DXC in result table
+r 28E=D201F002008E # MVC 2(2,R15),PGMINT+2  Save interrupt code in result table
+r 294=07FE         # BR R14            Resume next test
+r 2FC=B2B20310     #DIE LPSWE DISWAIT  Load disabled wait PSW
+r 300=07020001800000000000000000AAAAAA # WAITPSW Enabled wait state PSW
+r 310=00020001800000000000000000BADBAD # DISWAIT Disabled wait state PSW
+r 320=00040000     # CTLR0             Control register 0 (bit45 AFP control)
+r 324=00000000     # FPCREG            Floating point control register
+r 328=00000000     # COUNT             Error counter
+* Test data
+r 800=4040000040000000F8000000         # TEST1 DC EB'3,2',FPC=INV-DIVZ-UF-OF-INEX
+r 810=0000000080000000F8000000         # TEST2 DC EB'0,-0',FPC=INV-DIVZ-UF-OF-INEX
+r 820=BF8000003F800000F8000000         # TEST3 DC EB'-1,1',FPC=INV-DIVZ-UF-OF-INEX
+r 830=7F8000017F7FC99E80000000         # TEST4 DC EB'SNAN,3.4E+38',FPC=INV
+r 840=7FC000007F7FC99E80000000         # TEST5 DC EB'QNAN,3.4E+38',FPC=INV
+r 850=3F8000007F800000F8000000         # TEST6 DC EB'1,INF',FPC=INV-DIVZ-UF-OF-INEX
+r 860=7F8000017F7FC99E78000000         # TEST7 DC EB'SNAN,3.4E+38',FPC=DIVZ-UF-OF-INEX
+r 870=FF800000FF800000F8000000         # TEST8 DC EB'-INF,-INF',FPC=INV-DIVZ-UF-OF-INEX
+* Expected condition codes and DXC codes      CEBR     KEBR
+r C00=2000000020000000                 # EXP1 CC=2     CC=2
+r C08=0000000000000000                 # EXP2 CC=0     CC=0
+r C10=1000000010000000                 # EXP3 CC=1     CC=1
+r C18=FF800007FF800007                 # EXP4 DXC=INV  DXC=INV
+r C20=30000000FF800007                 # EXP5 CC=3     DXC=INV
+r C28=1000000010000000                 # EXP6 CC=1     CC=1
+r C30=3000000030000000                 # EXP7 CC=3     CC=3
+r C38=0000000000000000                 # EXP8 CC=0     CC=0
+pgmtrace +7
+restart
+pause 1
+* Display test data
+r 800.80
+* Display expected results
+r C00.40
+* Display actual results
+r 900.40
