@@ -3266,46 +3266,27 @@ DEF_INST(load_positive_bfp_short_reg)
 /*-------------------------------------------------------------------*/
 DEF_INST(load_rounded_bfp_long_to_short_reg)
 {
-    int r1, r2, raised;
-    struct sbfp op1;
-    struct lbfp op2;
+    int r1, r2;
+    float32 op1;
+    float64 op2;
     int pgm_check;
 
     RRE(inst, regs, r1, r2);
     //logmsg("LEDBR r1=%d r2=%d\n", r1, r2);
     BFPINST_CHECK(regs);
 
-    get_lbfp(&op2, regs->fpr + FPR2I(r2));
+    get_float64(&op2, regs->fpr + FPR2I(r2));
 
-    switch (lbfpclassify(&op2)) {
-    case FP_ZERO:
-        sbfpzero(&op1, op2.sign);
-        break;
-    case FP_NAN:
-        if (lbfpissnan(&op2)) {
-            ieee_exception(FE_INVALID, regs);
-            sbfpstoqnan(&op1);
-        }
-        break;
-    case FP_INFINITE:
-        sbfpinfinity(&op1, op2.sign);
-        break;
-    default:
-        FECLEAREXCEPT(FE_ALL_EXCEPT);
-        lbfpston(&op2);
-        op1.v = (double)op2.v;
-        sbfpntos(&op1);
-        raised = fetestexcept(FE_ALL_EXCEPT);
-        if (raised) {
-            pgm_check = ieee_exception(raised, regs);
-            if (pgm_check) {
-                regs->program_interrupt(regs, pgm_check);
-            }
-        }
-        break;
+    float_clear_exception_flags();
+    set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
+    op1 = float64_to_float32(op2);
+    pgm_check = float_exception(regs);
+
+    put_float32(&op1, regs->fpr + FPR2I(r1));
+
+    if (pgm_check) {
+        regs->program_interrupt(regs, pgm_check);
     }
-
-    put_sbfp(&op1, regs->fpr + FPR2I(r1));
 
 } /* end DEF_INST(load_rounded_bfp_long_to_short_reg) */
 
@@ -3314,9 +3295,9 @@ DEF_INST(load_rounded_bfp_long_to_short_reg)
 /*-------------------------------------------------------------------*/
 DEF_INST(load_rounded_bfp_ext_to_long_reg)
 {
-    int r1, r2, raised;
-    struct lbfp op1;
-    struct ebfp op2;
+    int r1, r2;
+    float64 op1;
+    float128 op2;
     int pgm_check;
 
     RRE(inst, regs, r1, r2);
@@ -3324,37 +3305,18 @@ DEF_INST(load_rounded_bfp_ext_to_long_reg)
     BFPINST_CHECK(regs);
     BFPREGPAIR2_CHECK(r1, r2, regs);
 
-    get_ebfp(&op2, regs->fpr + FPR2I(r2));
+    get_float128(&op2, regs->fpr + FPR2I(r2));
 
-    switch (ebfpclassify(&op2)) {
-    case FP_ZERO:
-        lbfpzero(&op1, op2.sign);
-        break;
-    case FP_NAN:
-        if (ebfpissnan(&op2)) {
-            ieee_exception(FE_INVALID, regs);
-            lbfpstoqnan(&op1);
-        }
-        break;
-    case FP_INFINITE:
-        lbfpinfinity(&op1, op2.sign);
-        break;
-    default:
-        FECLEAREXCEPT(FE_ALL_EXCEPT);
-        ebfpston(&op2);
-        op1.v = op2.v;
-        lbfpntos(&op1);
-        raised = fetestexcept(FE_ALL_EXCEPT);
-        if (raised) {
-            pgm_check = ieee_exception(raised, regs);
-            if (pgm_check) {
-                regs->program_interrupt(regs, pgm_check);
-            }
-        }
-        break;
+    float_clear_exception_flags();
+    set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
+    op1 = float128_to_float64(op2);
+    pgm_check = float_exception(regs);
+
+    put_float64(&op1, regs->fpr + FPR2I(r1));
+
+    if (pgm_check) {
+        regs->program_interrupt(regs, pgm_check);
     }
-
-    put_lbfp(&op1, regs->fpr + FPR2I(r1));
 
 } /* end DEF_INST(load_rounded_bfp_ext_to_long_reg) */
 
@@ -3363,9 +3325,9 @@ DEF_INST(load_rounded_bfp_ext_to_long_reg)
 /*-------------------------------------------------------------------*/
 DEF_INST(load_rounded_bfp_ext_to_short_reg)
 {
-    int r1, r2, raised;
-    struct sbfp op1;
-    struct ebfp op2;
+    int r1, r2;
+    float32 op1;
+    float128 op2;
     int pgm_check;
 
     RRE(inst, regs, r1, r2);
@@ -3373,37 +3335,18 @@ DEF_INST(load_rounded_bfp_ext_to_short_reg)
     BFPINST_CHECK(regs);
     BFPREGPAIR2_CHECK(r1, r2, regs);
 
-    get_ebfp(&op2, regs->fpr + FPR2I(r2));
+    get_float128(&op2, regs->fpr + FPR2I(r2));
 
-    switch (ebfpclassify(&op2)) {
-    case FP_ZERO:
-        sbfpzero(&op1, op2.sign);
-        break;
-    case FP_NAN:
-        if (ebfpissnan(&op2)) {
-            ieee_exception(FE_INVALID, regs);
-            sbfpstoqnan(&op1);
-        }
-        break;
-    case FP_INFINITE:
-        sbfpinfinity(&op1, op2.sign);
-        break;
-    default:
-        FECLEAREXCEPT(FE_ALL_EXCEPT);
-        ebfpston(&op2);
-        op1.v = op2.v;
-        sbfpntos(&op1);
-        raised = fetestexcept(FE_ALL_EXCEPT);
-        if (raised) {
-            pgm_check = ieee_exception(raised, regs);
-            if (pgm_check) {
-                regs->program_interrupt(regs, pgm_check);
-            }
-        }
-        break;
+    float_clear_exception_flags();
+    set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
+    op1 = float128_to_float32(op2);
+    pgm_check = float_exception(regs);
+
+    put_float32(&op1, regs->fpr + FPR2I(r1));
+
+    if (pgm_check) {
+        regs->program_interrupt(regs, pgm_check);
     }
-
-    put_sbfp(&op1, regs->fpr + FPR2I(r1));
 
 } /* end DEF_INST(load_rounded_bfp_ext_to_short_reg) */
 
