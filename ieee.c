@@ -1857,7 +1857,7 @@ DEF_INST(compare_and_signal_bfp_short)
 DEF_INST(convert_fix32_to_bfp_ext_reg)
 {
     int r1, r2;
-    struct ebfp op1;
+    float128 op1;
     S32 op2;
 
     RRE(inst, regs, r1, r2);
@@ -1866,15 +1866,8 @@ DEF_INST(convert_fix32_to_bfp_ext_reg)
     BFPREGPAIR_CHECK(r1, regs);
 
     op2 = regs->GR_L(r2);
-
-    if (op2) {
-        op1.v = (long double)op2;
-        ebfpntos(&op1);
-    } else {
-        ebfpzero(&op1, 0);
-    }
-
-    put_ebfp(&op1, regs->fpr + FPR2I(r1));
+    op1 = int32_to_float128(op2);
+    put_float128(&op1, regs->fpr + FPR2I(r1));
 
 } /* end DEF_INST(convert_fix32_to_bfp_ext_reg) */
 
@@ -1884,7 +1877,7 @@ DEF_INST(convert_fix32_to_bfp_ext_reg)
 DEF_INST(convert_fix32_to_bfp_long_reg)
 {
     int r1, r2;
-    struct lbfp op1;
+    float64 op1;
     S32 op2;
 
     RRE(inst, regs, r1, r2);
@@ -1892,16 +1885,10 @@ DEF_INST(convert_fix32_to_bfp_long_reg)
     BFPINST_CHECK(regs);
 
     op2 = regs->GR_L(r2);
+    op1 = int32_to_float64(op2);
+    put_float64(&op1, regs->fpr + FPR2I(r1));
 
-    if (op2) {
-        op1.v = (double)op2;
-        lbfpntos(&op1);
-    } else {
-        lbfpzero(&op1, 0);
-    }
-
-    put_lbfp(&op1, regs->fpr + FPR2I(r1));
-}
+} /* end DEF_INST(convert_fix32_to_bfp_long_reg) */
 
 /*-------------------------------------------------------------------*/
 /* B394 CEFBR - CONVERT FROM FIXED (32 to short BFP)           [RRE] */
@@ -1909,8 +1896,9 @@ DEF_INST(convert_fix32_to_bfp_long_reg)
 DEF_INST(convert_fix32_to_bfp_short_reg)
 {
     int r1, r2;
-    struct sbfp op1;
+    float32 op1;
     S32 op2;
+    int pgm_check;
 
     RRE(inst, regs, r1, r2);
     //logmsg("CEFBR r1=%d r2=%d\n", r1, r2);
@@ -1918,15 +1906,18 @@ DEF_INST(convert_fix32_to_bfp_short_reg)
 
     op2 = regs->GR_L(r2);
 
-    if (op2) {
-        op1.v = (float)op2;
-        sbfpntos(&op1);
-    } else {
-        sbfpzero(&op1, 0);
+    float_clear_exception_flags();
+    set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
+    op1 = int32_to_float32(op2);
+    pgm_check = float_exception(regs);
+
+    put_float32(&op1, regs->fpr + FPR2I(r1));
+
+    if (pgm_check) {
+        regs->program_interrupt(regs, pgm_check);
     }
 
-    put_sbfp(&op1, regs->fpr + FPR2I(r1));
-}
+} /* end DEF_INST(convert_fix32_to_bfp_short_reg) */
 
 #if defined(FEATURE_ESAME)
 /*-------------------------------------------------------------------*/
@@ -1935,7 +1926,7 @@ DEF_INST(convert_fix32_to_bfp_short_reg)
 DEF_INST(convert_fix64_to_bfp_ext_reg)
 {
     int r1, r2;
-    struct ebfp op1;
+    float128 op1;
     S64 op2;
 
     RRE(inst, regs, r1, r2);
@@ -1944,15 +1935,8 @@ DEF_INST(convert_fix64_to_bfp_ext_reg)
     BFPREGPAIR_CHECK(r1, regs);
 
     op2 = regs->GR_G(r2);
-
-    if (op2) {
-        op1.v = (long double)op2;
-        ebfpntos(&op1);
-    } else {
-        ebfpzero(&op1, 0);
-    }
-
-    put_ebfp(&op1, regs->fpr + FPR2I(r1));
+    op1 = int64_to_float128(op2);
+    put_float128(&op1, regs->fpr + FPR2I(r1));
 
 } /* end DEF_INST(convert_fix64_to_bfp_ext_reg) */
 #endif /*defined(FEATURE_ESAME)*/
@@ -1964,8 +1948,9 @@ DEF_INST(convert_fix64_to_bfp_ext_reg)
 DEF_INST(convert_fix64_to_bfp_long_reg)
 {
     int r1, r2;
-    struct lbfp op1;
+    float64 op1;
     S64 op2;
+    int pgm_check;
 
     RRE(inst, regs, r1, r2);
     //logmsg("CDGBR r1=%d r2=%d\n", r1, r2);
@@ -1973,15 +1958,18 @@ DEF_INST(convert_fix64_to_bfp_long_reg)
 
     op2 = regs->GR_G(r2);
 
-    if (op2) {
-        op1.v = (double)op2;
-        lbfpntos(&op1);
-    } else {
-        lbfpzero(&op1, 0);
+    float_clear_exception_flags();
+    set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
+    op1 = int64_to_float64(op2);
+    pgm_check = float_exception(regs);
+
+    put_float64(&op1, regs->fpr + FPR2I(r1));
+
+    if (pgm_check) {
+        regs->program_interrupt(regs, pgm_check);
     }
 
-    put_lbfp(&op1, regs->fpr + FPR2I(r1));
-}
+} /* end DEF_INST(convert_fix64_to_bfp_long_reg) */
 #endif /*defined(FEATURE_ESAME)*/
 
 #if defined(FEATURE_ESAME)
@@ -1991,8 +1979,9 @@ DEF_INST(convert_fix64_to_bfp_long_reg)
 DEF_INST(convert_fix64_to_bfp_short_reg)
 {
     int r1, r2;
-    struct sbfp op1;
+    float32 op1;
     S64 op2;
+    int pgm_check;
 
     RRE(inst, regs, r1, r2);
     //logmsg("CEGBR r1=%d r2=%d\n", r1, r2);
@@ -2000,15 +1989,18 @@ DEF_INST(convert_fix64_to_bfp_short_reg)
 
     op2 = regs->GR_G(r2);
 
-    if (op2) {
-        op1.v = (float)op2;
-        sbfpntos(&op1);
-    } else {
-        sbfpzero(&op1, 0);
+    float_clear_exception_flags();
+    set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
+    op1 = int64_to_float32(op2);
+    pgm_check = float_exception(regs);
+
+    put_float32(&op1, regs->fpr + FPR2I(r1));
+
+    if (pgm_check) {
+        regs->program_interrupt(regs, pgm_check);
     }
 
-    put_sbfp(&op1, regs->fpr + FPR2I(r1));
-}
+} /* end DEF_INST(convert_fix64_to_bfp_short_reg) */
 #endif /*defined(FEATURE_ESAME)*/
 
 /*-------------------------------------------------------------------*/
