@@ -2801,11 +2801,12 @@ DEF_INST(load_fp_int_bfp_short_reg)
     set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
 
     pgm_check = float_exception(regs);
+
+    put_float32(&op1, regs->fpr + FPR2I(r1));
+
     if (pgm_check) {
         regs->program_interrupt(regs, pgm_check);
     }
-
-    put_float32(&op1, regs->fpr + FPR2I(r1));
 
 } /* end DEF_INST(load_fp_int_bfp_short_reg) */
 
@@ -2830,11 +2831,12 @@ DEF_INST(load_fp_int_bfp_long_reg)
     set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
 
     pgm_check = float_exception(regs);
+
+    put_float64(&op1, regs->fpr + FPR2I(r1));
+
     if (pgm_check) {
         regs->program_interrupt(regs, pgm_check);
     }
-
-    put_float64(&op1, regs->fpr + FPR2I(r1));
 
 } /* end DEF_INST(load_fp_int_bfp_long_reg) */
 
@@ -2860,11 +2862,12 @@ DEF_INST(load_fp_int_bfp_ext_reg)
     set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
 
     pgm_check = float_exception(regs);
+
+    put_float128(&op1, regs->fpr + FPR2I(r1));
+
     if (pgm_check) {
         regs->program_interrupt(regs, pgm_check);
     }
-
-    put_float128(&op1, regs->fpr + FPR2I(r1));
 
 } /* end DEF_INST(load_fp_int_bfp_ext_reg) */
 
