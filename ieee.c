@@ -3287,6 +3287,11 @@ DEF_INST(load_rounded_bfp_long_to_short_reg)
 
     put_float32(&op1, regs->fpr + FPR2I(r1));
 
+    if (pgm_check && (regs->fpc & (FPC_DXC_O | FPC_DXC_U))) {
+        op2 = float32_to_float64(op1);
+        put_float64(&op2, regs->fpr + FPR2I(r1));
+    }
+
     if (pgm_check) {
         regs->program_interrupt(regs, pgm_check);
     }
@@ -3317,6 +3322,11 @@ DEF_INST(load_rounded_bfp_ext_to_long_reg)
 
     put_float64(&op1, regs->fpr + FPR2I(r1));
 
+    if (pgm_check && (regs->fpc & (FPC_DXC_O | FPC_DXC_U))) {
+        op2 = float64_to_float128(op1);
+        put_float128(&op2, regs->fpr + FPR2I(r1));
+    }
+
     if (pgm_check) {
         regs->program_interrupt(regs, pgm_check);
     }
@@ -3346,6 +3356,11 @@ DEF_INST(load_rounded_bfp_ext_to_short_reg)
     pgm_check = float_exception(regs);
 
     put_float32(&op1, regs->fpr + FPR2I(r1));
+
+    if (pgm_check && (regs->fpc & (FPC_DXC_O | FPC_DXC_U))) {
+        op2 = float32_to_float128(op1);
+        put_float128(&op2, regs->fpr + FPR2I(r1));
+    }
 
     if (pgm_check) {
         regs->program_interrupt(regs, pgm_check);
