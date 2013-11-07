@@ -1033,45 +1033,42 @@ static inline void put_float128(float128 *op, U32 *fpr) {
  * save result into long register and return condition code
  * Roger Bowler, 19 July 2003
  */
-static int cnvt_bfp_to_hfp (struct lbfp *op, int class, U32 *fpr)
+static int cnvt_bfp_to_hfp (float64 *op, U32 *fpr)
 {
     int exp;
     U64 fract;
     U32 r0, r1;
     int cc;
+    int sign;
 
-    switch (class) {
-    default:
-    case FP_NAN:
+    sign = float64_is_neg(*op) ? 1 : 0;
+
+    if (float64_is_nan(*op)) {
         r0 = 0x7FFFFFFF;
         r1 = 0xFFFFFFFF;
         cc = 3;
-        break;
-    case FP_INFINITE:
-        r0 = op->sign ? 0xFFFFFFFF : 0x7FFFFFFF;
+    } else if (float64_is_inf(*op)) {
+        r0 = sign ? 0xFFFFFFFF : 0x7FFFFFFF;
         r1 = 0xFFFFFFFF;
         cc = 3;
-        break;
-    case FP_ZERO:
-        r0 = op->sign ? 0x80000000 : 0;
+    } else if (float64_is_zero(*op)) {
+        r0 = sign ? 0x80000000 : 0;
         r1 = 0;
         cc = 0;
-        break;
-    case FP_SUBNORMAL:
-        r0 = op->sign ? 0x80000000 : 0;
+    } else if (float64_is_subnormal(*op)) {
+        r0 = sign ? 0x80000000 : 0;
         r1 = 0;
-        cc = op->sign ? 1 : 2;
-        break;
-    case FP_NORMAL:
+        cc = sign ? 1 : 2;
+    } else {
         //logmsg("ieee: exp=%d (X\'%3.3x\')\tfract=%16.16"I64_FMT"x\n",
-        //        op->exp, op->exp, op->fract);
+        //        float64_exp(*op), float64_exp(*op), float64_fract(*op));
         /* Insert an implied 1. in front of the 52 bit binary
            fraction and lengthen the result to 56 bits */
-        fract = (U64)(op->fract | 0x10000000000000ULL) << 3;
+        fract = (U64)(float64_fract(*op) | 0x10000000000000ULL) << 3;
 
         /* The binary exponent is equal to the biased exponent - 1023
            adjusted by 1 to move the point before the 56 bit fraction */
-        exp = op->exp - 1023 + 1;
+        exp = float64_exp(*op) - 1023 + 1;
 
         //logmsg("ieee: adjusted exp=%d\tfract=%16.16"I64_FMT"x\n", exp, fract);
         /* Shift the fraction right one bit at a time until
@@ -1089,37 +1086,38 @@ static int cnvt_bfp_to_hfp (struct lbfp *op, int class, U32 *fpr)
 
         /* If the hexadecimal exponent is less than -64 then return
            a signed zero result with a non-zero condition code */
-        if (exp < -64) {
-            r0 = op->sign ? 0x80000000 : 0;
+        if (exp < -64)
+        {
+            r0 = sign ? 0x80000000 : 0;
             r1 = 0;
-            cc = op->sign ? 1 : 2;
-            break;
+            cc = sign ? 1 : 2;
         }
-
         /* If the hexadecimal exponent exceeds +63 then return
            a signed maximum result with condition code 3 */
-        if (exp > 63) {
-            r0 = op->sign ? 0xFFFFFFFF : 0x7FFFFFFF;
+        else if (exp > 63)
+        {
+            r0 = sign ? 0xFFFFFFFF : 0x7FFFFFFF;
             r1 = 0xFFFFFFFF;
             cc = 3;
-            break;
         }
+        else
+        {
+            /* Convert the hexadecimal exponent to a characteristic
+               by adding 64 */
+            exp += 64;
 
-        /* Convert the hexadecimal exponent to a characteristic
-           by adding 64 */
-        exp += 64;
-
-        /* Pack the exponent and the fraction into the result */
-        r0 = (op->sign ? 1<<31 : 0) | (exp << 24) | (fract >> 32);
-        r1 = fract & 0xFFFFFFFF;
-        cc = op->sign ? 1 : 2;
-        break;
+            /* Pack the exponent and the fraction into the result */
+            r0 = (sign ? 1<<31 : 0) | (exp << 24) | (fract >> 32);
+            r1 = fract & 0xFFFFFFFF;
+            cc = sign ? 1 : 2;
+        }
     }
     /* Store high and low halves of result into fp register array
        and return condition code */
     fpr[0] = r0;
     fpr[1] = r1;
     return cc;
+
 } /* end function cnvt_bfp_to_hfp */
 
 /*
@@ -1241,19 +1239,18 @@ static int cnvt_hfp_to_bfp (U32 *fpr, int rounding,
 DEF_INST(convert_bfp_long_to_float_long_reg)
 {
     int r1, r2;
-    struct lbfp op2;
+    float64 op2;
 
     RRE(inst, regs, r1, r2);
     //logmsg("THDR r1=%d r2=%d\n", r1, r2);
     HFPREG2_CHECK(r1, r2, regs);
 
-    /* Load lbfp operand from R2 register */
-    get_lbfp(&op2, regs->fpr + FPR2I(r2));
+    /* Load long BFP operand from R2 register */
+    get_float64(&op2, regs->fpr + FPR2I(r2));
 
-    /* Convert to hfp register and set condition code */
+    /* Convert to HFP register and set condition code */
     regs->psw.cc =
         cnvt_bfp_to_hfp (&op2,
-                         lbfpclassify(&op2),
                          regs->fpr + FPR2I(r1));
 
 } /* end DEF_INST(convert_bfp_long_to_float_long_reg) */
@@ -1265,25 +1262,22 @@ DEF_INST(convert_bfp_long_to_float_long_reg)
 DEF_INST(convert_bfp_short_to_float_long_reg)
 {
     int r1, r2;
-    struct sbfp op2;
-    struct lbfp lbfp_op2;
+    float32 op2;
+    float64 lbfp_op2;
 
     RRE(inst, regs, r1, r2);
     //logmsg("THDER r1=%d r2=%d\n", r1, r2);
     HFPREG2_CHECK(r1, r2, regs);
 
-    /* Load sbfp operand from R2 register */
-    get_sbfp(&op2, regs->fpr + FPR2I(r2));
+    /* Load short BFP operand from R2 register */
+    get_float32(&op2, regs->fpr + FPR2I(r2));
 
-    /* Lengthen sbfp operand to lbfp */
-    lbfp_op2.sign = op2.sign;
-    lbfp_op2.exp = op2.exp - 127 + 1023;
-    lbfp_op2.fract = (U64)op2.fract << (52 - 23);
+    /* Lengthen short BFP operand to long BFP */
+    lbfp_op2 = float32_to_float64(op2);
 
-    /* Convert lbfp to hfp register and set condition code */
+    /* Convert to HFP register and set condition code */
     regs->psw.cc =
         cnvt_bfp_to_hfp (&lbfp_op2,
-                         sbfpclassify(&op2),
                          regs->fpr + FPR2I(r1));
 
 } /* end DEF_INST(convert_bfp_short_to_float_long_reg) */
