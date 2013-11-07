@@ -372,6 +372,28 @@ float64 float64_snan_to_qnan( float64 a )
 }
 
 /*----------------------------------------------------------------------------
+| Returns the exponent of double-precision floating-point value `a'.
+*----------------------------------------------------------------------------*/
+
+bits16 float64_exp( float64 a )
+{
+
+    return (( a>>52 ) & 0x7FF );
+
+}
+
+/*----------------------------------------------------------------------------
+| Returns the fraction of double-precision floating-point value `a'.
+*----------------------------------------------------------------------------*/
+
+bits64 float64_fract( float64 a )
+{
+
+    return ( a & LIT64( 0x000FFFFFFFFFFFFF ) );
+
+}
+
+/*----------------------------------------------------------------------------
 | Returns the result of converting the double-precision floating-point NaN
 | `a' to the canonical NaN format.  If `a' is a signaling NaN, the invalid
 | exception is raised.

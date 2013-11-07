@@ -72,6 +72,8 @@ EXPORTS
     float64_pos
     float64_neg
     float64_snan_to_qnan
+    float64_exp
+    float64_fract
     float128_to_int32
     float128_to_int32_round_to_zero
     float128_to_int64

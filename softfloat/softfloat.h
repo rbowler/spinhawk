@@ -210,6 +210,8 @@ flag float64_is_zero( float64 );
 float64 float64_pos( float64 );
 float64 float64_neg( float64 );
 float64 float64_snan_to_qnan( float64 );
+bits16 float64_exp( float64 );
+bits64 float64_fract( float64 );
 
 #ifdef FLOATX80
 
