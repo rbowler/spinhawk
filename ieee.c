@@ -2008,9 +2008,9 @@ DEF_INST(convert_fix64_to_bfp_short_reg)
 /*-------------------------------------------------------------------*/
 DEF_INST(convert_bfp_ext_to_fix32_reg)
 {
-    int r1, r2, m3, raised;
+    int r1, r2, m3;
     S32 op1;
-    struct ebfp op2;
+    float128 op2;
     int pgm_check;
 
     RRF_M(inst, regs, r1, r2, m3);
@@ -2019,54 +2019,25 @@ DEF_INST(convert_bfp_ext_to_fix32_reg)
     BFPREGPAIR_CHECK(r2, regs);
     BFPRM_CHECK(m3,regs);
 
-    get_ebfp(&op2, regs->fpr + FPR2I(r2));
+    get_float128(&op2, regs->fpr + FPR2I(r2));
 
-    switch (ebfpclassify(&op2)) {
-    case FP_NAN:
-        pgm_check = ieee_exception(FE_INVALID, regs);
-        regs->psw.cc = 3;
-        regs->GR_L(r1) = 0x80000000;
-        if (regs->fpc & FPC_MASK_IMX) {
-            pgm_check = ieee_exception(FE_INEXACT, regs);
-            if (pgm_check) {
-                ebfpston(&op2);logmsg("INEXACT\n");
-                regs->program_interrupt(regs, pgm_check);
-            }
-        }
-        break;
-    case FP_ZERO:
-        regs->psw.cc = 0;
-        regs->GR_L(r1) = 0;
-        break;
-    case FP_INFINITE:
-        pgm_check = ieee_exception(FE_INVALID, regs);
-        regs->psw.cc = 3;
-        if (op2.sign) {
-            regs->GR_L(r1) = 0x80000000;
-        } else {
-            regs->GR_L(r1) = 0x7FFFFFFF;
-        }
-        if (regs->fpc & FPC_MASK_IMX) {
-            pgm_check = ieee_exception(FE_INEXACT, regs);
-            if (pgm_check) {
-                regs->program_interrupt(regs, pgm_check);
-            }
-        }
-        break;
-    default:
-        FECLEAREXCEPT(FE_ALL_EXCEPT);
-        ebfpston(&op2);
-        op1 = (S32)op2.v;
-        raised = fetestexcept(FE_ALL_EXCEPT);
-        if (raised) {
-            pgm_check = ieee_exception(raised, regs);
-            if (pgm_check) {
-                regs->program_interrupt(regs, pgm_check);
-            }
-        }
-        regs->GR_L(r1) = op1;
-        regs->psw.cc = op1 > 0 ? 2 : 1;
+    float_clear_exception_flags();
+    set_rounding_mode(regs->fpc, m3);
+
+    op1 = float128_to_int32(op2);
+    pgm_check = float_exception(regs);
+
+    set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
+
+    regs->GR_L(r1) = op1;
+    regs->psw.cc = (float128_is_nan(op2) || float128_is_inf(op2)) ? 3 :
+        float128_is_zero(op2) ? 0 :
+        float128_is_neg(op2) ? 1 : 2;
+
+    if (pgm_check) {
+        regs->program_interrupt(regs, pgm_check);
     }
+
 } /* end DEF_INST(convert_bfp_ext_to_fix32_reg) */
 
 /*-------------------------------------------------------------------*/
@@ -2074,9 +2045,9 @@ DEF_INST(convert_bfp_ext_to_fix32_reg)
 /*-------------------------------------------------------------------*/
 DEF_INST(convert_bfp_long_to_fix32_reg)
 {
-    int r1, r2, m3, raised;
+    int r1, r2, m3;
     S32 op1;
-    struct lbfp op2;
+    float64 op2;
     int pgm_check;
 
     RRF_M(inst, regs, r1, r2, m3);
@@ -2084,64 +2055,35 @@ DEF_INST(convert_bfp_long_to_fix32_reg)
     BFPINST_CHECK(regs);
     BFPRM_CHECK(m3,regs);
 
-    get_lbfp(&op2, regs->fpr + FPR2I(r2));
+    get_float64(&op2, regs->fpr + FPR2I(r2));
 
-    switch (lbfpclassify(&op2)) {
-    case FP_NAN:
-        pgm_check = ieee_exception(FE_INVALID, regs);
-        regs->psw.cc = 3;
-        regs->GR_L(r1) = 0x80000000;
-        if (regs->fpc & FPC_MASK_IMX) {
-            pgm_check = ieee_exception(FE_INEXACT, regs);
-            if (pgm_check) {
-                lbfpston(&op2);logmsg("INEXACT\n");
-                regs->program_interrupt(regs, pgm_check);
-            }
-        }
-        break;
-    case FP_ZERO:
-        regs->psw.cc = 0;
-        regs->GR_L(r1) = 0;
-        break;
-    case FP_INFINITE:
-        pgm_check = ieee_exception(FE_INVALID, regs);
-        regs->psw.cc = 3;
-        if (op2.sign) {
-            regs->GR_L(r1) = 0x80000000;
-        } else {
-            regs->GR_L(r1) = 0x7FFFFFFF;
-        }
-        if (regs->fpc & FPC_MASK_IMX) {
-            pgm_check = ieee_exception(FE_INEXACT, regs);
-            if (pgm_check) {
-                regs->program_interrupt(regs, pgm_check);
-            }
-        }
-        break;
-    default:
-        FECLEAREXCEPT(FE_ALL_EXCEPT);
-        lbfpston(&op2);
-        op1 = (S32)op2.v;
-        raised = fetestexcept(FE_ALL_EXCEPT);
-        if (raised) {
-            pgm_check = ieee_exception(raised, regs);
-            if (pgm_check) {
-                regs->program_interrupt(regs, pgm_check);
-            }
-        }
-        regs->GR_L(r1) = op1;
-        regs->psw.cc = op1 > 0 ? 2 : 1;
+    float_clear_exception_flags();
+    set_rounding_mode(regs->fpc, m3);
+
+    op1 = float64_to_int32(op2);
+    pgm_check = float_exception(regs);
+
+    set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
+
+    regs->GR_L(r1) = op1;
+    regs->psw.cc = (float64_is_nan(op2) || float64_is_inf(op2)) ? 3 :
+        float64_is_zero(op2) ? 0 :
+        float64_is_neg(op2) ? 1 : 2;
+
+    if (pgm_check) {
+        regs->program_interrupt(regs, pgm_check);
     }
-}
+
+} /* end DEF_INST(convert_bfp_long_to_fix32_reg) */
 
 /*-------------------------------------------------------------------*/
 /* B398 CFEBR - CONVERT TO FIXED (short BFP to 32)             [RRF] */
 /*-------------------------------------------------------------------*/
 DEF_INST(convert_bfp_short_to_fix32_reg)
 {
-    int r1, r2, m3, raised;
+    int r1, r2, m3;
     S32 op1;
-    struct sbfp op2;
+    float32 op2;
     int pgm_check;
 
     RRF_M(inst, regs, r1, r2, m3);
@@ -2149,54 +2091,26 @@ DEF_INST(convert_bfp_short_to_fix32_reg)
     BFPINST_CHECK(regs);
     BFPRM_CHECK(m3,regs);
 
-    get_sbfp(&op2, regs->fpr + FPR2I(r2));
+    get_float32(&op2, regs->fpr + FPR2I(r2));
 
-    switch (sbfpclassify(&op2)) {
-    case FP_NAN:
-        pgm_check = ieee_exception(FE_INVALID, regs);
-        regs->psw.cc = 3;
-        regs->GR_L(r1) = 0x80000000;
-        if (regs->fpc & FPC_MASK_IMX) {
-            pgm_check = ieee_exception(FE_INEXACT, regs);
-            if (pgm_check) {
-                regs->program_interrupt(regs, pgm_check);
-            }
-        }
-        break;
-    case FP_ZERO:
-        regs->psw.cc = 0;
-        regs->GR_L(r1) = 0;
-        break;
-    case FP_INFINITE:
-        pgm_check = ieee_exception(FE_INVALID, regs);
-        regs->psw.cc = 3;
-        if (op2.sign) {
-            regs->GR_L(r1) = 0x80000000;
-        } else {
-            regs->GR_L(r1) = 0x7FFFFFFF;
-        }
-        if (regs->fpc & FPC_MASK_IMX) {
-            pgm_check = ieee_exception(FE_INEXACT, regs);
-            if (pgm_check) {
-                regs->program_interrupt(regs, pgm_check);
-            }
-        }
-        break;
-    default:
-        FECLEAREXCEPT(FE_ALL_EXCEPT);
-        sbfpston(&op2);
-        op1 = (S32)op2.v;
-        raised = fetestexcept(FE_ALL_EXCEPT);
-        if (raised) {
-            pgm_check = ieee_exception(raised, regs);
-            if (pgm_check) {
-                regs->program_interrupt(regs, pgm_check);
-            }
-        }
-        regs->GR_L(r1) = op1;
-        regs->psw.cc = op1 > 0 ? 2 : 1;
+    float_clear_exception_flags();
+    set_rounding_mode(regs->fpc, m3);
+
+    op1 = float32_to_int32(op2);
+    pgm_check = float_exception(regs);
+
+    set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
+
+    regs->GR_L(r1) = op1;
+    regs->psw.cc = (float32_is_nan(op2) || float32_is_inf(op2)) ? 3 :
+        float32_is_zero(op2) ? 0 :
+        float32_is_neg(op2) ? 1 : 2;
+
+    if (pgm_check) {
+        regs->program_interrupt(regs, pgm_check);
     }
-}
+
+} /* end DEF_INST(convert_bfp_short_to_fix32_reg) */
 
 #if defined(FEATURE_ESAME)
 /*-------------------------------------------------------------------*/
@@ -2204,9 +2118,9 @@ DEF_INST(convert_bfp_short_to_fix32_reg)
 /*-------------------------------------------------------------------*/
 DEF_INST(convert_bfp_ext_to_fix64_reg)
 {
-    int r1, r2, m3, raised;
+    int r1, r2, m3;
     S64 op1;
-    struct ebfp op2;
+    float128 op2;
     int pgm_check;
 
     RRF_M(inst, regs, r1, r2, m3);
@@ -2215,54 +2129,25 @@ DEF_INST(convert_bfp_ext_to_fix64_reg)
     BFPREGPAIR_CHECK(r2, regs);
     BFPRM_CHECK(m3,regs);
 
-    get_ebfp(&op2, regs->fpr + FPR2I(r2));
+    get_float128(&op2, regs->fpr + FPR2I(r2));
 
-    switch (ebfpclassify(&op2)) {
-    case FP_NAN:
-        pgm_check = ieee_exception(FE_INVALID, regs);
-        regs->psw.cc = 3;
-        regs->GR_G(r1) = 0x8000000000000000ULL;
-        if (regs->fpc & FPC_MASK_IMX) {
-            pgm_check = ieee_exception(FE_INEXACT, regs);
-            if (pgm_check) {
-                ebfpston(&op2);logmsg("INEXACT\n");
-                regs->program_interrupt(regs, pgm_check);
-            }
-        }
-        break;
-    case FP_ZERO:
-        regs->psw.cc = 0;
-        regs->GR_G(r1) = 0;
-        break;
-    case FP_INFINITE:
-        pgm_check = ieee_exception(FE_INVALID, regs);
-        regs->psw.cc = 3;
-        if (op2.sign) {
-            regs->GR_G(r1) = 0x8000000000000000ULL;
-        } else {
-            regs->GR_G(r1) = 0x7FFFFFFFFFFFFFFFULL;
-        }
-        if (regs->fpc & FPC_MASK_IMX) {
-            pgm_check = ieee_exception(FE_INEXACT, regs);
-            if (pgm_check) {
-                regs->program_interrupt(regs, pgm_check);
-            }
-        }
-        break;
-    default:
-        FECLEAREXCEPT(FE_ALL_EXCEPT);
-        ebfpston(&op2);
-        op1 = (S64)op2.v;
-        raised = fetestexcept(FE_ALL_EXCEPT);
-        if (raised) {
-            pgm_check = ieee_exception(raised, regs);
-            if (pgm_check) {
-                regs->program_interrupt(regs, pgm_check);
-            }
-        }
-        regs->GR_G(r1) = op1;
-        regs->psw.cc = op1 > 0 ? 2 : 1;
+    float_clear_exception_flags();
+    set_rounding_mode(regs->fpc, m3);
+
+    op1 = float128_to_int64(op2);
+    pgm_check = float_exception(regs);
+
+    set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
+
+    regs->GR_G(r1) = op1;
+    regs->psw.cc = (float128_is_nan(op2) || float128_is_inf(op2)) ? 3 :
+        float128_is_zero(op2) ? 0 :
+        float128_is_neg(op2) ? 1 : 2;
+
+    if (pgm_check) {
+        regs->program_interrupt(regs, pgm_check);
     }
+
 } /* end DEF_INST(convert_bfp_ext_to_fix64_reg) */
 #endif /*defined(FEATURE_ESAME)*/
 
@@ -2272,9 +2157,9 @@ DEF_INST(convert_bfp_ext_to_fix64_reg)
 /*-------------------------------------------------------------------*/
 DEF_INST(convert_bfp_long_to_fix64_reg)
 {
-    int r1, r2, m3, raised;
+    int r1, r2, m3;
     S64 op1;
-    struct lbfp op2;
+    float64 op2;
     int pgm_check;
 
     RRF_M(inst, regs, r1, r2, m3);
@@ -2282,55 +2167,26 @@ DEF_INST(convert_bfp_long_to_fix64_reg)
     BFPINST_CHECK(regs);
     BFPRM_CHECK(m3,regs);
 
-    get_lbfp(&op2, regs->fpr + FPR2I(r2));
+    get_float64(&op2, regs->fpr + FPR2I(r2));
 
-    switch (lbfpclassify(&op2)) {
-    case FP_NAN:
-        pgm_check = ieee_exception(FE_INVALID, regs);
-        regs->psw.cc = 3;
-        regs->GR_G(r1) = 0x8000000000000000ULL;
-        if (regs->fpc & FPC_MASK_IMX) {
-            pgm_check = ieee_exception(FE_INEXACT, regs);
-            if (pgm_check) {
-                lbfpston(&op2);logmsg("INEXACT\n");
-                regs->program_interrupt(regs, pgm_check);
-            }
-        }
-        break;
-    case FP_ZERO:
-        regs->psw.cc = 0;
-        regs->GR_G(r1) = 0;
-        break;
-    case FP_INFINITE:
-        pgm_check = ieee_exception(FE_INVALID, regs);
-        regs->psw.cc = 3;
-        if (op2.sign) {
-            regs->GR_G(r1) = 0x8000000000000000ULL;
-        } else {
-            regs->GR_G(r1) = 0x7FFFFFFFFFFFFFFFULL;
-        }
-        if (regs->fpc & FPC_MASK_IMX) {
-            pgm_check = ieee_exception(FE_INEXACT, regs);
-            if (pgm_check) {
-                regs->program_interrupt(regs, pgm_check);
-            }
-        }
-        break;
-    default:
-        FECLEAREXCEPT(FE_ALL_EXCEPT);
-        lbfpston(&op2);
-        op1 = (S64)op2.v;
-        raised = fetestexcept(FE_ALL_EXCEPT);
-        if (raised) {
-            pgm_check = ieee_exception(raised, regs);
-            if (pgm_check) {
-                regs->program_interrupt(regs, pgm_check);
-            }
-        }
-        regs->GR_G(r1) = op1;
-        regs->psw.cc = op1 > 0 ? 2 : 1;
+    float_clear_exception_flags();
+    set_rounding_mode(regs->fpc, m3);
+
+    op1 = float64_to_int64(op2);
+    pgm_check = float_exception(regs);
+
+    set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
+
+    regs->GR_G(r1) = op1;
+    regs->psw.cc = (float64_is_nan(op2) || float64_is_inf(op2)) ? 3 :
+        float64_is_zero(op2) ? 0 :
+        float64_is_neg(op2) ? 1 : 2;
+
+    if (pgm_check) {
+        regs->program_interrupt(regs, pgm_check);
     }
-}
+
+} /* end DEF_INST(convert_bfp_long_to_fix64_reg) */
 #endif /*defined(FEATURE_ESAME)*/
 
 #if defined(FEATURE_ESAME)
@@ -2339,9 +2195,9 @@ DEF_INST(convert_bfp_long_to_fix64_reg)
 /*-------------------------------------------------------------------*/
 DEF_INST(convert_bfp_short_to_fix64_reg)
 {
-    int r1, r2, m3, raised;
+    int r1, r2, m3;
     S64 op1;
-    struct sbfp op2;
+    float32 op2;
     int pgm_check;
 
     RRF_M(inst, regs, r1, r2, m3);
@@ -2349,54 +2205,26 @@ DEF_INST(convert_bfp_short_to_fix64_reg)
     BFPINST_CHECK(regs);
     BFPRM_CHECK(m3,regs);
 
-    get_sbfp(&op2, regs->fpr + FPR2I(r2));
+    get_float32(&op2, regs->fpr + FPR2I(r2));
 
-    switch (sbfpclassify(&op2)) {
-    case FP_NAN:
-        pgm_check = ieee_exception(FE_INVALID, regs);
-        regs->psw.cc = 3;
-        regs->GR_G(r1) = 0x8000000000000000ULL;
-        if (regs->fpc & FPC_MASK_IMX) {
-            pgm_check = ieee_exception(FE_INEXACT, regs);
-            if (pgm_check) {
-                regs->program_interrupt(regs, pgm_check);
-            }
-        }
-        break;
-    case FP_ZERO:
-        regs->psw.cc = 0;
-        regs->GR_G(r1) = 0;
-        break;
-    case FP_INFINITE:
-        pgm_check = ieee_exception(FE_INVALID, regs);
-        regs->psw.cc = 3;
-        if (op2.sign) {
-            regs->GR_G(r1) = 0x8000000000000000ULL;
-        } else {
-            regs->GR_G(r1) = 0x7FFFFFFFFFFFFFFFULL;
-        }
-        if (regs->fpc & FPC_MASK_IMX) {
-            pgm_check = ieee_exception(FE_INEXACT, regs);
-            if (pgm_check) {
-                regs->program_interrupt(regs, pgm_check);
-            }
-        }
-        break;
-    default:
-        FECLEAREXCEPT(FE_ALL_EXCEPT);
-        sbfpston(&op2);
-        op1 = (S64)op2.v;
-        raised = fetestexcept(FE_ALL_EXCEPT);
-        if (raised) {
-            pgm_check = ieee_exception(raised, regs);
-            if (pgm_check) {
-                regs->program_interrupt(regs, pgm_check);
-            }
-        }
-        regs->GR_G(r1) = op1;
-        regs->psw.cc = op1 > 0 ? 2 : 1;
+    float_clear_exception_flags();
+    set_rounding_mode(regs->fpc, m3);
+
+    op1 = float32_to_int64(op2);
+    pgm_check = float_exception(regs);
+
+    set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
+
+    regs->GR_G(r1) = op1;
+    regs->psw.cc = (float32_is_nan(op2) || float32_is_inf(op2)) ? 3 :
+        float32_is_zero(op2) ? 0 :
+        float32_is_neg(op2) ? 1 : 2;
+
+    if (pgm_check) {
+        regs->program_interrupt(regs, pgm_check);
     }
-}
+
+} /* end DEF_INST(convert_bfp_short_to_fix64_reg) */
 #endif /*defined(FEATURE_ESAME)*/
 
 
