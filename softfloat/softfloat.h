@@ -169,6 +169,9 @@ flag float32_is_zero( float32 );
 float32 float32_pos( float32 );
 float32 float32_neg( float32 );
 float32 float32_snan_to_qnan( float32 );
+float32 float32_build( int, int, bits32 );
+bits16 float32_exp( float32 );
+bits32 float32_fract( float32 );
 
 /*----------------------------------------------------------------------------
 | Software IEC/IEEE double-precision conversion routines.
@@ -210,6 +213,7 @@ flag float64_is_zero( float64 );
 float64 float64_pos( float64 );
 float64 float64_neg( float64 );
 float64 float64_snan_to_qnan( float64 );
+float64 float64_build( int, int, bits64 );
 bits16 float64_exp( float64 );
 bits64 float64_fract( float64 );
 

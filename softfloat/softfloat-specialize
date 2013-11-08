@@ -203,6 +203,41 @@ float32 float32_snan_to_qnan( float32 a )
 }
 
 /*----------------------------------------------------------------------------
+| Builds a single-precision floating-point value.                   
+*----------------------------------------------------------------------------*/
+
+float32 float32_build( int sign, int exp, bits32 fract )
+{
+
+    return ( (bits32) ( sign ? 0x80000000 : 0 ) )
+        | ( (bits32) ( exp & 0xFF ) << 23 )  
+        | ( fract & 0x007FFFFF );
+
+}
+
+/*----------------------------------------------------------------------------
+| Returns the exponent of single-precision floating-point value `a'.
+*----------------------------------------------------------------------------*/
+
+bits16 float32_exp( float32 a )
+{
+
+    return (( a>>23 ) & 0xFF );
+
+}
+
+/*----------------------------------------------------------------------------
+| Returns the fraction of single-precision floating-point value `a'.
+*----------------------------------------------------------------------------*/
+
+bits32 float32_fract( float32 a )
+{
+
+    return ( a & 0x007FFFFF );
+
+}
+
+/*----------------------------------------------------------------------------
 | Returns the result of converting the single-precision floating-point NaN
 | `a' to the canonical NaN format.  If `a' is a signaling NaN, the invalid
 | exception is raised.
@@ -368,6 +403,19 @@ float64 float64_snan_to_qnan( float64 a )
 {
 
     return ( a | LIT64( 0x0008000000000000 ) );
+
+}
+
+/*----------------------------------------------------------------------------
+| Builds a double-precision floating-point value.                   
+*----------------------------------------------------------------------------*/
+
+float64 float64_build( int sign, int exp, bits64 fract )
+{
+
+    return ( (bits64) ( sign ? LIT64( 0x8000000000000000 ) : 0 )
+        | ( (bits64) ( exp & 0x7FF ) << 52 )  
+        | ( fract & LIT64( 0x000FFFFFFFFFFFFF ) ) );
 
 }
 

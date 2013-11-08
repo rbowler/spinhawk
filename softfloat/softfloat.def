@@ -44,6 +44,9 @@ EXPORTS
     float32_pos
     float32_neg
     float32_snan_to_qnan
+    float32_build
+    float32_exp
+    float32_fract
     float64_to_int32
     float64_to_int32_round_to_zero
     float64_to_int64
@@ -72,6 +75,7 @@ EXPORTS
     float64_pos
     float64_neg
     float64_snan_to_qnan
+    float64_build
     float64_exp
     float64_fract
     float128_to_int32
