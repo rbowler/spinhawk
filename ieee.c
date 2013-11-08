@@ -1,5 +1,5 @@
 /* IEEE.C       (c) Copyright Willem Konynenberg, 2001-2003          */
-/*              (c) Copyright Roger Bowler and others, 2003-2010     */
+/*              (c) Copyright Roger Bowler and others, 2003-2013     */
 /*              Hercules Binary (IEEE) Floating Point Instructions   */
 
 /*-------------------------------------------------------------------*/
@@ -22,39 +22,7 @@
  * Licensed under the Q Public License
  * For details, see html/herclic.html
  * Based very loosely on float.c by Peter Kuschnerus, (c) 2000-2006.
- */
-
-/*
- * WARNING
- * For rapid implementation, this module was written to perform its
- * floating point arithmetic using the floating point operations of
- * the native C compiler. This method is a short-cut which may under
- * some circumstances produce results different from those required
- * by the Principles of Operation manuals. For complete conformance
- * with Principles of Operation, this module would need to be updated
- * to perform all floating point arithmetic using explicitly coded
- * bit operations, similar to how float.c implements the hexadecimal
- * floating point instructions.
- *
- * Rounding:
- * The native IEEE implementation is set to apply the rounding
- * as specified in the FPC register or the instruction mask.
- * The Rounding and Range Function is not explicitly implemented.
- * Most of its functionality should be covered by the native floating
- * point implementation.  However, there are some cases where use of
- * this function is called for by the specification, even when no
- * actual arithmetic operation is performed.  Here, the function would
- * need to be implemented explicitly.
- *
- * Precision:
- * This code assumes the following relations between C data types and
- * emulated IEEE formats:
- * - float can represent 32-bit short format
- * - double can represent 64-bit long format
- * - long double can represent 128-bit extended format
- * On some host systems (including Intel), the long double type is
- * actually only 80-bits, so the conversion from extended format to native
- * long double format will cause loss of precision and range.
+ * Converted to use J.R.Hauser's softfloat package - RB, Oct 2013.
  */
 
 #include "hstdinc.h"
@@ -67,62 +35,12 @@
 #define _IEEE_C_
 #endif
 
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE 1
-#endif
-
-/* COMMENT OUT THE FOLLOWING DEFINE    */
-/* (_ISW_PREVENT_COMPWARN)             */
-/* IF IEEE FP INSTRUCTIONS ARE GIVING  */
-/* INCOHERENT RESULTS IN RESPECT TO    */
-/* INFINITY.                           */
-#define _ISW_PREVENT_COMPWARN
-
-/* For Microsoft Visual C++, inhibit   */
-/* warning C4723: potential divide by 0*/
-#if defined(_MSVC_)
- #pragma warning(disable:4723)
-#endif
-
-/* ABOUT THE MACRO BELOW :             */
-/* ISW 2004/09/15                      */
-/* Current GLIBC has an issue with     */
-/* feclearexcept that re-enables       */
-/* FE Traps by re-enabling Intel SSE   */
-/* trap mask. This leads to various    */
-/* machine checks from the CPU receiv- */
-/* ing SIGFPE. feholdexcept reestab-   */
-/* lishes the proper non-stop mask     */
-/*                                     */
-/* Until a proper conditional can be   */
-/* devised to only do the feholdexcept */
-/* when appropriate, it is there for   */
-/* all host architectures              */
-
-#ifndef FECLEAREXCEPT
-#define FECLEAREXCEPT(_e) \
-do { \
-    fenv_t __fe; \
-    feclearexcept((_e)); \
-    fegetenv(&__fe); \
-    feholdexcept(&__fe); \
-} while(0)
-#endif
-
 #include "hercules.h"
 
 #if defined(FEATURE_BINARY_FLOATING_POINT) && !defined(NO_IEEE_SUPPORT)
 
 #include "opcode.h"
 #include "inline.h"
-#if defined(WIN32) && !defined(HAVE_FENV_H)
-  #include "ieee-w32.h"
-#endif
-
-/* jbs 01/16/2008 */
-#if defined(__SOLARIS__)
-  #include "ieee-sol.h"
-#endif
 
 /* Definitions of BFP rounding methods */
 #define RM_DEFAULT_ROUNDING             0
@@ -139,74 +57,16 @@ do { \
 
 #if !defined(_IEEE_C)
 /* Architecture independent code goes within this ifdef */
-
 #include "milieu.h"
 #include "softfloat.h"
-
-#ifndef FE_INEXACT
-#define FE_INEXACT 0x00
-#endif
-
-struct ebfp {
-    int sign;
-    int exp;
-    U64 fracth;
-    U64 fractl;
-    long double v;
-};
-struct lbfp {
-    int sign;
-    int exp;
-    U64 fract;
-    double v;
-};
-struct sbfp {
-    int sign;
-    int exp;
-    int fract;
-    float v;
-};
-
-#ifndef HAVE_SQRTL
-#define sqrtl(x) sqrt(x)
-#endif
-#ifndef HAVE_LDEXPL
-#define ldexpl(x,y) ldexp(x,y)
-#endif
-#ifndef HAVE_FABSL
-#define fabsl(x) fabs(x)
-#endif
-#ifndef HAVE_FMODL
-#define fmodl(x,y) fmod(x,y)
-#endif
-#ifndef HAVE_FREXPL
-#define frexpl(x,y) frexp(x,y)
-#endif
-#ifndef HAVE_LDEXPF
-#define ldexpf(x,y) ((float)ldexp((double)(x),(y)))
-#endif
-#ifndef HAVE_FREXPF
-#define frexpf(x,y) ((float)frexp((double)(x),(y)))
-#endif
-#ifndef HAVE_FABSF
-#define fabsf(x) ((float)fabs((double)(x)))
-#endif
-#ifndef HAVE_RINT
-#define rint(i) (((i)-floor(i)<0.5)?floor(i):ceil(i))
-#endif
-
 #endif  /* !defined(_IEEE_C) */
 
 /* externally defined architecture-dependent functions */
-/* I guess this could go into an include file... */
 #define vfetch4 ARCH_DEP(vfetch4)
 #define vfetch8 ARCH_DEP(vfetch8)
 
 /* locally defined architecture-dependent functions */
-#define ieee_exception ARCH_DEP(ieee_exception)
 #define float_exception ARCH_DEP(float_exception)
-#define vfetch_lbfp ARCH_DEP(vfetch_lbfp)
-#define vfetch_sbfp ARCH_DEP(vfetch_sbfp)
 #define vfetch_float32 ARCH_DEP(vfetch_float32)
 #define vfetch_float64 ARCH_DEP(vfetch_float64)
 
@@ -251,54 +111,6 @@ struct sbfp {
 #define test_data_class_sbfp ARCH_DEP(test_data_class_sbfp)
 #define divint_lbfp ARCH_DEP(divint_lbfp)
 #define divint_sbfp ARCH_DEP(divint_sbfp)
-
-/*
- * Convert from C IEEE exception to Pop IEEE exception
- */
-static inline int ieee_exception(int raised, REGS * regs)
-{
-    int dxc = 0;
-
-    if (raised & FE_INEXACT) {
-        /*
-         * C doesn't tell use whether it truncated or incremented,
-         * so we will just always claim it truncated.
-         */
-        dxc = DXC_IEEE_INEXACT_INCR;
-    }
-    /* This sequence sets dxc according to the priorities defined
-     * in PoP, Ch. 6, Data Exception Code.
-     */
-    if (raised & FE_UNDERFLOW) {
-        dxc |= DXC_IEEE_UF_EXACT;
-    } else if (raised & FE_OVERFLOW) {
-        dxc |= DXC_IEEE_OF_EXACT;
-    } else if (raised & FE_DIVBYZERO) {
-        dxc = DXC_IEEE_DIV_ZERO;
-    } else if (raised & FE_INVALID) {
-        dxc = DXC_IEEE_INVALID_OP;
-    }
-
-    if (dxc & ((regs->fpc & FPC_MASK) >> 24)) {
-        regs->dxc = dxc;
-        regs->fpc |= dxc << 8;
-        if (dxc == DXC_IEEE_DIV_ZERO || dxc == DXC_IEEE_INVALID_OP) {
-            /* suppress operation */
-            regs->program_interrupt(regs, PGM_DATA_EXCEPTION);
-        }
-        /*
-         * Other operations need to take appropriate action
-         * to complete the operation.
-         * In most cases, C will have done the right thing...
-         */
-        return PGM_DATA_EXCEPTION;
-    } else {
-        /* Set flags in FPC */
-        regs->fpc |= (dxc & 0xF8) << 16;
-        /* have caller take default action */
-        return 0;
-    }
-}
 
 /*
  * Convert from Softfloat IEEE exception to Pop IEEE exception
@@ -350,11 +162,11 @@ static inline int float_exception(REGS * regs)
 
 #if !defined(_IEEE_C)
 /*
- * Set rounding mode according to BFP rounding mode mask
+ * Set softfloat rounding mode according to BFP rounding mode mask
  */
 void set_rounding_mode(U32 fpcreg, int mask)
 {
-    int brm, ferm;
+    int brm;
     int8 flrm;
 
     /* If mask is zero, obtain rounding mode from FPC register */
@@ -366,614 +178,26 @@ void set_rounding_mode(U32 fpcreg, int mask)
     /* Convert BFP rounding mode to nearest equivalent FE rounding mode */
     switch (brm) {
     case RM_ROUND_TO_NEAREST: /* Round to nearest ties to even */
-        ferm = FE_TONEAREST;
         flrm = float_round_nearest_even;
         break;
     case RM_ROUND_TOWARD_ZERO: /* Round toward zero */
-        ferm = FE_TOWARDZERO;
         flrm = float_round_to_zero;
         break;
     case RM_ROUND_TOWARD_POS_INF: /* Round toward +infinity */
-        ferm = FE_UPWARD;
         flrm = float_round_up;
         break;
     case RM_ROUND_TOWARD_NEG_INF: /* Round toward -infinity */
-        ferm = FE_DOWNWARD;
         flrm = float_round_down;
         break;
     default:
-        ferm = FE_TONEAREST;
         flrm = float_round_nearest_even;
         break;
     } /* end switch(brm) */
-
-    /* Switch rounding mode if necessary */
-    if (fegetround() != ferm)
-        fesetround(ferm);
 
     /* Set rounding mode for softfloat */
     float_set_rounding_mode(flrm);
 
 } /* end function set_rounding_mode */
-
-/*
- * Classify emulated fp values
- */
-int ebfpclassify(struct ebfp *op)
-{
-    if (op->exp == 0) {
-        if (op->fracth == 0 && op->fractl == 0)
-            return FP_ZERO;
-        else
-            return FP_SUBNORMAL;
-    } else if (op->exp == 0x7FFF) {
-        if (op->fracth == 0 && op->fractl == 0)
-            return FP_INFINITE;
-        else
-            return FP_NAN;
-    } else {
-        return FP_NORMAL;
-    }
-}
-
-int lbfpclassify(struct lbfp *op)
-{
-    if (op->exp == 0) {
-        if (op->fract == 0)
-            return FP_ZERO;
-        else
-            return FP_SUBNORMAL;
-    } else if (op->exp == 0x7FF) {
-        if (op->fract == 0)
-            return FP_INFINITE;
-        else
-            return FP_NAN;
-    } else {
-        return FP_NORMAL;
-    }
-}
-
-int sbfpclassify(struct sbfp *op)
-{
-    if (op->exp == 0) {
-        if (op->fract == 0)
-            return FP_ZERO;
-        else
-            return FP_SUBNORMAL;
-    } else if (op->exp == 0xFF) {
-        if (op->fract == 0)
-            return FP_INFINITE;
-        else
-            return FP_NAN;
-    } else {
-        return FP_NORMAL;
-    }
-}
-
-int ebfpissnan(struct ebfp *op)
-{
-    return ebfpclassify(op) == FP_NAN
-        && (op->fracth & 0x0000800000000000ULL) == 0;
-}
-
-int lbfpissnan(struct lbfp *op)
-{
-    return lbfpclassify(op) == FP_NAN
-        && (op->fract & 0x0008000000000000ULL) == 0;
-}
-
-int sbfpissnan(struct sbfp *op)
-{
-    return sbfpclassify(op) == FP_NAN
-        && (op->fract & 0x00400000) == 0;
-}
-
-/*
- * A special QNaN is supplied as the default result for
- * an IEEE-invalid-operation condition; it has a plus
- * sign and a leftmost fraction bit of one, with the
- * remaining fraction bits being set to zeros.
- */
-void ebfpdnan(struct ebfp *op)
-{
-    op->sign = 0;
-    op->exp = 0x7FFF;
-    op->fracth = 0x0000800000000000ULL;
-    op->fractl = 0;
-}
-void lbfpdnan(struct lbfp *op)
-{
-    op->sign = 0;
-    op->exp = 0x7FF;
-    op->fract = 0x0008000000000000ULL;
-}
-void sbfpdnan(struct sbfp *op)
-{
-    op->sign = 0;
-    op->exp = 0xFF;
-    op->fract = 0x00400000;
-}
-void ebfpstoqnan(struct ebfp *op)
-{
-    op->fracth |= 0x0000800000000000ULL;
-}
-void lbfpstoqnan(struct lbfp *op)
-{
-    op->fract |= 0x0008000000000000ULL;
-}
-void sbfpstoqnan(struct sbfp *op)
-{
-    op->fract |= 0x00400000;
-}
-void ebfpzero(struct ebfp *op, int sign)
-{
-    op->exp = 0;
-    op->fracth = 0;
-    op->fractl = 0;
-    op->sign = sign;
-}
-void lbfpzero(struct lbfp *op, int sign)
-{
-    op->exp = 0;
-    op->fract = 0;
-    op->sign = sign;
-}
-void sbfpzero(struct sbfp *op, int sign)
-{
-    op->exp = 0;
-    op->fract = 0;
-    op->sign = sign;
-}
-void ebfpinfinity(struct ebfp *op, int sign)
-{
-    op->exp = 0x7FFF;
-    op->fracth = 0;
-    op->fractl = 0;
-    op->sign = sign;
-}
-void lbfpinfinity(struct lbfp *op, int sign)
-{
-    op->exp = 0x7FF;
-    op->fract = 0;
-    op->sign = sign;
-}
-void sbfpinfinity(struct sbfp *op, int sign)
-{
-    op->exp = 0xFF;
-    op->fract = 0;
-    op->sign = sign;
-}
-
-/*
- * Conversion either way does not check for any loss of precision,
- * overflow, etc.
- * As noted above, it is well possible that for some formats, the native
- * format has less range or precision than the emulated format.
- * In that case, the conversion could change the value.
- * Similarly, if the situation is the other way around, certain exceptions
- * will not happen when the native operations are performed, and should
- * thus be raised when converting to the emulated format.
- * When precision is reduced, the result could be that an inexact result
- * is produced without proper notification.  When range is reduced, a
- * garbled result can be produced due to an out-of-range exponent value,
- * where an infinity should have been produced.
- * Since this concerns only a few boundary conditions, few of the programs
- * that are going to use these instructions will care.
- * If you want to do high-precision number-crunching, you'll find a better way.
- *
- * This code should deal with FPC bits 0.0 and 1.0 when handling a NaN,
- * but it doesn't yet.
- */
-
-/*
- * Simulated to Native conversion
- */
-void ebfpston(struct ebfp *op)
-{
-    long double h, l;
-#if defined(_ISW_PREVENT_COMPWARN)
-    long double dummyzero;
-#endif
-
-    switch (ebfpclassify(op)) {
-    case FP_NAN:
-        logmsg(_("ebfpston: unexpectedly converting a NaN\n"));
-        op->v = sqrt(-1);
-        break;
-    case FP_INFINITE:
-        logmsg(_("ebfpston: unexpectedly converting an Infinite\n"));
-        if (op->sign) {
-            op->v = log(0);
-        } else {
-#if defined(_ISW_PREVENT_COMPWARN)
-            dummyzero=0;
-            op->v = 1/dummyzero;
-#else
-            op->v = 1/0;
-#endif
-        }
-        break;
-    case FP_ZERO:
-        if (op->sign) {
-            op->v = 1 / log(0);
-        } else {
-            op->v = 0;
-        }
-        break;
-    case FP_SUBNORMAL:
-        /* WARNING:
-         * This code is probably not correct yet.
-         * I only did the quick hack of removing unit bit 1.
-         * Haven't looked at exponent handling yet.
-         */
-        h = ldexpl((long double)(op->fracth), -48);
-        l = ldexpl((long double)op->fractl, -112);
-        if (op->sign) {
-            h = -h;
-            l = -l;
-        }
-        op->v = ldexpl(h + l, op->exp - 16383);
-        break;
-    case FP_NORMAL:
-        h = ldexpl((long double)(op->fracth | 0x1000000000000ULL), -48);
-        l = ldexpl((long double)op->fractl, -112);
-        if (op->sign) {
-            h = -h;
-            l = -l;
-        }
-        op->v = ldexpl(h + l, op->exp - 16383);
-        break;
-    }
-    //logmsg("exp=%d fracth=%" I64_FMT "x fractl=%" I64_FMT "x v=%Lg\n", op->exp, op->fracth, op->fractl, op->v);
-}
-
-void lbfpston(struct lbfp *op)
-{
-    double t;
-#if defined(_ISW_PREVENT_COMPWARN)
-    double dummyzero;
-#endif
-
-    switch (lbfpclassify(op)) {
-    case FP_NAN:
-        logmsg(_("lbfpston: unexpectedly converting a NaN\n"));
-        op->v = sqrt(-1);
-        break;
-    case FP_INFINITE:
-        logmsg(_("lbfpston: unexpectedly converting an Infinite\n"));
-        if (op->sign) {
-            op->v = log(0);
-        } else {
-#if defined(_ISW_PREVENT_COMPWARN)
-            dummyzero=0;
-            op->v = 1/dummyzero;
-#else
-            op->v = 1/0;
-#endif
-        }
-        break;
-    case FP_ZERO:
-        if (op->sign) {
-            op->v = 1 / log(0);
-        } else {
-            op->v = 0;
-        }
-        break;
-    case FP_SUBNORMAL:
-        /* WARNING:
-         * This code is probably not correct yet.
-         * I only did the quick hack of removing unit bit 1.
-         * Haven't looked at exponent handling yet.
-         */
-        t = ldexp((double)(op->fract), -52);
-        if (op->sign)
-            t = -t;
-        op->v = ldexp(t, op->exp - 1023);
-        break;
-    case FP_NORMAL:
-        t = ldexp((double)(op->fract | 0x10000000000000ULL), -52);
-        if (op->sign)
-            t = -t;
-        op->v = ldexp(t, op->exp - 1023);
-        break;
-    }
-    //logmsg("exp=%d fract=%" I64_FMT "x v=%g\n", op->exp, op->fract, op->v);
-}
-
-void sbfpston(struct sbfp *op)
-{
-    float t;
-#if defined(_ISW_PREVENT_COMPWARN)
-    float dummyzero;
-#endif
-
-    switch (sbfpclassify(op)) {
-    case FP_NAN:
-        logmsg(_("sbfpston: unexpectedly converting a NaN\n"));
-        op->v = sqrt(-1);
-        break;
-    case FP_INFINITE:
-        logmsg(_("sbfpston: unexpectedly converting an Infinite\n"));
-        if (op->sign) {
-            op->v = log(0);
-        } else {
-#if defined(_ISW_PREVENT_COMPWARN)
-            dummyzero=0;
-            op->v = 1/dummyzero;
-#else
-            op->v = 1/0;
-#endif
-        }
-        break;
-    case FP_ZERO:
-        if (op->sign) {
-            op->v = 1 / log(0);
-        } else {
-            op->v = 0;
-        }
-        break;
-    case FP_SUBNORMAL:
-        /* WARNING:
-         * This code is probably not correct yet.
-         * I only did the quick hack of removing unit bit 1.
-         * Haven't looked at exponent handling yet.
-         */
-        t = ldexpf((float)(op->fract | 0x800000), -23);
-        if (op->sign)
-            t = -t;
-        op->v = ldexpf(t, op->exp - 127);
-        break;
-    case FP_NORMAL:
-        t = ldexpf((float)(op->fract | 0x800000), -23);
-        if (op->sign)
-            t = -t;
-        op->v = ldexpf(t, op->exp - 127);
-        break;
-    }
-    //logmsg("exp=%d fract=%x v=%g\n", op->exp, op->fract, op->v);
-}
-
-/*
- * Native to Simulated conversion
- */
-void ebfpntos(struct ebfp *op)
-{
-    long double f;
-
-    switch (fpclassify(op->v)) {
-    case FP_NAN:
-        ebfpdnan(op);
-        break;
-    case FP_INFINITE:
-        ebfpinfinity(op, signbit(op->v));
-        break;
-    case FP_ZERO:
-        ebfpzero(op, signbit(op->v));
-        break;
-    case FP_SUBNORMAL:
-        /* This may need special handling, but I don't know
-         * exactly how yet.  I suspect I need to do something
-         * to deal with the different implied unit bit.
-         */
-    case FP_NORMAL:
-        f = frexpl(op->v, &(op->exp));
-        op->sign = signbit(op->v);
-        op->exp += 16383 - 1;
-        op->fracth = (U64)ldexp(fabsl(f), 49) & 0xFFFFFFFFFFFFULL;
-        op->fractl = (U64)fmodl(ldexp(fabsl(f), 113), pow(2, 64));
-        break;
-    }
-    //logmsg("exp=%d fracth=%" I64_FMT "x fractl=%" I64_FMT "x v=%Lg\n", op->exp, op->fracth, op->fractl, op->v);
-}
-
-void lbfpntos(struct lbfp *op)
-{
-    double f;
-
-    switch (fpclassify(op->v)) {
-    case FP_NAN:
-        lbfpdnan(op);
-        break;
-    case FP_INFINITE:
-        lbfpinfinity(op, signbit(op->v));
-        break;
-    case FP_ZERO:
-        lbfpzero(op, signbit(op->v));
-        break;
-    case FP_SUBNORMAL:
-        /* This may need special handling, but I don't know
-         * exactly how yet.  I suspect I need to do something
-         * to deal with the different implied unit bit.
-         */
-    case FP_NORMAL:
-        f = frexp(op->v, &(op->exp));
-        op->sign = signbit(op->v);
-        op->exp += 1023 - 1;
-        op->fract = (U64)ldexp(fabs(f), 53) & 0xFFFFFFFFFFFFFULL;
-        break;
-    }
-    //logmsg("exp=%d fract=%" I64_FMT "x v=%g\n", op->exp, op->fract, op->v);
-}
-
-void sbfpntos(struct sbfp *op)
-{
-    float f;
-
-    switch (fpclassify(op->v)) {
-    case FP_NAN:
-        sbfpdnan(op);
-        break;
-    case FP_INFINITE:
-        sbfpinfinity(op, signbit(op->v));
-        break;
-    case FP_ZERO:
-        sbfpzero(op, signbit(op->v));
-        break;
-    case FP_SUBNORMAL:
-        /* This may need special handling, but I don't
-         * exactly how yet.  I suspect I need to do something
-         * to deal with the different implied unit bit.
-         */
-    case FP_NORMAL:
-        f = frexpf(op->v, &(op->exp));
-        op->sign = signbit(op->v);
-        op->exp += 127 - 1;
-        op->fract = (U32)ldexp(fabsf(f), 24) & 0x7FFFFF;
-        break;
-    }
-    //logmsg("exp=%d fract=%x v=%g\n", op->exp, op->fract, op->v);
-}
-
-/*
- * Get/fetch binary float from registers/memory
- */
-static void get_ebfp(struct ebfp *op, U32 *fpr)
-{
-    op->sign = (fpr[0] & 0x80000000) != 0;
-    op->exp = (fpr[0] & 0x7FFF0000) >> 16;
-    op->fracth = (((U64)fpr[0] & 0x0000FFFF) << 32) | fpr[1];
-    op->fractl = ((U64)fpr[FPREX] << 32) | fpr[FPREX+1];
-}
-
-static void get_lbfp(struct lbfp *op, U32 *fpr)
-{
-    op->sign = (fpr[0] & 0x80000000) != 0;
-    op->exp = (fpr[0] & 0x7FF00000) >> 20;
-    op->fract = (((U64)fpr[0] & 0x000FFFFF) << 32) | fpr[1];
-    //logmsg("lget r=%8.8x%8.8x exp=%d fract=%" I64_FMT "x\n", fpr[0], fpr[1], op->exp, op->fract);
-}
-#endif  /* !defined(_IEEE_C) */
-
-static void vfetch_lbfp(struct lbfp *op, VADR addr, int arn, REGS *regs)
-{
-    U64 v;
-
-    v = vfetch8(addr, arn, regs);
-
-    op->sign = (v & 0x8000000000000000ULL) != 0;
-    op->exp = (v & 0x7FF0000000000000ULL) >> 52;
-    op->fract = v & 0x000FFFFFFFFFFFFFULL;
-    //logmsg("lfetch m=%16.16" I64_FMT "x exp=%d fract=%" I64_FMT "x\n", v, op->exp, op->fract);
-}
-
-#if !defined(_IEEE_C)
-static void get_sbfp(struct sbfp *op, U32 *fpr)
-{
-    op->sign = (*fpr & 0x80000000) != 0;
-    op->exp = (*fpr & 0x7F800000) >> 23;
-    op->fract = *fpr & 0x007FFFFF;
-    //logmsg("sget r=%8.8x exp=%d fract=%x\n", *fpr, op->exp, op->fract);
-}
-#endif  /* !defined(_IEEE_C) */
-
-static void vfetch_sbfp(struct sbfp *op, VADR addr, int arn, REGS *regs)
-{
-    U32 v;
-
-    v = vfetch4(addr, arn, regs);
-
-    op->sign = (v & 0x80000000) != 0;
-    op->exp = (v & 0x7F800000) >> 23;
-    op->fract = v & 0x007FFFFF;
-    //logmsg("sfetch m=%8.8x exp=%d fract=%x\n", v, op->exp, op->fract);
-}
-
-#if !defined(_IEEE_C)
-/*
- * Put binary float in registers
- */
-static void put_ebfp(struct ebfp *op, U32 *fpr)
-{
-    fpr[0] = (op->sign ? 1<<31 : 0) | (op->exp<<16) | (op->fracth>>32);
-    fpr[1] = op->fracth & 0xFFFFFFFF;
-    fpr[FPREX] = op->fractl>>32;
-    fpr[FPREX+1] = op->fractl & 0xFFFFFFFF;
-}
-
-static void put_lbfp(struct lbfp *op, U32 *fpr)
-{
-    fpr[0] = (op->sign ? 1<<31 : 0) | (op->exp<<20) | (op->fract>>32);
-    fpr[1] = op->fract & 0xFFFFFFFF;
-    //logmsg("lput exp=%d fract=%" I64_FMT "x r=%8.8x%8.8x\n", op->exp, op->fract, fpr[0], fpr[1]);
-}
-
-static void put_sbfp(struct sbfp *op, U32 *fpr)
-{
-    fpr[0] = (op->sign ? 1<<31 : 0) | (op->exp<<23) | op->fract;
-    //logmsg("sput exp=%d fract=%x r=%8.8x\n", op->exp, op->fract, *fpr);
-}
-
-/*
- * Convert binary float to longer format
- */
-static void lengthen_short_to_long(struct sbfp *op2, struct lbfp *op1, REGS *regs)
-{
-    switch (sbfpclassify(op2)) {
-    case FP_ZERO:
-        lbfpzero(op1, op2->sign);
-        break;
-    case FP_NAN:
-        if (sbfpissnan(op2)) {
-            ieee_exception(FE_INVALID, regs);
-            lbfpstoqnan(op1);
-        }
-        break;
-    case FP_INFINITE:
-        lbfpinfinity(op1, op2->sign);
-        break;
-    default:
-        sbfpston(op2);
-        op1->v = (double)op2->v;
-        lbfpntos(op1);
-        break;
-    }
-}
-
-static void lengthen_long_to_ext(struct lbfp *op2, struct ebfp *op1, REGS *regs)
-{
-    switch (lbfpclassify(op2)) {
-    case FP_ZERO:
-        ebfpzero(op1, op2->sign);
-        break;
-    case FP_NAN:
-        if (lbfpissnan(op2)) {
-            ieee_exception(FE_INVALID, regs);
-            ebfpstoqnan(op1);
-        }
-        break;
-    case FP_INFINITE:
-        ebfpinfinity(op1, op2->sign);
-        break;
-    default:
-        lbfpston(op2);
-        op1->v = (long double)op2->v;
-        ebfpntos(op1);
-        break;
-    }
-}
-
-static void lengthen_short_to_ext(struct sbfp *op2, struct ebfp *op1, REGS *regs)
-{
-    switch (sbfpclassify(op2)) {
-    case FP_ZERO:
-        ebfpzero(op1, op2->sign);
-        break;
-    case FP_NAN:
-        if (sbfpissnan(op2)) {
-            ieee_exception(FE_INVALID, regs);
-            ebfpstoqnan(op1);
-        }
-        break;
-    case FP_INFINITE:
-        ebfpinfinity(op1, op2->sign);
-        break;
-    default:
-        sbfpston(op2);
-        op1->v = (long double)op2->v;
-        ebfpntos(op1);
-        break;
-    }
-}
 #endif  /* !defined(_IEEE_C) */
 
 #if !defined(_IEEE_C)
@@ -2224,53 +1448,6 @@ DEF_INST(convert_bfp_short_to_fix64_reg)
 
 } /* end DEF_INST(convert_bfp_short_to_fix64_reg) */
 #endif /*defined(FEATURE_ESAME)*/
-
-
-/*-------------------------------------------------------------------*/
-/* FP INTEGER (extended)                                             */
-/*-------------------------------------------------------------------*/
-static int integer_ebfp(struct ebfp *op, int mode, REGS *regs)
-{
-    int r, raised;
-    UNREFERENCED(mode);
-
-    switch(ebfpclassify(op)) {
-    case FP_NAN:
-        if (ebfpissnan(op)) {
-            if (regs->fpc & FPC_MASK_IMI) {
-                ebfpstoqnan(op);
-                ieee_exception(FE_INEXACT, regs);
-            } else {
-                ieee_exception(FE_INVALID, regs);
-            }
-        }
-        break;
-    case FP_ZERO:
-    case FP_INFINITE:
-        break;
-    default:
-        FECLEAREXCEPT(FE_ALL_EXCEPT);
-        ebfpston(op);
-        set_rounding_mode(regs->fpc, mode);
-        op->v = rint(op->v);
-        if (regs->fpc & FPC_MASK_IMX) {
-            ieee_exception(FE_INEXACT, regs);
-        } else {
-            ieee_exception(FE_INVALID, regs);
-        }
-        ebfpntos(op);
-
-        raised = fetestexcept(FE_ALL_EXCEPT);
-        if (raised) {
-            r = ieee_exception(raised, regs);
-            if (r) {
-                return r;
-            }
-        }
-    } /* end switch */
-    return 0;
-
-} /* end function integer_ebfp */
 
 /*-------------------------------------------------------------------*/
 /* FP INTEGER (long)                                                 */

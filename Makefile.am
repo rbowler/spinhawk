@@ -637,8 +637,6 @@ noinst_HEADERS = hostinfo.h     \
                  w32ctca.h      \
                  tt32api.h      \
                  linklist.h     \
-                 ieee-sol.h     \
-                 ieee-w32.h     \
                  httpmisc.h     \
                  devtype.h      \
                  codepage.h     \
