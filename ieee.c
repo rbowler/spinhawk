@@ -1288,7 +1288,9 @@ DEF_INST(convert_bfp_short_to_float_long_reg)
 DEF_INST(convert_float_long_to_bfp_long_reg)
 {
     int r1, r2, m3;
-    struct lbfp op1;
+    float64 op1;
+    int sign, exp;
+    U64 fract;
 
     RRF_M(inst, regs, r1, r2, m3);
     //logmsg("TBDR r1=%d r2=%d\n", r1, r2);
@@ -1298,9 +1300,10 @@ DEF_INST(convert_float_long_to_bfp_long_reg)
     regs->psw.cc =
         cnvt_hfp_to_bfp (regs->fpr + FPR2I(r2), m3,
             /*fractbits*/52, /*emax*/1023, /*ebias*/1023,
-            &(op1.sign), &(op1.exp), &(op1.fract));
+            &sign, &exp, &fract);
+    op1 = float64_build(sign, exp, fract);
 
-    put_lbfp(&op1, regs->fpr + FPR2I(r1));
+    put_float64(&op1, regs->fpr + FPR2I(r1));
 
 } /* end DEF_INST(convert_float_long_to_bfp_long_reg) */
 
@@ -1310,7 +1313,8 @@ DEF_INST(convert_float_long_to_bfp_long_reg)
 DEF_INST(convert_float_long_to_bfp_short_reg)
 {
     int r1, r2, m3;
-    struct sbfp op1;
+    float32 op1;
+    int sign, exp;
     U64 fract;
 
     RRF_M(inst, regs, r1, r2, m3);
@@ -1321,10 +1325,10 @@ DEF_INST(convert_float_long_to_bfp_short_reg)
     regs->psw.cc =
         cnvt_hfp_to_bfp (regs->fpr + FPR2I(r2), m3,
             /*fractbits*/23, /*emax*/127, /*ebias*/127,
-            &(op1.sign), &(op1.exp), &fract);
-    op1.fract = (U32)fract;
+            &sign, &exp, &fract);
+    op1 = float32_build(sign, exp, (U32)fract);
 
-    put_sbfp(&op1, regs->fpr + FPR2I(r1));
+    put_float32(&op1, regs->fpr + FPR2I(r1));
 
 } /* end DEF_INST(convert_float_long_to_bfp_short_reg) */
 #endif /*defined(FEATURE_FPS_EXTENSIONS)*/
