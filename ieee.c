@@ -1252,7 +1252,8 @@ DEF_INST(convert_bfp_ext_to_fix32_reg)
     set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
 
     regs->GR_L(r1) = op1;
-    regs->psw.cc = (float128_is_nan(op2) || float128_is_inf(op2)) ? 3 :
+    regs->psw.cc =
+        (float_get_exception_flags() & float_flag_invalid) ? 3 :
         float128_is_zero(op2) ? 0 :
         float128_is_neg(op2) ? 1 : 2;
 
@@ -1288,7 +1289,8 @@ DEF_INST(convert_bfp_long_to_fix32_reg)
     set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
 
     regs->GR_L(r1) = op1;
-    regs->psw.cc = (float64_is_nan(op2) || float64_is_inf(op2)) ? 3 :
+    regs->psw.cc =
+        (float_get_exception_flags() & float_flag_invalid) ? 3 :
         float64_is_zero(op2) ? 0 :
         float64_is_neg(op2) ? 1 : 2;
 
@@ -1324,7 +1326,8 @@ DEF_INST(convert_bfp_short_to_fix32_reg)
     set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
 
     regs->GR_L(r1) = op1;
-    regs->psw.cc = (float32_is_nan(op2) || float32_is_inf(op2)) ? 3 :
+    regs->psw.cc =
+        (float_get_exception_flags() & float_flag_invalid) ? 3 :
         float32_is_zero(op2) ? 0 :
         float32_is_neg(op2) ? 1 : 2;
 
@@ -1362,7 +1365,8 @@ DEF_INST(convert_bfp_ext_to_fix64_reg)
     set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
 
     regs->GR_G(r1) = op1;
-    regs->psw.cc = (float128_is_nan(op2) || float128_is_inf(op2)) ? 3 :
+    regs->psw.cc =
+        (float_get_exception_flags() & float_flag_invalid) ? 3 :
         float128_is_zero(op2) ? 0 :
         float128_is_neg(op2) ? 1 : 2;
 
@@ -1400,7 +1404,8 @@ DEF_INST(convert_bfp_long_to_fix64_reg)
     set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
 
     regs->GR_G(r1) = op1;
-    regs->psw.cc = (float64_is_nan(op2) || float64_is_inf(op2)) ? 3 :
+    regs->psw.cc =
+        (float_get_exception_flags() & float_flag_invalid) ? 3 :
         float64_is_zero(op2) ? 0 :
         float64_is_neg(op2) ? 1 : 2;
 
@@ -1438,7 +1443,8 @@ DEF_INST(convert_bfp_short_to_fix64_reg)
     set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
 
     regs->GR_G(r1) = op1;
-    regs->psw.cc = (float32_is_nan(op2) || float32_is_inf(op2)) ? 3 :
+    regs->psw.cc =
+        (float_get_exception_flags() & float_flag_invalid) ? 3 :
         float32_is_zero(op2) ? 0 :
         float32_is_neg(op2) ? 1 : 2;
 
