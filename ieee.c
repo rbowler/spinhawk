@@ -117,36 +117,46 @@
  */
 static inline int float_exception(REGS * regs)
 {
+    int fpc = 0;
     int dxc = 0;
+    int exc = 0;
     int8 flags = float_get_exception_flags();
 
     if (flags & float_flag_inexact) {
-        /*
-         * Softfloat doesn't say whether it truncated or incremented,
-         * so we will just always claim it incremented
-         */
-        dxc = DXC_IEEE_INEXACT_INCR;
-    }
-    /* This sequence sets dxc according to the priorities defined
-     * in PoP, Ch. 6, Data Exception Code.
-     */
-    if (flags & float_flag_underflow) {
-        dxc |= DXC_IEEE_UF_EXACT;
-    } else if (flags & float_flag_overflow) {
-        dxc |= DXC_IEEE_OF_EXACT;
-    } else if (flags & float_flag_divbyzero) {
-        dxc = DXC_IEEE_DIV_ZERO;
-    } else if (flags & float_flag_invalid) {
-        dxc = DXC_IEEE_INVALID_OP;
+        fpc = FPC_FLAG_SFX;
     }
 
-    if (dxc & ((regs->fpc & FPC_MASK) >> 24)) {
+    if (flags & float_flag_underflow) {
+        fpc |= FPC_FLAG_SFU;
+    } else if (flags & float_flag_overflow) {
+        fpc |= FPC_FLAG_SFO;
+    } else if (flags & float_flag_divbyzero) {
+        fpc |= FPC_FLAG_SFZ;
+    } else if (flags & float_flag_invalid) {
+        fpc |= FPC_FLAG_SFI;
+    }
+
+    exc = (fpc & FPC_FLAG) & ((regs->fpc & FPC_MASK) >> 8);
+    if (exc & FPC_FLAG_SFI) {
+        dxc = DXC_IEEE_INVALID_OP;
+    } else if (exc & FPC_FLAG_SFZ) {
+        dxc = DXC_IEEE_DIV_ZERO;
+    } else if (exc & FPC_FLAG_SFO) {
+        dxc = (fpc & FPC_FLAG_SFX) ? DXC_IEEE_OF_INEX_TRUNC : DXC_IEEE_OF_EXACT;
+    } else if (exc & FPC_FLAG_SFU) {
+        dxc = (fpc & FPC_FLAG_SFX) ? DXC_IEEE_UF_INEX_TRUNC : DXC_IEEE_UF_EXACT;
+    } else if (exc & FPC_FLAG_SFX) {
+        dxc = DXC_IEEE_INEXACT_TRUNC;
+    }
+
+    if (exc) {
         regs->dxc = dxc;
-        regs->fpc |= dxc << 8;
         if (dxc == DXC_IEEE_DIV_ZERO || dxc == DXC_IEEE_INVALID_OP) {
             /* suppress operation */
             regs->program_interrupt(regs, PGM_DATA_EXCEPTION);
         }
+        fpc &= ~exc;
+        regs->fpc |= fpc;
         /*
          * Other operations need to take appropriate action
          * to complete the operation.
@@ -154,11 +164,12 @@ static inline int float_exception(REGS * regs)
         return PGM_DATA_EXCEPTION;
     } else {
         /* Set flags in FPC */
-        regs->fpc |= (dxc & 0xF8) << 16;
+        regs->fpc |= fpc;
         /* have caller take default action */
         return 0;
     }
-}
+
+} /* end function float_exception */
 
 #if !defined(_IEEE_C)
 /*
