@@ -160,13 +160,6 @@ typedef int             mode_t;
 //#include "getopt.h"
 #define HAVE_GETOPT_LONG
 
-#include <math.h>
-#define HAVE_SQRTL
-#define HAVE_LDEXPL
-#define HAVE_FABSL
-#define HAVE_FMODL
-#define HAVE_FREXPL
-
 // The following are needed by hostopts.h...
 
 #define HAVE_DECL_SIOCSIFNETMASK  1     // (manually defined in tuntap.h)

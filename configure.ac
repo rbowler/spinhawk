@@ -230,7 +230,6 @@ AH_TEMPLATE( [C99_FLEXIBLE_ARRAYS],     [Define if your gcc properly supports C9
 
 AH_TEMPLATE( [HAVE_ATTR_REGPARM],       [Define if your gcc properly supports __attribute__((regparm(n)))] )
 AH_TEMPLATE( [NO_ASM_BYTESWAP],         [Define to disable assembler routines for byte swapping] )
-AH_TEMPLATE( [NO_IEEE_SUPPORT],         [Define to disable IEEE floating point support] )
 AH_TEMPLATE( [NO_SETUID],               [Define to disable setuid operation] )
 AH_TEMPLATE( [NO_SIGABEND_HANDLER],     [Define to disable sigabend_handler (please describe this better)] )
 AH_TEMPLATE( [NON_UNIQUE_GETTIMEOFDAY], [Define if 'gettimeofday' returns non-unique values] )
@@ -502,7 +501,6 @@ AC_CHECK_HEADERS( inttypes.h,     [hc_cv_have_inttypes_h=yes],     [hc_cv_have_i
 AC_CHECK_HEADERS( iconv.h,        [hc_cv_have_iconv_h=yes],        [hc_cv_have_iconv_h=no]        )
 AC_CHECK_HEADERS( ltdl.h,         [hc_cv_have_ltdl_h=yes],         [hc_cv_have_ltdl_h=no]         )
 AC_CHECK_HEADERS( malloc.h,       [hc_cv_have_malloc_h=yes],       [hc_cv_have_malloc_h=no]       )
-AC_CHECK_HEADERS( math.h,         [hc_cv_have_math_h=yes],         [hc_cv_have_math_h=no]         )
 AC_CHECK_HEADERS( netdb.h,        [hc_cv_have_netdb_h=yes],        [hc_cv_have_netdb_h=no]        )
 AC_CHECK_HEADERS( pwd.h,          [hc_cv_have_pwd_h=yes],          [hc_cv_have_pwd_h=no]          )
 AC_CHECK_HEADERS( regex.h,        [hc_cv_have_regex_h=yes],        [hc_cv_have_regex_h=no]        )
@@ -629,7 +627,6 @@ AC_CACHE_SAVE()
 
 AC_CHECK_LIB( msvcrt, _pipe          )
 AC_CHECK_LIB( dl,     dlopen         )
-AC_CHECK_LIB( m,      sqrt           )
 AC_CHECK_LIB( socket, connect        )
 AC_CHECK_LIB( nsl,    gethostbyname  )
 AC_CHECK_LIB( resolv, inet_aton      )
@@ -656,8 +653,6 @@ AC_CACHE_SAVE()
 AC_CHECK_FUNCS( iconv )
 AC_CHECK_FUNCS( memrchr )
 AC_CHECK_FUNCS( getopt_long )
-AC_CHECK_FUNCS( sqrtl ldexpl fabsl fmodl frexpl )
-AC_CHECK_FUNCS( ldexpf frexpf fabsf rint )
 AC_CHECK_FUNCS( strlcpy strlcat )
 AC_CHECK_FUNCS( strerror_r )
 AC_CHECK_FUNCS( strsignal, [hc_cv_have_strsignal=yes], [hc_cv_have_strsignal=no] )
@@ -1839,12 +1834,6 @@ if test "$hc_cv_regparm_attr_supported" = "yes"  &&
    test "$hc_cv_regparm_attr_broke"    != "yes"; then
 
     AC_DEFINE(HAVE_ATTR_REGPARM)
-fi
-
-if test "$hc_cv_is_windows"  != "yes"  &&
-   test "$hc_cv_have_fenv_h" != "yes"; then
-
-    AC_DEFINE(NO_IEEE_SUPPORT)
 fi
 
 if test "$hc_cv_is_apple" = "yes"; then

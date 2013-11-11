@@ -37,7 +37,7 @@
 
 #include "hercules.h"
 
-#if defined(FEATURE_BINARY_FLOATING_POINT) && !defined(NO_IEEE_SUPPORT)
+#if defined(FEATURE_BINARY_FLOATING_POINT)
 
 #include "opcode.h"
 #include "inline.h"

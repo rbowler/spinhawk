@@ -176,9 +176,6 @@
 #ifdef HAVE_MALLOC_H
   #include <malloc.h>
 #endif
-#ifdef HAVE_MATH_H
-  #include <math.h>
-#endif
 #ifdef HAVE_NETDB_H
   #include <netdb.h>
 #endif

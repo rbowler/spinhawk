@@ -499,12 +499,6 @@
 #endif
 
 #if defined(FEATURE_BINARY_FLOATING_POINT) \
- && defined(NO_IEEE_SUPPORT)
- #undef FEATURE_BINARY_FLOATING_POINT
- #undef FEATURE_FPS_EXTENSIONS
-#endif
-
-#if defined(FEATURE_BINARY_FLOATING_POINT) \
  && !defined(FEATURE_BASIC_FP_EXTENSIONS)
  #error Binary floating point requires basic FP extensions
 #endif
@@ -603,7 +597,7 @@
 #if defined(FEATURE_CPU_MEASUREMENT_COUNTER_FACILITY)\
     || defined(FEATURE_CPU_MEASUREMENT_SAMPLING_FACILITY)
   #if !defined(FEATURE_LOAD_PROGRAM_PARAMETER_FACILITY)
-    #error CPU Measurement facilities requires Load Program Parameter facility 
+    #error CPU Measurement facilities requires Load Program Parameter facility
   #endif
 #endif
 
