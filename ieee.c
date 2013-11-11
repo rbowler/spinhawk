@@ -2274,7 +2274,7 @@ DEF_INST(load_positive_bfp_short_reg)
 
     put_float32(&op1, regs->fpr + FPR2I(r1));
 
-} /* end DEF_INST(load_positive_bfp_short_reg)
+} /* end DEF_INST(load_positive_bfp_short_reg) */
 
 /*-------------------------------------------------------------------*/
 /* B344 LEDBR - LOAD ROUNDED (long to short BFP)               [RRE] */
