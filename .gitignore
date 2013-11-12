@@ -13,6 +13,7 @@
 /Makefile.in
 /aclocal.m4
 /autom4te.cache
+/bin
 /cckd2ckd
 /cckdcdsk
 /cckdcomp
@@ -59,6 +60,7 @@
 /hetinit
 /hetmap
 /hetupd
+/lib
 /libtool
 /makefile
 /msvc.AMD64.bin
@@ -69,6 +71,7 @@
 /msvc.dllmod.map
 /msvc.dllmod.obj
 /msvc.dllmod.pdb
+/share
 /stamp-h
 /stamp-h.in
 /stamp-h1
