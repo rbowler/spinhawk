@@ -3537,23 +3537,51 @@ DEF_INST(divide_integer_bfp_long_reg)
 static int divint_sbfp(float32 *op1, float32 *op2,
                         float32 *op3, int mode, REGS *regs)
 {
-    int r;
+    int code;
+    float32 temp;
 
-    *op3 = *op1;
-    r = divide_sbfp(op3, op2, regs);
-    if (r) return r;
+    float_clear_exception_flags();
 
-    r = integer_sbfp(op3, mode, regs);
-    if (r) return r;
+    if (float32_is_signaling_nan(*op1)) {
+        float_raise(float_flag_invalid);
+        code = float_exception(regs);
+        *op1 = float32_snan_to_qnan(*op1);
+        *op3 = float32_snan_to_qnan(*op1);
+        regs->psw.cc = 1;
+        return code;
+    }
 
-    r = multiply_sbfp(op2, op3, regs);
-    if (r) return r;
+    if (float32_is_signaling_nan(*op2)) {
+        float_raise(float_flag_invalid);
+        code = float_exception(regs);
+        *op1 = float32_snan_to_qnan(*op2);
+        *op3 = float32_snan_to_qnan(*op2);
+        regs->psw.cc = 1;
+        return code;
+    }
 
-    r = subtract_sbfp(op1, op2, regs);
-    if (r) return r;
+    if (float32_is_inf(*op1) || float32_is_zero(*op2)) {
+        float_raise(float_flag_invalid);
+        code = float_exception(regs);
+        *op1 = float32_default_nan;
+        *op3 = float32_default_nan;
+        regs->psw.cc = 1;
+        return code;
+    }
+
+    temp = float32_div(*op1, *op2);
+
+    set_rounding_mode(regs->fpc, mode);
+    *op3 = float32_round_to_int(temp);
+    set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
+
+    temp = float32_mul(*op2, *op3);
+    *op1 = float32_sub(*op1, temp);
+
+    code = float_exception(regs);
 
     regs->psw.cc = 0;
-    return 0;
+    return code;
 
 } /* end function divint_sbfp */
 
