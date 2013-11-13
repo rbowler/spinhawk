@@ -110,6 +110,11 @@ void float_clear_exception_flags( void );
 void float_raise( int8 );
 
 /*----------------------------------------------------------------------------
+| The pattern for a default generated single-precision NaN.
+*----------------------------------------------------------------------------*/
+#define float32_default_nan 0x7FC00000
+
+/*----------------------------------------------------------------------------
 | Software IEC/IEEE integer-to-floating-point conversion routines.
 *----------------------------------------------------------------------------*/
 float32 int32_to_float32( int32 );
@@ -172,6 +177,11 @@ float32 float32_snan_to_qnan( float32 );
 float32 float32_build( int, int, bits32 );
 bits16 float32_exp( float32 );
 bits32 float32_fract( float32 );
+
+/*----------------------------------------------------------------------------
+| The pattern for a default generated double-precision NaN.
+*----------------------------------------------------------------------------*/
+#define float64_default_nan LIT64( 0x7FF8000000000000 )
 
 /*----------------------------------------------------------------------------
 | Software IEC/IEEE double-precision conversion routines.
@@ -259,6 +269,13 @@ flag floatx80_is_signaling_nan( floatx80 );
 #endif
 
 #ifdef FLOAT128
+
+/*----------------------------------------------------------------------------
+| The pattern for a default generated quadruple-precision NaN.  The `high' and
+| `low' values hold the most- and least-significant bits, respectively.
+*----------------------------------------------------------------------------*/
+#define float128_default_nan_high LIT64( 0x7FFF800000000000 )
+#define float128_default_nan_low  LIT64( 0x0000000000000000 )
 
 /*----------------------------------------------------------------------------
 | Software IEC/IEEE quadruple-precision conversion routines.
