@@ -3560,6 +3560,19 @@ static int divint_sbfp(float32 *op1, float32 *op2,
         return code;
     }
 
+    if (float32_is_nan(*op1)) {
+        *op3 = *op1;
+        regs->psw.cc = 1;
+        return 0;
+    }
+
+    if (float32_is_nan(*op2)) {
+        *op1 = *op2;
+        *op3 = *op2;
+        regs->psw.cc = 1;
+        return 0;
+    }
+
     if (float32_is_inf(*op1) || float32_is_zero(*op2)) {
         float_raise(float_flag_invalid);
         code = float_exception(regs);
