@@ -3538,7 +3538,10 @@ static int divint_sbfp(float32 *op1, float32 *op2,
                         float32 *op3, int mode, REGS *regs)
 {
     int code;
+    int cc;
     float32 temp;
+    int flags;
+    float32 maxp = 0x4B800000; /* Two to the power 24 */
 
     float_clear_exception_flags();
 
@@ -3582,18 +3585,36 @@ static int divint_sbfp(float32 *op1, float32 *op2,
         return code;
     }
 
+    set_rounding_mode(regs->fpc, RM_ROUND_TOWARD_ZERO);
     temp = float32_div(*op1, *op2);
+    //logmsg("DIEBR div flags=%2.2X\n", float_get_exception_flags());
 
-    set_rounding_mode(regs->fpc, mode);
-    *op3 = float32_round_to_int(temp);
-    set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
+    flags = float_get_exception_flags();
+    cc = (flags & float_flag_overflow) ? 1 : 0;
+    if ((flags & float_flag_inexact)
+        && (float32_le(maxp, float32_pos(temp)))) {
+        cc += 2;
+        *op3 = temp;
+    } else {
+        set_rounding_mode(regs->fpc, mode);
+        float_clear_exception_flags();
+        *op3 = float32_round_to_int(temp);
+        //logmsg("DIEBR rou flags=%2.2X\n", float_get_exception_flags());
+    }
 
+    set_rounding_mode(regs->fpc, RM_ROUND_TOWARD_ZERO);
+    float_clear_exception_flags();
     temp = float32_mul(*op2, *op3);
+    //logmsg("DIEBR mul flags=%2.2X\n", float_get_exception_flags());
+    float_clear_exception_flags();
     *op1 = float32_sub(*op1, temp);
+    //logmsg("DIEBR sub flags=%2.2X\n", float_get_exception_flags());
+    set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
+    float_clear_exception_flags();
 
     code = float_exception(regs);
 
-    regs->psw.cc = 0;
+    regs->psw.cc = cc;
     return code;
 
 } /* end function divint_sbfp */
