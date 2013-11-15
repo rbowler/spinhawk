@@ -447,6 +447,7 @@ static char *pgmintname[] = {
         {
             sie_ilc = realregs->guestregs->execflag ?
                       realregs->guestregs->exrl ? 6 : 4 : 2;
+            realregs->guestregs->psw.IA += sie_ilc; /* IanWorthington regression restored from 20081205 */
             realregs->guestregs->psw.ilc = sie_ilc;
         }
     }
