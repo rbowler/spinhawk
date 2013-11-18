@@ -2021,9 +2021,9 @@ DEF_INST(load_lengthened_bfp_short_to_ext_reg)
 
     float_clear_exception_flags();
     get_float32(&op2, regs->fpr + FPR2I(r2));
-    pgm_check = float_exception(regs);
 
     op1 = float32_to_float128(op2);
+    pgm_check = float_exception(regs);
 
     put_float128(&op1, regs->fpr + FPR2I(r1));
 
@@ -2051,9 +2051,9 @@ DEF_INST(load_lengthened_bfp_short_to_ext)
 
     float_clear_exception_flags();
     vfetch_float32(&op2, effective_addr2, b2, regs);
-    pgm_check = float_exception(regs);
 
     op1 = float32_to_float128(op2);
+    pgm_check = float_exception(regs);
 
     put_float128(&op1, regs->fpr + FPR2I(r1));
 
