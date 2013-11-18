@@ -583,6 +583,7 @@ static int add_ebfp(float128 *op1, float128 *op2, REGS *regs)
     float128 result;
 
     float_clear_exception_flags();
+    set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
     result = float128_add(*op1, *op2);
     code = float_exception(regs);
     *op1 = result;
@@ -629,6 +630,7 @@ static int add_lbfp(float64 *op1, float64 *op2, REGS *regs)
     float64 result;
 
     float_clear_exception_flags();
+    set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
     result = float64_add(*op1, *op2);
     code = float_exception(regs);
     *op1 = result;
@@ -701,6 +703,7 @@ static int add_sbfp(float32 *op1, float32 *op2, REGS *regs)
     float32 result;
 
     float_clear_exception_flags();
+    set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
     result = float32_add(*op1, *op2);
     code = float_exception(regs);
     *op1 = result;
@@ -1511,6 +1514,7 @@ static int divide_ebfp(float128 *op1, float128 *op2, REGS *regs)
     float128 result;
 
     float_clear_exception_flags();
+    set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
     result = float128_div(*op1, *op2);
     code = float_exception(regs);
     *op1 = result;
@@ -1554,6 +1558,7 @@ static int divide_lbfp(float64 *op1, float64 *op2, REGS *regs)
     float64 result;
 
     float_clear_exception_flags();
+    set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
     result = float64_div(*op1, *op2);
     code = float_exception(regs);
     *op1 = result;
@@ -1623,6 +1628,7 @@ static int divide_sbfp(float32 *op1, float32 *op2, REGS *regs)
     float32 result;
 
     float_clear_exception_flags();
+    set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
     result = float32_div(*op1, *op2);
     code = float_exception(regs);
     *op1 = result;
@@ -2389,6 +2395,7 @@ static int multiply_ebfp(float128 *op1, float128 *op2, REGS *regs)
     float128 result;
 
     float_clear_exception_flags();
+    set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
     result = float128_mul(*op1, *op2);
     code = float_exception(regs);
     *op1 = result;
@@ -2495,6 +2502,7 @@ static int multiply_lbfp(float64 *op1, float64 *op2, REGS *regs)
     float64 result;
 
     float_clear_exception_flags();
+    set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
     result = float64_mul(*op1, *op2);
     code = float_exception(regs);
     *op1 = result;
@@ -2625,6 +2633,7 @@ static int multiply_sbfp(float32 *op1, float32 *op2, REGS *regs)
     float32 result;
 
     float_clear_exception_flags();
+    set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
     result = float32_mul(*op1, *op2);
     code = float_exception(regs);
     *op1 = result;
@@ -2695,6 +2704,7 @@ static int multiply_add_lbfp(float64 *op1, float64 *op2, float64 *op3,
     float64 product, result;
 
     float_clear_exception_flags();
+    set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
     product = float64_mul(*op2, *op3);
     result = float64_add(product, *op1);
     code = float_exception(regs);
@@ -2768,6 +2778,7 @@ static int multiply_add_sbfp(float32 *op1, float32 *op2, float32 *op3,
     float32 product, result;
 
     float_clear_exception_flags();
+    set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
     product = float32_mul(*op2, *op3);
     result = float32_add(product, *op1);
     code = float_exception(regs);
@@ -2841,6 +2852,7 @@ static int multiply_subtract_lbfp(float64 *op1, float64 *op2,
     float64 product, result;
 
     float_clear_exception_flags();
+    set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
     product = float64_mul(*op2, *op3);
     result = float64_sub(product, *op1);
     code = float_exception(regs);
@@ -2914,6 +2926,7 @@ static int multiply_subtract_sbfp(float32 *op1, float32 *op2,
     float32 product, result;
 
     float_clear_exception_flags();
+    set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
     product = float32_mul(*op2, *op3);
     result = float32_sub(product, *op1);
     code = float_exception(regs);
@@ -2997,6 +3010,7 @@ static int squareroot_ebfp(float128 *op, REGS *regs)
     float128 result;
 
     float_clear_exception_flags();
+    set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
     result = float128_sqrt(*op);
     code = float_exception(regs);
     *op = result;
@@ -3039,6 +3053,7 @@ static int squareroot_lbfp(float64 *op, REGS *regs)
     float64 result;
 
     float_clear_exception_flags();
+    set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
     result = float64_sqrt(*op);
     code = float_exception(regs);
     *op = result;
@@ -3106,6 +3121,7 @@ static int squareroot_sbfp(float32 *op, REGS *regs)
     float32 result;
 
     float_clear_exception_flags();
+    set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
     result = float32_sqrt(*op);
     code = float_exception(regs);
     *op = result;
@@ -3178,6 +3194,7 @@ static int subtract_ebfp(float128 *op1, float128 *op2, REGS *regs)
     float128 result;
 
     float_clear_exception_flags();
+    set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
     result = float128_sub(*op1, *op2);
     code = float_exception(regs);
     *op1 = result;
@@ -3224,6 +3241,7 @@ static int subtract_lbfp(float64 *op1, float64 *op2, REGS *regs)
     float64 result;
 
     float_clear_exception_flags();
+    set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
     result = float64_sub(*op1, *op2);
     code = float_exception(regs);
     *op1 = result;
@@ -3296,6 +3314,7 @@ static int subtract_sbfp(float32 *op1, float32 *op2, REGS *regs)
     float32 result;
 
     float_clear_exception_flags();
+    set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
     result = float32_sub(*op1, *op2);
     code = float_exception(regs);
     *op1 = result;
