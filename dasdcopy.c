@@ -660,7 +660,7 @@ int syntax (char *pgm)
 #endif
             ,(sizeof(off_t) > 4) ? _( "     -lfs              output ckd file will be a single file\n" ) : ( "" )
             );
-    printf (usage);
+    printf ("%s", usage);
     return -1;
 } /* end function syntax */
 
