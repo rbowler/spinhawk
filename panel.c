@@ -668,7 +668,8 @@ static void do_panel_command( void* cmd )
 {
     if (!is_currline_visible())
         scroll_to_bottom_screen( 1 );
-    strlcpy( cmdline, cmd, sizeof(cmdline) );
+    if (cmd != (void*)cmdline)
+        strlcpy( cmdline, cmd, sizeof(cmdline) );
     panel_command( cmdline );
     cmdline[0] = '\0';
     cmdlen = 0;
