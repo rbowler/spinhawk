@@ -3558,9 +3558,9 @@ static int divint_sbfp(float32 *op1, float32 *op2,
 {
     int code;
     int cc;
-    float32 temp;
     int flags;
-    float32 maxp = 0x4B800000; /* Two to the power 24 */
+    float128 xop1, xop2, xop3, xtemp;
+    float128 xmaxint32 = {0x4017000000000000ULL, 0ULL}; // 2**24
 
     float_clear_exception_flags();
 
@@ -3604,34 +3604,43 @@ static int divint_sbfp(float32 *op1, float32 *op2,
         return code;
     }
 
+    xop1 = float32_to_float128(*op1);
+    xop2 = float32_to_float128(*op2);
+
     set_rounding_mode(regs->fpc, RM_ROUND_TOWARD_ZERO);
-    temp = float32_div(*op1, *op2);
+    xtemp = float128_div(xop1, xop2);
     //logmsg("DIEBR div flags=%2.2X\n", float_get_exception_flags());
 
     flags = float_get_exception_flags();
     cc = (flags & float_flag_overflow) ? 1 : 0;
     if ((flags & float_flag_inexact)
-        && (float32_le(maxp, float32_pos(temp)))) {
+        && (float128_le(xmaxint32, float128_pos(xtemp)))) {
+        /* If quotient exceeds 2**24, truncate it to form a partial
+           quotient consisting of an implied 1 with 23 fraction bits,
+           and set the condition code to 2 or 3 */
+        xop3.high = xtemp.high & 0xFFFFFFFFFE000000ULL;
+        xop3.low = 0;
         cc += 2;
-        *op3 = temp;
     } else {
         set_rounding_mode(regs->fpc, mode);
         float_clear_exception_flags();
-        *op3 = float32_round_to_int(temp);
+        xop3 = float128_round_to_int(xtemp);
         //logmsg("DIEBR rou flags=%2.2X\n", float_get_exception_flags());
     }
 
     set_rounding_mode(regs->fpc, RM_ROUND_TOWARD_ZERO);
     float_clear_exception_flags();
-    temp = float32_mul(*op2, *op3);
+    xtemp = float128_mul(xop2, xop3);
     //logmsg("DIEBR mul flags=%2.2X\n", float_get_exception_flags());
     float_clear_exception_flags();
-    *op1 = float32_sub(*op1, temp);
+    xop1 = float128_sub(xop1, xtemp);
     //logmsg("DIEBR sub flags=%2.2X\n", float_get_exception_flags());
     set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
     float_clear_exception_flags();
 
     code = float_exception(regs);
+    *op1 = float128_to_float32(xop1);
+    *op3 = float128_to_float32(xop3);
 
     regs->psw.cc = cc;
     return code;
