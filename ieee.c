@@ -3505,23 +3505,104 @@ DEF_INST(test_data_class_bfp_ext)
 static int divint_lbfp(float64 *op1, float64 *op2,
                         float64 *op3, int mode, REGS *regs)
 {
-    int r;
+    int code;
+    int cc;
+    int flags;
+    float128 xop1, xop2, xop3, xtemp;
+    float128 xmaxint64 = {0x4034000000000000ULL, 0ULL}; // 2**53
+    float128 xfract64 = {0xFFFFFFFFFFFFFFFFULL, 0xF000000000000000ULL}; // sign+exp+52 bits
 
-    *op3 = *op1;
-    r = divide_lbfp(op3, op2, regs);
-    if (r) return r;
+    float_clear_exception_flags();
 
-    r = integer_lbfp(op3, mode, regs);
-    if (r) return r;
+    if (float64_is_signaling_nan(*op1)) {
+        float_raise(float_flag_invalid);
+        code = float_exception(regs);
+        *op1 = float64_snan_to_qnan(*op1);
+        *op3 = float64_snan_to_qnan(*op1);
+        regs->psw.cc = 1;
+        return code;
+    }
 
-    r = multiply_lbfp(op2, op3, regs);
-    if (r) return r;
+    if (float64_is_signaling_nan(*op2)) {
+        float_raise(float_flag_invalid);
+        code = float_exception(regs);
+        *op1 = float64_snan_to_qnan(*op2);
+        *op3 = float64_snan_to_qnan(*op2);
+        regs->psw.cc = 1;
+        return code;
+    }
 
-    r = subtract_lbfp(op1, op2, regs);
-    if (r) return r;
+    if (float64_is_nan(*op1)) {
+        *op3 = *op1;
+        regs->psw.cc = 1;
+        return 0;
+    }
 
-    regs->psw.cc = 0;
-    return 0;
+    if (float64_is_nan(*op2)) {
+        *op1 = *op2;
+        *op3 = *op2;
+        regs->psw.cc = 1;
+        return 0;
+    }
+
+    if (float64_is_inf(*op1) || float64_is_zero(*op2)) {
+        float_raise(float_flag_invalid);
+        code = float_exception(regs);
+        *op1 = float64_default_nan;
+        *op3 = float64_default_nan;
+        regs->psw.cc = 1;
+        return code;
+    }
+
+    xop1 = float64_to_float128(*op1);
+    xop2 = float64_to_float128(*op2);
+
+    set_rounding_mode(regs->fpc, RM_ROUND_TOWARD_ZERO);
+    xtemp = float128_div(xop1, xop2);
+
+    flags = float_get_exception_flags();
+    if ((flags & float_flag_inexact)
+        && (float128_le(xmaxint64, float128_pos(xtemp)))) {
+        /* If quotient exceeds 2**53, truncate it to form a partial
+           quotient consisting of an implied 1 with 52 fraction bits,
+           and set the condition code to 2 */
+        xop3.high = xtemp.high & xfract64.high;
+        xop3.low = xtemp.low & xfract64.low;
+        cc = 2;
+    } else {
+        /* Otherwise round it to an integer according to the specified
+           rounding mode, and set the condition code to 0 */
+        set_rounding_mode(regs->fpc, mode);
+        float_clear_exception_flags();
+        xop3 = float128_round_to_int(xtemp);
+        cc = 0;
+    }
+
+    set_rounding_mode(regs->fpc, RM_ROUND_TOWARD_ZERO);
+    float_clear_exception_flags();
+    xtemp = float128_mul(xop2, xop3);
+    float_clear_exception_flags();
+    xop1 = float128_sub(xop1, xtemp);
+    set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
+    float_clear_exception_flags();
+
+    code = float_exception(regs);
+
+    if (float128_exp(xop3) > FLOAT128_BIAS + FLOAT64_BIAS) {
+        /* If quotient exponent exceeds maximum for float64, reduce
+           the exponent by 1536 and increase condition code by 1 */
+        xop3 = float128_build(float128_is_neg(xop3) ? 1 : 0,
+                        float128_exp(xop3) - 1536,
+                        float128_fract_high(xop3),
+                        float128_fract_low(xop3));
+        cc += 1;
+    }
+
+    *op1 = float128_to_float64(xop1);
+    *op3 = float128_to_float64(xop3);
+
+    regs->psw.cc = cc;
+    return code;
 
 } /* end function divint_lbfp */
 
