@@ -5,7 +5,7 @@ r 1a0=00000001800000000000000000000200 # z/Arch restart PSW
 r 1d0=000000018000000000000000000002E0 # z/Arch pgm new PSW
 r 200=B7000320     # LCTL R0,R0,CTLR0  Set CR0 bit 45
 r 204=B29D0324     # LFPC FPCREG       Load value into FPC register
-r 208=41000015     # LA R0,21          R0=Number of test data
+r 208=41000020     # LA R0,32          R0=Number of test data
 r 20C=41100800     # LA R1,TEST1       R1=>Test data table
 r 210=41F00A00     # LA R15,RES1       R15=>Result table
 r 214=1B88         # SR R8,R8          Clear CC register
@@ -24,9 +24,9 @@ r 244=41F0F010     # LA R15,16(,R15)   R15=>next result table
 r 248=41101010     # LA R1,16(,R1)     R1=>Next TESTn
 r 24C=46000216     # BCT R0,A          Loop to end of TEST table
 r 250=41000A00     # LA R0,RES1        R0->Actual results
-r 254=41100150     # LA R1,21*16       R1=Length of results table
+r 254=41100200     # LA R1,32*16       R1=Length of results table
 r 258=41200C00     # LA R2,EXP1        R2->Expected results
-r 25C=41300150     # LA R3,21*16       R3=Length of results table
+r 25C=41300200     # LA R3,32*16       R3=Length of results table
 r 260=0F02         # CLCL R0,R2        Compare with expected results
 r 262=477002FC     # BNE DIE           Error if not equal
 r 266=B2B20300     # LPSWE WAITPSW     Load enabled wait PSW
@@ -63,6 +63,17 @@ r 910=A8C311AE007FFFFF00000001         # TEST18
 r 920=9C86235E007FFFFF00000001         # TEST19
 r 930=8EC46BE0007FFFFF00000001         # TEST20
 r 940=8288D7C2007FFFFF00000001         # TEST21
+r 950=4FFFFFFFB380003B00000001         # TEST22 Partial quotient
+r 960=3EDB6800B380003B00000001         # TEST23
+r 970=6B7FC1FFDEDF658E00000001         # TEST24 Partial quotient, negative divisor
+r 980=5EE52600DEDF658E00000001         # TEST25
+r 990=C100200200FFFFFE00000001         # TEST26 Partial quotient, overflow, negative dividend
+r 9A0=B0800C0000FFFFFE00000001         # TEST27
+r 9B0=9F40100000FFFFFE00000001         # TEST28
+r 9C0=9300200200FFFFFE00000001         # TEST29
+r 9D0=82800C0000FFFFFE00000001         # TEST30
+r 9E0=729414B8615DEB6D00000001         # TEST31 Partial quotient
+r 9F0=66AC8AD9615DEB6D00000001         # TEST32
 *     <--F4--><--F3--><C--INT><--FPC->   Expected results, condition codes, and FPC
 r C00=7FC000007FC000001000000000800001 # EXP1 DNAN,DNAN,CC1,INV
 r C10=7FC123457FC123451000000000000001 # EXP2 QNAN(12345),QNAN(12345),CC1
@@ -85,12 +96,35 @@ r D10=9C86235EE7C311AF2000000000000001 # EXP18 CC2
 r D20=8EC46BE0DB86235F2000000000000001 # EXP19 CC2
 r D30=8288D7C2CDC46BE12000000000000001 # EXP20 CC2
 r D40=800D7C31C18800000000000000000001 # EXP21 CC0
+r D50=3EDB6800DBFFFF892000000000000001 # EXP22 CC2 Partial quotient
+r D60=32DE3F04CADB679A0000000000000001 # EXP23 CC0
+r D70=5EE52600CC128AC02000000000000001 # EXP24 CC2 Partial quotient, negative divisor
+r D80=5C380E40BF8000000000000000000001 # EXP25 CC0
+r D90=B0800C009F8020033000000000000001 # EXP26 CC3 Partial quotient, overflow, negative dividend
+r DA0=9F401000EF000C012000000000000001 # EXP27 CC2
+r DB0=93002002DDC010012000000000000001 # EXP28 CC2
+r DC0=82800C00D18020032000000000000001 # EXP29 CC2
+r DD0=8000C010C10000000000000000000001 # EXP30 CC0
+r DE0=66AC8AD950AAD2632000000000000001 # EXP31 CC2 Partial quotient
+r DF0=608D745044C700000000000000000001 # EXP32 CC0
 pgmtrace +7
 restart
 pause 1
-* Display test data
-r 800.150
-* Display expected results
-r C00.150
-* Display actual results
-r A00.150
+* Display test data (tests 1-10)
+r 800.A0
+* Display expected results (tests 1-10)
+r C00.A0
+* Display actual results (tests 1-10)
+r A00.A0
+* Display test data (tests 11-21)
+r 8A0.B0
+* Display expected results (tests 11-21)
+r CA0.B0
+* Display actual results (tests 11-21)
+r AA0.B0
+* Display test data (tests 22-32)
+r 950.B0
+* Display expected results (tests 22-32)
+r D50.B0
+* Display actual results (tests 22-32)
+r B50.B0
