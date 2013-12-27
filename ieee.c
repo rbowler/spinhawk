@@ -59,6 +59,12 @@
 /* Architecture independent code goes within this ifdef */
 #include "milieu.h"
 #include "softfloat.h"
+
+/* Floating point exponent bias values */
+#define FLOAT32_BIAS    127
+#define FLOAT64_BIAS    1023
+#define FLOAT128_BIAS   16383
+
 #endif  /* !defined(_IEEE_C) */
 
 /* externally defined architecture-dependent functions */
@@ -3561,6 +3567,7 @@ static int divint_sbfp(float32 *op1, float32 *op2,
     int flags;
     float128 xop1, xop2, xop3, xtemp;
     float128 xmaxint32 = {0x4017000000000000ULL, 0ULL}; // 2**24
+    float128 xfract32 = {0xFFFFFFFFFE000000ULL, 0ULL}; // sign+exp+23 bits
 
     float_clear_exception_flags();
 
@@ -3612,20 +3619,22 @@ static int divint_sbfp(float32 *op1, float32 *op2,
     //logmsg("DIEBR div flags=%2.2X\n", float_get_exception_flags());
 
     flags = float_get_exception_flags();
-    cc = (flags & float_flag_overflow) ? 1 : 0;
     if ((flags & float_flag_inexact)
         && (float128_le(xmaxint32, float128_pos(xtemp)))) {
         /* If quotient exceeds 2**24, truncate it to form a partial
            quotient consisting of an implied 1 with 23 fraction bits,
-           and set the condition code to 2 or 3 */
-        xop3.high = xtemp.high & 0xFFFFFFFFFE000000ULL;
+           and set the condition code to 2 */
+        xop3.high = xtemp.high & xfract32.high;
         xop3.low = 0;
-        cc += 2;
+        cc = 2;
     } else {
+        /* Otherwise round it to an integer according to the specified
+           rounding mode, and set the condition code to 0 */
         set_rounding_mode(regs->fpc, mode);
         float_clear_exception_flags();
         xop3 = float128_round_to_int(xtemp);
         //logmsg("DIEBR rou flags=%2.2X\n", float_get_exception_flags());
+        cc = 0;
     }
 
     set_rounding_mode(regs->fpc, RM_ROUND_TOWARD_ZERO);
@@ -3639,6 +3648,17 @@ static int divint_sbfp(float32 *op1, float32 *op2,
     float_clear_exception_flags();
 
     code = float_exception(regs);
+
+    if (float128_exp(xop3) > FLOAT128_BIAS + FLOAT32_BIAS) {
+        /* If quotient exponent exceeds maximum for float32, reduce
+           the exponent by 192 and increase condition code by 1 */
+        xop3 = float128_build(float128_is_neg(xop3) ? 1 : 0,
+                        float128_exp(xop3) - 192,
+                        float128_fract_high(xop3),
+                        float128_fract_low(xop3));
+        cc += 1;
+    }
+
     *op1 = float128_to_float32(xop1);
     *op3 = float128_to_float32(xop3);
 
