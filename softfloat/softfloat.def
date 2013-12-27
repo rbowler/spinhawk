@@ -106,3 +106,7 @@ EXPORTS
     float128_pos
     float128_neg
     float128_snan_to_qnan
+    float128_build
+    float128_exp
+    float128_fract_high
+    float128_fract_low

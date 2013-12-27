@@ -315,6 +315,10 @@ flag float128_is_zero( float128 );
 float128 float128_pos( float128 );
 float128 float128_neg( float128 );
 float128 float128_snan_to_qnan( float128 );
+float128 float128_build( int sign, int exp, bits64 fract_high, bits64 fract_low );
+bits16 float128_exp( float128 a );
+bits64 float128_fract_high( float128 a );
+bits64 float128_fract_low( float128 a );
 
 #endif
 

@@ -713,6 +713,57 @@ float128 float128_snan_to_qnan( float128 a )
 }
 
 /*----------------------------------------------------------------------------
+| Builds a quadruple-precision floating-point value.
+*----------------------------------------------------------------------------*/
+
+float128 float128_build( int sign, int exp, bits64 fract_high, bits64 fract_low )
+{
+    float128 result;                                      
+
+    result.high = ( (bits64) ( sign ? LIT64( 0x8000000000000000 ) : 0 )
+        | ( (bits64) ( exp & 0x7FFF ) << 48 )  
+        | ( fract_high & LIT64( 0x0000FFFFFFFFFFFF ) ) );
+    result.low = fract_low;
+    return result;
+
+}
+
+/*----------------------------------------------------------------------------
+| Returns the exponent of quadruple-precision floating-point value `a'.
+*----------------------------------------------------------------------------*/
+
+bits16 float128_exp( float128 a )
+{
+
+    return (( a.high>>48 ) & 0x7FFF );
+
+}
+
+/*----------------------------------------------------------------------------
+| Returns the high-order 48 bits of the fraction of quadruple-precision
+| floating-point value `a'.
+*----------------------------------------------------------------------------*/
+
+bits64 float128_fract_high( float128 a )
+{
+
+    return ( a.high & LIT64( 0x0000FFFFFFFFFFFF ) );
+
+}
+
+/*----------------------------------------------------------------------------
+| Returns the low-order 64 bits of the fraction of quadruple-precision
+| floating-point value `a'.
+*----------------------------------------------------------------------------*/
+
+bits64 float128_fract_low( float128 a )
+{
+
+    return ( a.low );
+
+}
+
+/*----------------------------------------------------------------------------
 | Returns the result of converting the quadruple-precision floating-point NaN
 | `a' to the canonical NaN format.  If `a' is a signaling NaN, the invalid
 | exception is raised.
