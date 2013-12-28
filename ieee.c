@@ -3508,9 +3508,13 @@ static int divint_lbfp(float64 *op1, float64 *op2,
     int code;
     int cc;
     int flags;
+    int divsign, dvrsign;
     float128 xop1, xop2, xop3, xtemp;
     float128 xmaxint64 = {0x4034000000000000ULL, 0ULL}; // 2**53
     float128 xfract64 = {0xFFFFFFFFFFFFFFFFULL, 0xF000000000000000ULL}; // sign+exp+52 bits
+
+    divsign = float64_is_neg(*op1) ? 1 : 0;
+    dvrsign = float64_is_neg(*op2) ? 1 : 0;
 
     float_clear_exception_flags();
 
@@ -3601,6 +3605,16 @@ static int divint_lbfp(float64 *op1, float64 *op2,
     *op1 = float128_to_float64(xop1);
     *op3 = float128_to_float64(xop3);
 
+    /* A zero remainder is negative if the dividend is negative */
+    if (float64_is_zero(*op1)) {
+        *op1 = divsign ? 0x8000000000000000ULL : 0ULL;
+    }
+
+    /* A zero quotient is negative if dividend and divisor have different signs */
+    if (float64_is_zero(*op3)) {
+        *op3 = (divsign != dvrsign) ? 0x8000000000000000ULL : 0ULL;
+    }
+
     regs->psw.cc = cc;
     return code;
 
@@ -3646,9 +3660,13 @@ static int divint_sbfp(float32 *op1, float32 *op2,
     int code;
     int cc;
     int flags;
+    int divsign, dvrsign;
     float128 xop1, xop2, xop3, xtemp;
     float128 xmaxint32 = {0x4017000000000000ULL, 0ULL}; // 2**24
     float128 xfract32 = {0xFFFFFFFFFE000000ULL, 0ULL}; // sign+exp+23 bits
+
+    divsign = float32_is_neg(*op1) ? 1 : 0;
+    dvrsign = float32_is_neg(*op2) ? 1 : 0;
 
     float_clear_exception_flags();
 
@@ -3742,6 +3760,16 @@ static int divint_sbfp(float32 *op1, float32 *op2,
 
     *op1 = float128_to_float32(xop1);
     *op3 = float128_to_float32(xop3);
+
+    /* A zero remainder is negative if the dividend is negative */
+    if (float32_is_zero(*op1)) {
+        *op1 = divsign ? 0x80000000 : 0;
+    }
+
+    /* A zero quotient is negative if dividend and divisor have different signs */
+    if (float32_is_zero(*op3)) {
+        *op3 = (divsign != dvrsign) ? 0x80000000 : 0;
+    }
 
     regs->psw.cc = cc;
     return code;
