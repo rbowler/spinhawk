@@ -3558,6 +3558,12 @@ static int divint_lbfp(float64 *op1, float64 *op2,
         return code;
     }
 
+    if (float64_is_inf(*op2)) {
+        *op3 = (divsign != dvrsign) ? 0x8000000000000000ULL : 0ULL;
+        regs->psw.cc = 0;
+        return 0;
+    }
+
     xop1 = float64_to_float128(*op1);
     xop2 = float64_to_float128(*op2);
 
@@ -3708,6 +3714,12 @@ static int divint_sbfp(float32 *op1, float32 *op2,
         *op3 = float32_default_nan;
         regs->psw.cc = 1;
         return code;
+    }
+
+    if (float32_is_inf(*op2)) {
+        *op3 = (divsign != dvrsign) ? 0x80000000 : 0;
+        regs->psw.cc = 0;
+        return 0;
     }
 
     xop1 = float32_to_float128(*op1);
