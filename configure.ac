@@ -230,7 +230,6 @@ AH_TEMPLATE( [C99_FLEXIBLE_ARRAYS],     [Define if your gcc properly supports C9
 
 AH_TEMPLATE( [HAVE_ATTR_REGPARM],       [Define if your gcc properly supports __attribute__((regparm(n)))] )
 AH_TEMPLATE( [NO_ASM_BYTESWAP],         [Define to disable assembler routines for byte swapping] )
-AH_TEMPLATE( [NO_IEEE_SUPPORT],         [Define to disable IEEE floating point support] )
 AH_TEMPLATE( [NO_SETUID],               [Define to disable setuid operation] )
 AH_TEMPLATE( [NO_SIGABEND_HANDLER],     [Define to disable sigabend_handler (please describe this better)] )
 AH_TEMPLATE( [NON_UNIQUE_GETTIMEOFDAY], [Define if 'gettimeofday' returns non-unique values] )
@@ -498,7 +497,6 @@ AC_CHECK_HEADERS( sys/un.h,       [hc_cv_have_sys_un_h=yes],       [hc_cv_have_s
 AC_CHECK_HEADERS( byteswap.h,     [hc_cv_have_byteswap_h=yes],     [hc_cv_have_byteswap_h=no]     )
 AC_CHECK_HEADERS( bzlib.h,        [hc_cv_have_bzlib_h=yes],        [hc_cv_have_bzlib_h=no]        )
 AC_CHECK_HEADERS( dlfcn.h,        [hc_cv_have_dlfcn_h=yes],        [hc_cv_have_dlfcn_h=no]        )
-AC_CHECK_HEADERS( fenv.h,         [hc_cv_have_fenv_h=yes],         [hc_cv_have_fenv_h=no]         )
 AC_CHECK_HEADERS( inttypes.h,     [hc_cv_have_inttypes_h=yes],     [hc_cv_have_inttypes_h=no]     )
 AC_CHECK_HEADERS( iconv.h,        [hc_cv_have_iconv_h=yes],        [hc_cv_have_iconv_h=no]        )
 AC_CHECK_HEADERS( ltdl.h,         [hc_cv_have_ltdl_h=yes],         [hc_cv_have_ltdl_h=no]         )
@@ -1842,12 +1840,6 @@ if test "$hc_cv_regparm_attr_supported" = "yes"  &&
     AC_DEFINE(HAVE_ATTR_REGPARM)
 fi
 
-if test "$hc_cv_is_windows"  != "yes"  &&
-   test "$hc_cv_have_fenv_h" != "yes"; then
-
-    AC_DEFINE(NO_IEEE_SUPPORT)
-fi
-
 if test "$hc_cv_is_apple" = "yes"; then
 
     :
@@ -1936,7 +1928,7 @@ AM_CONDITIONAL( USE_DLLTOOL,         [ test "$hc_cv_is_windows"       = "yes" ] 
 
 AC_CACHE_SAVE()
 
-AC_OUTPUT( [ Makefile util/Makefile html/Makefile crypto/Makefile man/Makefile m4/Makefile decNumber/Makefile] )
+AC_OUTPUT( [ Makefile util/Makefile html/Makefile crypto/Makefile man/Makefile m4/Makefile decNumber/Makefile softfloat/Makefile] )
 
 ###############################################################################
 #   (end-of-file)

@@ -1,0 +1,86 @@
+* LTXBR test $Id$
+sysclear
+archmode esame
+r 1a0=00000001800000000000000000000200 # z/Arch restart PSW
+r 1d0=00000001800000000000000000000280 # z/Arch pgm new PSW
+r 200=B7000320     # LCTL R0,R0,CTLR0  Set CR0 bit 45
+r 204=B29D0324     # LFPC FPCREG       Load FPC register
+r 208=78000330     # LE R1,EB1         Load R0=nonzero
+r 20C=ED00032C000D # DEB R0,EB0        Generate zero-divide error
+r 212=41000006     # LA R0,6           R0=Number of test data
+r 216=41100800     # LA R1,TEST1       R1=>Test data table
+r 21A=41F00900     # LA R15,RES1       R15=>Result table
+r 21E=1B88         # SR R8,R8          Clear CC register
+r 220=D71FF000F000 #A XC 0(32,R15),0(R15)  Clear result table entry
+r 226=47000000     # NOP               Spare
+r 22A=47000000     # NOP               Spare
+r 22E=68100340     # LD R1,INIT        Load R1,R3=Initial pattern
+r 232=68300348     # LD R3,INIT+8      ...
+r 236=68401000     # LD R4,0(,R1)      Load R4,R6=TESTn
+r 23A=68601008     # LD R6,8(,R1)      ...
+r 23E=B29D1010     # LFPC 16(R1)       Load FPC register
+r 242=B3420014     # LTXBR R1,R4       R1,R3 = R4,R6 and set cc
+r 246=B2220080     #B IPM R8           R8=Cond code and pgm mask
+r 24A=6010F000     # STD R1,0(,R15)    Store R1,R3 in result table
+r 24E=6030F008     # STD R3,8(,R15)    ...
+r 252=5080F010     # ST R8,16(,R15)    Store cond code in result table
+r 256=41F0F020     # LA R15,32(,R15)   R15=>next result table
+r 25A=41101020     # LA R1,32(,R1)     R1=>Next TESTn
+r 25E=46000220     # BCT R0,A          Loop to end of TEST table
+r 262=41000900     # LA R0,RES1        R0->Actual results
+r 266=411000C0     # LA R1,6*32        R1=Length of results table
+r 26A=41200C00     # LA R2,EXP1        R2->Expected results
+r 26E=413000C0     # LA R3,6*32        R3=Length of results table
+r 272=0F02         # CLCL R0,R2        Compare with expected results
+r 274=477002FC     # BNE DIE           Error if not equal
+r 278=B2B20300     # LPSWE WAITPSW     Load enabled wait PSW
+r 280=B29C0324     #PGM STFPC FPCREG   Save FPC register
+r 284=D203F0140328 # MVC 20(4,R15),EYE  Move eye-catcher to result table
+r 28A=92DCF018     # MVI 24(R15),X'DC'  Indicate program check
+r 28E=D200F0190326 # MVC 25(1,R15),FPCREG+2  Save DXC in result table
+r 294=D201F01A008E # MVC 26(2,R15),PGMINT+2  Save interrupt code in result table
+r 29A=D203F01C0328 # MVC 28(4,R15),EYE  Move eye-catcher to result table
+r 2A0=47F00246     # B B               Continue to store result
+r 2FC=B2B20310     #DIE LPSWE DISWAIT  Load disabled wait PSW
+r 300=07020001800000000000000000AAAAAA # WAITPSW Enabled wait state PSW
+r 310=00020001800000000000000000BADBAD # DISWAIT Disabled wait state PSW
+r 320=00040000     # CTLR0             Control register 0 (bit45 AFP control)
+r 324=00000000     # FPCREG            Floating point control register
+r 328=FEEDBEEF     # EYE               Eye-catcher
+r 32C=00000000     # EB0 DC EB'0'      For zero-divide error
+r 330=3F800000     # EB1 DC EB'1'      For zero-divide error
+r 340=EEEEAAAAEEEEBBBBEEEECCCCEEEEDDDD # INIT Initial pattern
+r 800=40010000000000000000000000000000 # TEST1 DC LB'4'
+r 810=F8000000                         #       DC X'F8000000' FPC=INV+DIVZ+UF+OF+INEX
+r 820=C0010000000000000000000000000000 # TEST2 DC LB'-4'
+r 830=F8000000                         #       DC X'F8000000' FPC=INV+DIVZ+UF+OF+INEX
+r 840=80000000000000000000000000000000 # TEST3 DC LB'-0'
+r 850=F8000000                         #       DC X'F8000000' FPC=INV+DIVZ+UF+OF+INEX
+r 860=7FFF0000000000000000000000000ABC # TEST4 DC LB'+SNAN'
+r 870=80000000                         #       DC X'80000000' FPC=INV
+r 880=7FFF0000000000000000000000000123 # TEST5 DC LB'+SNAN'
+r 890=78000000                         #       DC X'78000000' FPC=DIVZ+UF+OF+INEX
+r 8A0=7FFF8000000000000000000000000DEF # TEST6 DC LB'+QNAN'
+r 8B0=80000000                         #       DC X'80000000' FPC=INV
+* Expected results, condition codes, and DXC codes
+r C00=40010000000000000000000000000000 # EXP1 DC LB'4'
+r C10=20000000000000000000000000000000 #      DC X'20' CC=2
+r C20=C0010000000000000000000000000000 # EXP2 DC LB'-4'
+r C30=10000000000000000000000000000000 #      DC X'10' CC=1
+r C40=80000000000000000000000000000000 # EXP3 DC LB'-0'
+r C50=00000000000000000000000000000000 #      DC X'00' CC=0
+r C60=EEEEAAAAEEEEBBBBEEEECCCCEEEEDDDD # EXP4 Initial pattern
+r C70=00000000FEEDBEEFDC800007FEEDBEEF #      DC F'0,EYE',X'DC',X'80',X'0007',F'EYE' IEEE-INVALID
+r C80=7FFF8000000000000000000000000123 # EXP5 DC LB'+QNAN'
+r C90=30000000000000000000000000000000 #      DC X'30' CC=3
+r CA0=7FFF8000000000000000000000000DEF # EXP6 DC LB'+QNAN'
+r CB0=30000000000000000000000000000000 #      DC X'30' CC=3
+pgmtrace +7
+restart
+pause 1
+* Display test data
+r 800.C0
+* Display expected results
+r C00.C0
+* Display actual results
+r 900.C0

@@ -651,7 +651,7 @@
 #endif /*!defined(FEATURE_BINARY_FLOATING_POINT)*/
 
 
-#if !defined(FEATURE_BINARY_FLOATING_POINT) || defined(NO_IEEE_SUPPORT)
+#if !defined(FEATURE_BINARY_FLOATING_POINT)
  UNDEF_INST(add_bfp_ext_reg)
  UNDEF_INST(add_bfp_long)
  UNDEF_INST(add_bfp_long_reg)

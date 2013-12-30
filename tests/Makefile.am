@@ -12,12 +12,15 @@ dist_pkgdata_DATA = \
 
 EXTRA_DIST =        \
     agf.txt         \
+    aebr.txt        \
     alsi.txt        \
     axtr.txt        \
     brc.txt         \
     cdfr.txt        \
     cdgr.txt        \
     cdsg.txt        \
+    cebr.txt        \
+    cfebr.txt       \
     cgdr.txt        \
     cgdtr.txt       \
     cger.txt        \
@@ -32,6 +35,7 @@ EXTRA_DIST =        \
     czxt.txt        \
     diag204.txt     \
     diag24.txt      \
+    diebr.txt       \
     dxtr.txt        \
     epsw.txt        \
     exrl.txt        \
@@ -65,15 +69,18 @@ EXTRA_DIST =        \
     kmc20.txt       \
     kmc3.txt        \
     kmc67.txt       \
+    ldebr.txt       \
     ldetr.txt       \
     ldxtr.txt       \
     ledtr.txt       \
     lfpc.txt        \
     llhrl.txt       \
     loop.txt        \
+    ltxbr.txt       \
     lxdtr.txt       \
     maer.txt        \
     mvcos.txt       \
+    mxbr.txt        \
     mxtr.txt        \
     pfmf.txt        \
     pcc.txt         \
@@ -83,6 +90,8 @@ EXTRA_DIST =        \
     rnsbg.txt       \
     rrdtr.txt       \
     rrxtr.txt       \
+    sebr.txt        \
+    sqxbr.txt       \
     srdt.txt        \
     tapepos.txt     \
     tbedr.txt       \

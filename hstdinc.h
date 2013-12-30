@@ -167,9 +167,6 @@
     #endif
   #endif
 #endif
-#ifdef HAVE_FENV_H
-  #include <fenv.h>
-#endif
 #ifdef HAVE_ICONV
   #include <iconv.h>
 #endif

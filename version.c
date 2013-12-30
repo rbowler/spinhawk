@@ -93,14 +93,6 @@ static const char *build_info[] = {
 #endif
 #endif
 
-#if defined(NO_IEEE_SUPPORT)
-    "No IEEE support",
-#else
-    #if !defined(HAVE_SQRTL)
-        "No sqrtl support",
-    #endif
-#endif
-
 #if defined(NO_SIGABEND_HANDLER)
     "No SIGABEND handler",
 #endif

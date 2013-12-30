@@ -82,14 +82,14 @@
 /vmfplc2
 /winbuild
 
-# /SoftFloat/
-/SoftFloat.lo
-/SoftFloat/.deps
-/SoftFloat/.libs
-/SoftFloat/Makefile
-/SoftFloat/Makefile.in
-/SoftFloat/SoftFloat.lo
-/SoftFloat/libSoftFloat.la
+# /softfloat/
+/softfloat.lo
+/softfloat/.deps
+/softfloat/.libs
+/softfloat/Makefile
+/softfloat/Makefile.in
+/softfloat/softfloat.lo
+/softfloat/libsoftfloat.la
 
 # /crypto/
 /crypto/.deps

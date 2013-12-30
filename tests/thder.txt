@@ -9,21 +9,28 @@ r 208=41000008     # LA R0,8           R0=Number of test data
 r 20C=41100320     # LA R1,TEST1       R1=>Test data table
 r 210=41E00400     # LA R14,EXPECT1    R14=>Expected result table
 r 214=41F00500     # LA R15,ACTUAL1    R15=>Actual result table
-r 218=78101000     #A LE F1,0(,R1)     Load FPR1=short BFP test data
-r 21C=B3580001     # THDER F0,F1       Convert to long HFP in FPR0
-r 220=6000F000     # STD F0,0(,R15)    Store actual result
-r 224=68101008     # LD F1,8(,R1)      Load FPR1=long BFP test data
-r 228=B3590001     # THDR F0,F1        Convert to long HFP in FPR0
-r 22C=6000F008     # STD F0,8(,R15)    Store actual result
-r 230=41E0E010     # LA R14,16(,R14)   R14=>next EXPECTn
-r 234=41F0F010     # LA R15,16(,R15)   R15=>next ACTUALn
-r 238=41101010     # LA R1,16(,R1)     R1=>Next TESTn
-r 23C=46000218     # BCT R0,A          Loop to end of TEST table
-r 240=D5FF05000400 # CLC ACTUAL1(256),EXPECT1  Compare actual results
-r 246=477002F0     # BNE DIE           Branch if not equal expected
-r 24A=B2B20300     # LPSWE WAITPSW     Load enabled wait PSW
-r 2F0=B2B201D0     # DIE LPSWE PGMNPSW Load disabled wait PSW
-r 300=07020001800000000000000000FED0D0 # WAITPSW Enabled wait state PSW
+r 218=1B88         # SR R8,R8          Clear CC register
+r 21A=D71FF000F000 #A XC 0(32,R15),0(R15)  Clear result table entry
+r 220=78101000     # LE F1,0(,R1)      Load FPR1=short BFP test data
+r 224=B3580001     # THDER F0,F1       Convert to long HFP in FPR0
+r 228=B2220080     # IPM R8            R8=Cond code and pgm mask
+r 22C=6000F000     # STD F0,0(,R15)    Store actual result
+r 230=5080F008     # ST R8,8(,R15)     Store cond code in result table
+r 234=68101008     # LD F1,8(,R1)      Load FPR1=long BFP test data
+r 238=B3590001     # THDR F0,F1        Convert to long HFP in FPR0
+r 23C=B2220080     # IPM R8            R8=Cond code and pgm mask
+r 240=6000F010     # STD F0,16(,R15)   Store actual result
+r 244=5080F018     # ST R8,24(,R15)    Store cond code in result table
+r 248=41E0E020     # LA R14,32(,R14)   R14=>next EXPECTn
+r 24C=41F0F020     # LA R15,32(,R15)   R15=>next ACTUALn
+r 250=41101010     # LA R1,16(,R1)     R1=>Next TESTn
+r 254=4600021A     # BCT R0,A          Loop to end of TEST table
+r 258=D5FF05000400 # CLC ACTUAL1(256),EXPECT1  Compare actual results
+r 25E=477002EC     # BNE DIE           Branch if not equal expected
+r 262=B2B20300     # LPSWE WAITPSW     Load enabled wait PSW
+r 2EC=B2B202F0     # DIE LPSWE DISWAIT Load disabled wait PSW
+r 2F0=00020001800000000000000000BADBAD # DISWAIT Disabled wait state PSW
+r 300=07020001800000000000000000AAAAAA # WAITPSW Enabled wait state PSW
 r 310=00040000     # CTLR0             Control register 0 (bit45 AFP control)
 r 314=00000000     # FPCREG            Floating point control register
 r 320=42F60000                         # TEST1 DC EB'123'     Normal
@@ -42,28 +49,28 @@ r 380=41500000                         # TEST7 DC EB'13'      Normal
 r 388=402A000000000000                 #       DC DB'13'
 r 390=FF7FC99E                         # TEST8 DC EB'-3.4E38' Normal
 r 398=C7EFF933C78CDFAD                 #       DC DB'-3.4E38'
-r 400=427B000000000000                 # EXPECT1 DC DH'123'   Normal
-r 408=427B000000000000                 #         DC DH'123'   Normal
-r 410=8000000000000000                 # EXPECT2 DC DH'-0'    Zero
-r 418=8000000000000000                 #         DC DH'-0'    Zero
-r 420=0000000000000000                 # EXPECT3 DC DH'0'     Subnormal
-r 428=0000000000000000                 #         DC DH'0'     Subnormal
-r 430=7FFFFFFFFFFFFFFF                 # EXPECT4 DC DH'(MAX)' Infinity
-r 438=7FFFFFFFFFFFFFFF                 #         DC DH'(MAX)' Infinity
-r 440=7FFFFFFFFFFFFFFF                 # EXPECT5 DC DH'(MAX)' QNaN
-r 448=7FFFFFFFFFFFFFFF                 #         DC DH'(MAX)' QNaN
-r 450=7FFFFFFFFFFFFFFF                 # EXPECT6 DC DH'(MAX)' SNan
-r 458=7FFFFFFFFFFFFFFF                 #         DC DH'(MAX)' SNan
-r 460=41D0000000000000                 # EXPECT7 DC DH'13'    Normal
-r 468=41D0000000000000                 #         DC DH'13'    Normal
-r 470=E0FFC99E00000000                 # EXPECT8 DC DHL4'-3.4E38R5,0'
-r 478=E0FFC99E3C66FD68                 #         DC DH'-3.4E38R5'
+r 400=427B0000000000002000000000000000 # EXPECT1 DC DH'123'   Normal CC2
+r 410=427B0000000000002000000000000000 #         DC DH'123'   Normal CC2
+r 420=80000000000000000000000000000000 # EXPECT2 DC DH'-0'    Zero CC0
+r 430=80000000000000000000000000000000 #         DC DH'-0'    Zero CC0
+r 440=1B800000000000002000000000000000 # EXPECT3 DC DH'(MIN)' Small CC2
+r 450=00000000000000002000000000000000 #         DC DH'0'     Subnormal CC2
+r 460=7FFFFFFFFFFFFFFF3000000000000000 # EXPECT4 DC DH'(MAX)' Infinity CC3
+r 470=7FFFFFFFFFFFFFFF3000000000000000 #         DC DH'(MAX)' Infinity CC3
+r 480=7FFFFFFFFFFFFFFF3000000000000000 # EXPECT5 DC DH'(MAX)' QNaN CC3
+r 490=7FFFFFFFFFFFFFFF3000000000000000 #         DC DH'(MAX)' QNaN CC3
+r 4A0=7FFFFFFFFFFFFFFF3000000000000000 # EXPECT6 DC DH'(MAX)' SNan CC3
+r 4B0=7FFFFFFFFFFFFFFF3000000000000000 #         DC DH'(MAX)' SNan CC3
+r 4C0=41D00000000000002000000000000000 # EXPECT7 DC DH'13'    Normal CC2
+r 4D0=41D00000000000002000000000000000 #         DC DH'13'    Normal CC2
+r 4E0=E0FFC99E000000001000000000000000 # EXPECT8 DC DHL4'-3.4E38R5,0' Normal CC1
+r 4F0=E0FFC99E3C66FD681000000000000000 #         DC DH'-3.4E38R5' Normal CC1
 pgmtrace +7
 restart
 pause 1
 * Display test data
 r 320.80
 * Display expected results
-r 400.80
+r 400.100
 * Display actual results
-r 500.80
+r 500.100

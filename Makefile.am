@@ -8,11 +8,11 @@ ACLOCAL_AMFLAGS  = -I m4 -I autoconf
 
 lns=@LN_S@
 
-SUBDIRS = decNumber m4 util html man . crypto
+SUBDIRS = decNumber softfloat m4 util html man . crypto
 
 LDADD = @LIBS@
 
-AM_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/decNumber
+AM_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/decNumber -I$(top_srcdir)/softfloat
 
 if BUILD_HERCIFC
   HERCIFC = hercifc
@@ -382,6 +382,7 @@ endif
                       libherct.la     \
                       libhercd.la     \
                       decNumber/libdecNumber.la \
+                      softfloat/libsoftfloat.la \
                       $(LDADD)
 
 #
@@ -636,8 +637,6 @@ noinst_HEADERS = hostinfo.h     \
                  w32ctca.h      \
                  tt32api.h      \
                  linklist.h     \
-                 ieee-sol.h     \
-                 ieee-w32.h     \
                  httpmisc.h     \
                  devtype.h      \
                  codepage.h     \

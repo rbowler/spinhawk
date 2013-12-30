@@ -221,11 +221,7 @@
 #define OS_VSE          0x7FF673FFF7DE7FFFULL   /* VSE               */
 #define OS_VM           0x7FFFFFFFF7DE7FFCULL   /* VM                */
 #define OS_OPENSOLARIS  0xF8FFFFFFFFDE7FF7ULL   /* OpenSolaris       */
-#if !defined(NO_IEEE_SUPPORT)
 #define OS_LINUX        0x78FFFFFFF7DE7FF7ULL   /* Linux             */
-#else
-#define OS_LINUX        0x78FFFFFFF7DE7FD6ULL   /* Linux             */
-#endif
 
 /* Definitions for program product OS restriction flag. This flag is ORed
    with the SCLP READ CPU INFO response code. A 4 here makes the CPU look

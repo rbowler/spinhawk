@@ -89,6 +89,9 @@ decNumber_OBJ = \
     $(O)decNumber.obj  \
     $(O)decPacked.obj
 
+softfloat_OBJ = \
+    $(O)softfloat.obj 
+
 hengine_OBJ = \
     $(O)assist.obj   \
     $(O)bldcfg.obj   \

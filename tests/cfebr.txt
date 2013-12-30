@@ -1,0 +1,84 @@
+* CFEBR test $Id$
+sysclear
+archmode esame
+r 1a0=00000001800000000000000000000200 # z/Arch restart PSW
+r 1d0=000000018000000000000000000002E0 # z/Arch pgm new PSW
+r 200=B7000320     # LCTL R0,R0,CTLR0  Set CR0 bit 45
+r 204=B29D0324     # LFPC FPCREG       Load value into FPC register
+r 208=41000010     # LA R0,16          R0=Number of test data
+r 20C=41100800     # LA R1,TEST1       R1=>Test data table
+r 210=41F00900     # LA R15,RES1       R15=>Result table
+r 214=1B88         # SR R8,R8          Clear CC register
+r 216=D70FF000F000 #A XC 0(16,R15),0(R15)  Clear result table entry
+r 21C=78401000     # LE F4,0(,R1)      Load FPR4=TESTn
+r 220=B29D1004     # LFPC 4(R1)        Load FPC=TESTn+4
+r 224=5830032C     # L R3,JUNKWORD     Load initial pattern into R3
+r 228=B3980034     # CFEBR R3,0,F4     Convert FPR4 to R3
+r 22C=B2220080     # IPM R8            R8=Cond code and pgm mask
+r 230=5030F000     #B ST R3,0(,R15)    Store R3 in result table
+r 234=BE88F004     # STCM R8,B'1000',4(R15)  Store CC in table
+r 238=B29CF008     # STFPC 8(R15)      Store FPC in table
+r 23C=41F0F010     # LA R15,16(,R15)   R15=>next result table
+r 240=41101008     # LA R1,8(,R1)      R1=>Next TESTn
+r 244=46000216     # BCT R0,A          Loop to end of TEST table
+r 248=41000900     # LA R0,RES1        R0->Actual results
+r 24C=41100100     # LA R1,16*16       R1=Length of results table
+r 250=41200C00     # LA R2,EXP1        R2->Expected results
+r 254=41300100     # LA R3,16*16       R3=Length of results table
+r 258=0F02         # CLCL R0,R2        Compare with expected results
+r 25A=477002FC     # BNE DIE           Error if not equal
+r 25E=B2B20300     # LPSWE WAITPSW     Load enabled wait PSW
+r 2E0=92FFF005     #PGM MVI 5(R15),X'FF' Indicate program check
+r 2E4=D201F006008E # MVC 6(2,R15),PGMINT+2  Save interrupt code in result table
+r 2EA=BF880152     # ICM R8,B'1000',PGMOPSW+2  R8=cond code from old PSW
+r 2EE=47F00230     # B B               Continue to next test
+r 2FC=B2B20310     #DIE LPSWE DISWAIT  Load disabled wait PSW
+r 300=07020001800000000000000000AAAAAA # WAITPSW Enabled wait state PSW
+r 310=00020001800000000000000000BADBAD # DISWAIT Disabled wait state PSW
+r 320=00040000     # CTLR0             Control register 0 (bit45 AFP control)
+r 324=00000000     # FPCREG            Floating point control register
+r 328=00000000     # COUNT             Error counter
+r 32C=DEADBEEF     # JUNKWORD          Initial pattern
+* Test data
+r 800=DF001FFA00000000                 # TEST1
+r 808=DEEFC00000000000                 # TEST2
+r 810=5FE57BE300000000                 # TEST3
+r 818=7F80820000000000                 # TEST4
+r 820=DF803F0000000000                 # TEST5
+r 828=4F7B1BBC00000000                 # TEST6
+r 830=6D80077E00000000                 # TEST7
+r 838=7E89A17A00000000                 # TEST8
+r 840=DECFFFFF00000000                 # TEST9
+r 848=FF81000700000000                 # TEST10
+r 850=FF81000780000001                 # TEST11 MASK=INV
+r 858=FF81000708000001                 # TEST12 MASK=INEX
+r 860=FF810007F8000001                 # TEST13 MASK=INV+DIVZERO+UF+OF+INEX
+r 868=42F6000000000001                 # TEST14 DC EB'123'
+r 870=8000000000000001                 # TEST15 DC EB'-0'
+r 878=C2F60000F8000001                 # TEST16 DC EB'-123',MASK=INV+DIVZERO+UF+OF+INEX
+* Expected results, condition codes, and FPC register
+r C00=80000000300000000088000000000000 # EXP1 -MAX,CC3,INV+INEX
+r C10=80000000300000000088000000000000 # EXP2 -MAX,CC3,INV+INEX
+r C20=7FFFFFFF300000000088000000000000 # EXP3 +MAX,CC3,INV+INEX
+r C30=80000000300000000088000000000000 # EXP4 -MAX,CC3,INV+INEX
+r C40=80000000300000000088000000000000 # EXP5 -MAX,CC3,INV+INEX
+r C50=7FFFFFFF300000000088000000000000 # EXP6 +MAX,CC3,INV+INEX
+r C60=7FFFFFFF300000000088000000000000 # EXP7 +MAX,CC3,INV+INEX
+r C70=7FFFFFFF300000000088000000000000 # EXP8 +MAX,CC3,INV+INEX
+r C80=80000000300000000088000000000000 # EXP9 -MAX,CC3,INV+INEX
+r C90=80000000300000000088000000000000 # EXP10 -MAX,CC3,INV+INEX
+r CA0=DEADBEEF00FF00078000800100000000 # EXP11 -MAX,CC0,INEX,DXC=INV
+r CB0=8000000030FF00070880080100000000 # EXP12 -MAX,CC0,INV,DXC=INEX
+r CC0=DEADBEEF00FF0007F800800100000000 # EXP13 -MAX,CC0,DXC=INV
+r CD0=0000007B200000000000000100000000 # EXP14 F'123',CC2
+r CE0=00000000000000000000000100000000 # EXP15 F'0',CC0
+r CF0=FFFFFF8510000000F800000100000000 # EXP16 F'-123',CC1
+pgmtrace +7
+restart
+pause 1
+* Display test data
+r 800.80
+* Display expected results
+r C00.100
+* Display actual results
+r 900.100

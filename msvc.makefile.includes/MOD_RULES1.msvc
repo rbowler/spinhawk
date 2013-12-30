@@ -39,6 +39,15 @@ $(O)pfpo.obj: pfpo.c
 $(O)decNumber.res: decNumber\decNumber.rc
     $(rc) $(rcflags) $(rcvars) -i decNumber -fo $(O)decNumber.res decNumber\decNumber.rc
 
+{softfloat}.c{$(OBJDIR)}.obj::
+    $(cc) $(cdebug) $(cflags) /Isoftfloat /I. $(cvarsdll) /Fo"$(OBJDIR)\\" /Fd"$(OBJDIR)\\" $<
+
+$(O)ieee.obj: ieee.c
+    $(cc) $(cdebug) $(cflags) /Isoftfloat /I. /Fp"$(OBJDIR)\\build_pch.pch" /Yu"hstdinc.h" $(cvarsdll) /Fo"$(OBJDIR)\\" /Fd"$(OBJDIR)\\" ieee.c
+
+$(O)softfloat.res: softfloat\softfloat.rc
+    $(rc) $(rcflags) $(rcvars) -i softfloat -fo $(O)softfloat.res softfloat\softfloat.rc
+
 #
 # No precompiled headers for these ones.. Sorry!
 #

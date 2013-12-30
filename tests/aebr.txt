@@ -1,0 +1,58 @@
+* AEBR test $Id$
+sysclear
+archmode esame
+r 1a0=00000001800000000000000000000200 # z/Arch restart PSW
+r 1d0=0000000180000000000000000000025A # z/Arch pgm new PSW
+r 200=B7000320     # LCTL R0,R0,CTLR0  Set CR0 bit 45
+r 204=B29D0324     # LFPC FPCREG       Load value into FPC register
+r 208=E54C03280000 # MVHI COUNT,0      Clear error counter
+r 20E=41000004     # LA R0,4           R0=Number of test data
+r 212=41100800     # LA R1,TEST1       R1=>Test data table
+r 216=41F00900     # LA R15,RES1       R15=>Result table
+r 21A=1B88         # SR R8,R8          Clear CC register
+r 21C=78401000     #A LE R4,0(,R1)     Load R4=TESTn
+r 220=78501004     # LE R5,4(,R1)      Load R5=TESTn+4
+r 224=B30A0045     # AEBR R4,R5        Add R4 and R5
+r 228=B2220080     # IPM R8            R8=Cond code and pgm mask
+r 22C=7040F000     # STE R4,0(,R15)    Store R4 in result table
+r 230=5080F004     # ST R8,4(,R15)     Store CC in table
+r 234=41F0F008     #B LA R15,8(,R15)   R15=>next result table
+r 238=41101008     # LA R1,8(,R1)      R1=>Next TESTn
+r 23C=4600021C     # BCT R0,A          Loop to end of TEST table
+r 240=41000900     # LA R0,RES1        R0->Actual results
+r 244=41100020     # LA R1,4*8         R1=Length of results table
+r 248=41200C00     # LA R2,EXP1        R2->Expected results
+r 24C=41300020     # LA R3,4*8         R3=Length of results table
+r 250=0F02         # CLCL R0,R2        Compare with expected results
+r 252=477002FC     # BNE DIE           Error if not equal
+r 256=B2B20300     # LPSWE WAITPSW     Load enabled wait PSW
+r 25A=B29C0324     #PGM STFPC FPCREG   Save FPC register
+r 25E=92FFF004     # MVI 4(R15),X'FF'  Indicate program check
+r 262=D200F0050326 # MVC 5(1,R15),FPCREG+2  Save DXC in result table
+r 268=D201F006008E # MVC 6(2,R15),PGMINT+2  Save interrupt code in result table
+r 26E=47F00234     # B B               Continue to next test
+r 2FC=B2B20310     #DIE LPSWE DISWAIT  Load disabled wait PSW
+r 300=07020001800000000000000000AAAAAA # WAITPSW Enabled wait state PSW
+r 310=00020001800000000000000000BADBAD # DISWAIT Disabled wait state PSW
+r 320=00040000     # CTLR0             Control register 0 (bit45 AFP control)
+r 324=20000000     # FPCREG            Floating point control register
+r 328=00000000     # COUNT             Error counter
+* Test data
+r 800=4040000040000000                 # TEST1 DC EB'3,2'
+r 808=3F800000C0000000                 # TEST2 DC EB'1,-2'
+r 810=3F800000BF800000                 # TEST3 DC EB'1,-1'
+r 818=7F7FC99E7F7FC99E                 # TEST4 DC EB'3.4E+38,3.4E+38'
+* Expected results, condition codes, and DXC codes
+r C00=40A0000020000000                 # EXP1 DC EB'5',X'20'
+r C08=BF80000010000000                 # EXP2 DC EB'-1',X'10'
+r C10=0000000000000000                 # EXP3 DC EB'0',X'00'
+r C18=1FFFC99EFF200007                 # EXP4 DC EB'6.8E+38',X'FF',X'20',X'0007' OVERFLOW
+pgmtrace +7
+restart
+pause 1
+* Display test data
+r 800.20
+* Display expected results
+r C00.20
+* Display actual results
+r 900.20
