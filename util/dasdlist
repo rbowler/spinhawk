@@ -1,8 +1,8 @@
 #!/bin/sh
 #
 # This command prints a track from a CKD DASD image file.
-# It uses the Unix Octal Dump (od) command to firstly obtain
-# the device geometry from the CKD header, and secondly to
+# It uses the Unix Octal Dump (od) command to obtain
+# the device geometry from the CKD header, then xxd to
 # print the track in hexadecimal format.
 #
 filename=$1
@@ -57,5 +57,5 @@ num=`expr $trklen`
 # Dump the requested track
 #
 echo "$filename Cyl $cyl Head $head"
-echo "od -Ax -tx1 -j $offset -N $num $filename"
-od -Ax -tx1 -j $offset -N $num $filename
+echo "xxd -E -g4 -u -s $offset -l $num $filename"
+xxd -E -g4 -u -s $offset -l $num $filename
