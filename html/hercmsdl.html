@@ -1408,7 +1408,7 @@ HHCDL107E Cannot obtain input buffer: <em>error</em>
 <dd><dl>
   <dt>Meaning
   <dd>An attempt to obtain a 64K byte input buffer for
-reaading the IEBCOPY input file failed. The error is described
+reading the IEBCOPY input file failed. The error is described
 by <code><em>error</em></code>.
   <dt>Action
   <dd>Correct the error and rerun <code>dasdload</code>.
@@ -1692,6 +1692,114 @@ file named <code><em>filename</em></code>. The error is described by <code><em>e
   <dd>dasdload.c, function seq_initialize
   </dl>
 </dl>
+<dt><code><a name="HHCDL130W">
+HHCDL130W WARNING -- XMIT file utility is not IEBCOPY; file <code><em>filename</em></code> not loaded
+<dd><dl>
+  <dt>Meaning
+  <dd>The file <code><em>filename</em></code> cannot be loaded as an XMIT file because
+it is not an unloaded PDS.
+  <dt>Action
+  <dd>If <code><em>filename</em></code> is an unloaded sequential file,
+rerun <code>dasdload</code> specifying XMSEQ instead of XMIT.
+  <dt>Issued by
+  <dd>dasdload.c, function process_iebcopy_file
+  </dl>
+<dt><code><a name="HHCDL131I">
+HHCDL131I Control record: <em>recname</em> length <em>length</em>
+<dd><dl>
+  <dt>Meaning
+  <dd>A control record named <code><em>recname</em></code> of length <code><em>length</em></code> has been
+read.
+  <dt>Message level
+  <dd>4
+  <dt>Issued by
+  <dd>dasdload.c, function process_inmcopy_file
+  </dl>
+<dt><code><a name="HHCDL132I">
+HHCDL132I File number: <em>filenum</em> (</code>(<code>not</code>)<code>
+selected)
+</a></code>
+<dd><dl>
+  <dt>Meaning
+  <dd>The data file, number <code><em>filenum</em></code>, was (or was not) selected for
+processing.
+  <dt>Message level
+  <dt>Issued by
+  <dd>dasdload.c, function process_inmcopy_file
+  </dl>
+<dt><code><a name="HHCDL133I">
+HHCDL133I Data record: length <em>length</em>
+</a></code>
+<dd><dl>
+  <dt>Meaning
+  <dd>A data record of length <code><em>length</em></code> has been read.
+  <dt>Message level
+  <dd>4
+  <dt>Issued by
+  <dd>dasdload.c, function process_inmcopy_file
+  </dl>
+<dt><code><a name="HHCDL135I">
+HHCDL135I CCHHR=<em>outcchhr</em> (TTR=<em>outttr</em>) KL=<em>keylen</em>
+DL=<em>datalen</em>
+</a></code>
+<dd><dl>
+  <dt>Meaning
+  <dd>A record with key length <code><em>keylen</em></code>
+and data length <code><em>datalen</em></code>,
+is being written to the output DASD image at
+absolute address <code><em>outcchhr</em></code>,
+relative address <code><em>outttr</em></code>.
+  <dt>Message level
+  <dd>4
+  <dt>Issued by
+  <dd>dasdload.c, function process_inmcopy_file
+  </dl>
+<dt><code><a name="HHCDL136E">
+HHCDL136E Cannot open file <em>filename</em>: <em>error</em>
+</a></code>
+<dd><dl>
+  <dt>Meaning
+  <dd>An attempt to open the sequential XMIT input file named
+<code><em>filename</em></code> failed. The error is described by <code><em>error</em></code>.
+  <dt>Action
+  <dd>Correct the error and rerun <code>dasdload</code>.
+  <dt>Issued by
+  <dd>dasdload.c, function process_inmcopy_file
+  </dl>
+<dt><code><a name="HHCDL137E">
+HHCDL137E Cannot obtain input buffer: <em>error</em>
+</a></code>
+<dd><dl>
+  <dt>Meaning
+  <dd>An attempt to obtain a 64K byte input buffer for
+reading the sequential XMIT input file failed. The error is described
+by <code><em>error</em></code>.
+  <dt>Action
+  <dd>Correct the error and rerun <code>dasdload</code>.
+  <dt>Issued by
+  <dd>dasdload.c, function process_inmcopy_file
+  </dl>
+<dt><code><a name="HHCDL138W">
+HHCDL138W WARNING -- XMIT file utility is not INMCOPY; file <code><em>filename</em></code> not loaded
+<dd><dl>
+  <dt>Meaning
+  <dd>The file <code><em>filename</em></code> cannot be loaded as an XMSEQ file because
+it does not appear to contain an unloaded sequential file.
+  <dt>Issued by
+  <dd>dasdload.c, function process_inmcopy_file
+  </dl>
+<dt><code><a name="HHCDL139I">
+HHCDL139I Processing file <em>filename</em>
+</a></code>
+<dd><dl>
+  <dt>Meaning
+  <dd>The input file named <code><em>filename</em></code> is being processed
+as a sequential XMIT file.
+  <dt>Message level
+  <dd>1
+  <dt>Issued by
+  <dd>dasdload.c, function process_inmcopy_file
+  </dl>
 <p><center><hr width=15% noshade></center>
 <p>
 If you have a question about Hercules, see the

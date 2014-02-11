@@ -1,4 +1,4 @@
-/* DASDLOAD.C   (c) Copyright Roger Bowler, 1999-2010                */
+/* DASDLOAD.C   (c) Copyright Roger Bowler, 1999-2014                */
 /*              Hercules DASD Utilities: DASD image loader           */
 
 /*-------------------------------------------------------------------*/
@@ -97,6 +97,7 @@ typedef struct _TTRCONV {
 #define METHOD_VTOC     4
 #define METHOD_VS       5
 #define METHOD_SEQ      6
+#define METHOD_XMSEQ    7
 
 /*-------------------------------------------------------------------*/
 /* Static data areas                                                 */
@@ -158,11 +159,11 @@ static void
 info_msg (int lvl, char *msg, ...)
 {
 va_list vl;
- 
+
     if (infolvl >= lvl)
     {
         va_start(vl, msg);
-        vprintf (msg, vl); 
+        vprintf (msg, vl);
     }
 } /* end function info_msg */
 
@@ -1824,6 +1825,7 @@ DATABLK        *datablk;                /* Data block                */
 /* Input:                                                            */
 /*      xbuf    Pointer to buffer containing control record          */
 /*      xreclen Length of control record                             */
+/*      utiln   Name of utility being processed (ASCIIZ)             */
 /*      filen   Pointer to field to receive file sequence number     */
 /*      dsorg   Pointer to byte to receive dataset organization      */
 /*      recfm   Pointer to byte to receive record format             */
@@ -1832,7 +1834,8 @@ DATABLK        *datablk;                /* Data block                */
 /*      keyln   Pointer to integer to receive key length             */
 /*      dirnm   Pointer to integer to number of directory blocks     */
 /* Output:                                                           */
-/*      If the record contains the text unit INMUTILN=IEBCOPY        */
+/*      If the record contains the text unit INMUTILN whose          */
+/*      value matches the name of the utility passed in utiln        */
 /*      then the dataset attributes are returned and the function    */
 /*      return value is 1.  Otherwise the return value is 0          */
 /*      and the dataset attributes remain unchanged.                 */
@@ -1841,7 +1844,7 @@ DATABLK        *datablk;                /* Data block                */
 /* File information is listed if infolvl is 2 or greater.            */
 /*-------------------------------------------------------------------*/
 static int
-process_inmr02 (BYTE *xbuf, int xreclen, int *filen,
+process_inmr02 (BYTE *xbuf, int xreclen, char *utiln, int *filen,
                 BYTE *dsorg, BYTE *recfm, U16 *lrecl, U16 *blksz,
                 U16 *keyln, U16 *dirnm)
 {
@@ -1940,8 +1943,8 @@ BYTE           *fieldptr[MAXNUM];       /* Array of field pointers   */
         } /* end switch(tukey) */
     } /* end while(bufrem) */
 
-    /* Return the dataset values if this is the IEBCOPY record */
-    if (strcmp(tuutiln, "IEBCOPY") == 0)
+    /* Return the dataset values if this INMR02 record is for utiln */
+    if (strcmp(tuutiln, utiln) == 0)
     {
         XMINFF (2, "HHCDL078I File %u: DSNAME=%s\n",
                 filenum, tudsnam);
@@ -2758,7 +2761,7 @@ char            pathname[MAX_PATH];     /* xfname in host path format*/
             /* Process control record according to type */
             if (strcmp(xrecname, "INMR02") == 0)
             {
-                rc = process_inmr02 (xbuf, xreclen, &copyfiln,
+                rc = process_inmr02 (xbuf, xreclen, "IEBCOPY", &copyfiln,
                                      &dsorg, &recfm, &lrecl, &blksz,
                                      &keyln, &dirnm);
                 if (rc < 0) return -1;
@@ -3584,6 +3587,212 @@ char            pathname[MAX_PATH];     /* sfname in host path format*/
 
 } /* end function seq_initialize */
 
+/*-------------------------------------------------------------------*/
+/* Subroutine to read an INMCOPY file and write to DASD image file   */
+/* Input:                                                            */
+/*      xfname  XMIT input file name                                 */
+/*      ofname  DASD image file name                                 */
+/*      cif     -> CKD image file descriptor                         */
+/*      devtype Output device type                                   */
+/*      heads   Output device number of tracks per cylinder          */
+/*      trklen  Output device virtual track length                   */
+/*      outcyl  Output starting cylinder number                      */
+/*      outhead Output starting head number                          */
+/*      maxtrks Maximum extent size in tracks                        */
+/* Output:                                                           */
+/*      odsorg  Dataset organization                                 */
+/*      orecfm  Record format                                        */
+/*      olrecl  Logical record length                                */
+/*      oblksz  Block size                                           */
+/*      okeyln  Key length                                           */
+/*      lastrec Record number of last block written                  */
+/*      trkbal  Number of bytes remaining on last track              */
+/*      numtrks Number of tracks written                             */
+/*      nxtcyl  Starting cylinder number for next dataset            */
+/*      nxthead Starting head number for next dataset                */
+/*-------------------------------------------------------------------*/
+static int
+process_inmcopy_file (char *xfname, char *ofname, CIFBLK *cif,
+                U16 devtype, int heads, int trklen,
+                int outcyl, int outhead, int maxtrks,
+                BYTE *odsorg, BYTE *orecfm,
+                int *olrecl, int *oblksz, int *okeyln,
+                int *lastrec, int *trkbal,
+                int *numtrks, int *nxtcyl, int *nxthead)
+{
+int             rc = 0;                 /* Return code               */
+int             xfd;                    /* XMIT file descriptor      */
+BYTE           *xbuf;                   /* -> Logical record buffer  */
+int             xreclen;                /* Logical record length     */
+BYTE            xctl;                   /* 0x20=Control record       */
+char            xrecname[8];            /* XMIT control record name  */
+int             datarecn = 0;           /* Data record counter       */
+int             datafiln = 0;           /* Data file counter         */
+int             copyfiln = 0;           /* Seq num of file to copy   */
+BYTE            dsorg=0;                /* Dataset organization      */
+BYTE            recfm=0;                /* Dataset record format     */
+U16             lrecl=0;                /* Dataset record length     */
+U16             blksz=0;                /* Dataset block size        */
+U16             keyln=0;                /* Dataset key length        */
+U16             dirnm;                  /* Number of directory blocks*/
+DATABLK         datablk;                /* Data block                */
+int             keylen;                 /* Key length of data block  */
+int             datalen;                /* Data length of data block */
+int             outusedv = 0;           /* Output bytes used on track
+                                           of virtual device         */
+int             outusedr = 0;           /* Output bytes used on track
+                                           of real device            */
+int             outtrkbr = 0;           /* Output bytes remaining on
+                                           track of real device      */
+int             outtrk = 0;             /* Output relative track     */
+int             outrec = 0;             /* Output record number      */
+char            pathname[MAX_PATH];     /* xfname in host path format*/
+
+    /* Open the input file */
+    hostpath(pathname, xfname, sizeof(pathname));
+    xfd = hopen(pathname, O_RDONLY|O_BINARY);
+    if (xfd < 0)
+    {
+        XMERRF ("HHCDL136E Cannot open %s: %s\n",
+                xfname, strerror(errno));
+        return -1;
+    }
+
+    /* Obtain the input logical record buffer */
+    xbuf = malloc (65536);
+    if (xbuf == NULL)
+    {
+        XMERRF ("HHCDL137E Cannot obtain input buffer: %s\n",
+                strerror(errno));
+        close (xfd);
+        return -1;
+    }
+
+    /* Display the file information message */
+    XMINFF (1, "HHCDL139I Processing file %s\n", xfname);
+
+    /* Read each logical record */
+    while (1)
+    {
+        xctl=0;
+        rc = read_xmit_rec (xfd, xfname, xbuf, &xctl);
+        if (rc < 0) return -1;
+        xreclen = rc;
+
+        /* Process control records */
+        if (xctl)
+        {
+            /* Extract the control record name */
+            make_asciiz (xrecname, sizeof(xrecname), xbuf, 6);
+            XMINFF (4, "HHCDL131I Control record: %s length %d\n",
+                        xrecname, xreclen);
+
+            /* Exit if control record is a trailer record */
+            if (strcmp(xrecname, "INMR06") == 0)
+                break;
+
+            /* Process control record according to type */
+            if (strcmp(xrecname, "INMR02") == 0)
+            {
+                rc = process_inmr02 (xbuf, xreclen, "INMCOPY", &copyfiln,
+                                     &dsorg, &recfm, &lrecl, &blksz,
+                                     &keyln, &dirnm);
+                if (rc < 0) return -1;
+            }
+            else
+            {
+                rc = process_inmrxx (xbuf, xreclen);
+                if (rc < 0) return -1;
+            }
+
+            /* Reset the data counter if data control record */
+            if (strcmp(xrecname, "INMR03") == 0)
+            {
+                datafiln++;
+                datarecn = 0;
+                XMINFF (4, "HHCDL132I File number: %d %s\n", datafiln,
+                    (datafiln == copyfiln) ? "(selected)"
+                                           : "(not selected)");
+            }
+
+            /* Loop to get next record */
+            continue;
+
+        } /* end if(xctl) */
+
+        /* Process data records */
+        datarecn++;
+        XMINFF (4, "HHCDL133I Data record: length %d\n", xreclen);
+        if (infolvl >= 5) data_dump (xbuf, xreclen);
+
+        /* If this is not the INMCOPY file then ignore data record */
+        if (datafiln != copyfiln)
+        {
+            continue;
+        }
+
+        /* Write the data block to the output file */
+        memcpy(datablk.kdarea, xbuf, xreclen);
+        keylen = 0;
+        datalen = xreclen;
+        rc = write_block (cif, ofname, &datablk, keylen, datalen,
+                    devtype, heads, trklen, maxtrks,
+                    &outusedv, &outusedr, &outtrkbr,
+                    &outtrk, &outcyl, &outhead, &outrec);
+        if (rc < 0)
+        {
+            close(xfd);
+            return -1;
+        }
+
+        XMINFF (4, "HHCDL135I CCHHR=%4.4X%4.4X%2.2X "
+                    "(TTR=%4.4X%2.2X) KL=%d DL=%d\n",
+                    outcyl, outhead, outrec,
+                    outtrk, outrec, keylen, datalen);
+
+    } /* end while(1) */
+
+    /* Check for unsupported xmit utility */
+    if (copyfiln == 0)
+    {
+        XMERRF ("HHCDL138W WARNING -- XMIT file utility is not INMCOPY;"
+                " file %s not loaded\n", xfname);
+    }
+
+    /* Close input file and release buffer */
+    close (xfd);
+    free (xbuf);
+
+    /* Create the end of file record */
+    rc = write_block (cif, ofname, &datablk, 0, 0,
+                devtype, heads, trklen, maxtrks,
+                &outusedv, &outusedr, &outtrkbr,
+                &outtrk, &outcyl, &outhead, &outrec);
+    if (rc < 0) return -1;
+
+    /* Return the last record number and track balance */
+    *lastrec = outrec;
+    *trkbal = outtrkbr;
+
+    /* Write any data remaining in track buffer */
+    rc = write_track (cif, ofname, heads, trklen,
+                    &outusedv, &outtrk, &outcyl, &outhead);
+    if (rc < 0) return -1;
+
+    /* Return the dataset attributes */
+    *odsorg = dsorg;
+    *orecfm = recfm;
+    *olrecl = lrecl;
+    *oblksz = blksz;
+    *okeyln = keyln;
+
+    /* Return number of tracks and starting address of next dataset */
+    *numtrks = outtrk;
+    *nxtcyl = outcyl;
+    *nxthead = outhead;
+    return 0;
+
+} /* end function process_inmcopy_file */
 
 /*-------------------------------------------------------------------*/
 /* Subroutine to initialize an empty dataset                         */
@@ -3878,6 +4087,8 @@ BYTE            c;                      /* Character work area       */
         *method = METHOD_VTOC;
     else if (strcasecmp(pimeth, "SEQ") == 0)
         *method = METHOD_SEQ;
+    else if (strcasecmp(pimeth, "XMSEQ") == 0)
+        *method = METHOD_XMSEQ;
     else
     {
         XMERRF ("HHCDL022E Invalid initialization method: %s\n", pimeth);
@@ -3885,7 +4096,8 @@ BYTE            c;                      /* Character work area       */
     }
 
     /* Locate the initialization file name */
-    if (*method == METHOD_XMIT || *method == METHOD_VS || *method == METHOD_SEQ)
+    if (*method == METHOD_XMIT || *method == METHOD_VS || *method == METHOD_SEQ
+        || *method == METHOD_XMSEQ)
     {
         pifile = strtok (NULL, " \t");
         if (pifile == NULL)
@@ -4209,6 +4421,19 @@ int             fsflag = 0;             /* 1=Free space message sent */
                                     outcyl, outhead, mintrks,
                                     dsorg, recfm, lrecl, blksz,
                                     keyln, &lastrec, &trkbal,
+                                    &tracks, &outcyl, &outhead);
+            if (rc < 0) return -1;
+            break;
+
+        case METHOD_XMSEQ:
+            /* Create sequential dataset using XMIT file as input */
+            maxtrks = MAX_TRACKS;
+            rc = process_inmcopy_file (ifname, ofname, cif,
+                                    devtype, heads, trklen,
+                                    outcyl, outhead, maxtrks,
+                                    &dsorg, &recfm,
+                                    &lrecl, &blksz, &keyln,
+                                    &lastrec, &trkbal,
                                     &tracks, &outcyl, &outhead);
             if (rc < 0) return -1;
             break;

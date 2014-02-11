@@ -23,7 +23,7 @@ volumes for use with Hercules.
                 <a href="#loading">Creating, formatting, and loading DASD volumes</a>
         </p>
         <p>
-                <a href="#PDS">Building a DASD volume from unloaded PDS files</a>
+                <a href="#PDS">Building a DASD volume from unloaded PDS or sequential files</a>
         </p>
         <p>
                 <a href="#utilities">Other DASD utilities</a>
@@ -313,11 +313,11 @@ volume image from the virtual tape onto the formatted virtual DASD
 volume.
 
 <p><hr><a name="PDS"></a>
-<h2>Building a DASD volume from unloaded PDS files</h2>
+<h2>Building a DASD volume from unloaded PDS or sequential files</h2>
 <p>
 The dasdload program can be run from the Unix shell prompt to
 create a new DASD image file and load it with data from unloaded
-PDS files.
+PDS or sequential files.
 <p>
 The format of the dasdload command is:
 <p><code>dasdload <i>[options]</i> <em>ctlfile outfile msglevel</em></code>
@@ -401,6 +401,11 @@ lrecl blksize keylen</em></code>
         ascii/ebcdic translation is not currently supported.  Also,
         the dsorg must either be <em>PS</em> or <em>DA</em> and
         recfm must either be <em>F</em> or <em>FB</em>.
+    <dt><code>XMSEQ <em>filename</em></code>
+    <dd>the dataset is loaded from a dump of a sequential dataset
+        created by the TSO XMIT command.
+        The input is a binary file containing fixed length 80 byte
+        records with no record delimiters.
     <dt><code>EMPTY</code>
     <dd>the dataset is initialized with an end of file record
         (if DSORG is PS) or an empty PDS directory (if DSORG is PO)
@@ -440,8 +445,8 @@ lrecl blksize keylen</em></code>
 </dl>
 <p>All parameters except dsname and method are optional.
 Defaults of zero are supplied for DCB parameters.  For datasets
-loaded with the XMIT method, the DCB parameters are taken from
-the unloaded PDS, and the minimum space allocation required to
+loaded with the XMIT or XMSEQ methods, the DCB parameters are taken
+from the unloaded file, and the minimum space allocation required to
 load the dataset is used unless a larger quantity is specified.
 If space allocation is omitted, the default is TRK 1 0 0.
 If CYL is specified without any primary quantity then the default
