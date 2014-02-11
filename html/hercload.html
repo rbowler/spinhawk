@@ -389,7 +389,13 @@ lrecl blksize keylen</em></code>
     <dl>
     <dt><code>XMIT <em>filename</em></code>
     <dd>the dataset is loaded from an unloaded PDS created by
-        the TSO XMIT command
+        the TSO XMIT command. The input is a binary file containing
+        fixed length 80 byte records with no record delimiters.
+    <dt><code>VS <em>filename</em></code>
+    <dd>the dataset is loaded from an unloaded PDS created by
+        IEBCOPY. The input is a binary file containing variable
+        length spanned records with the record descriptor words
+        omitted and with no record delimiters.
     <dt><code>SEQ <em>filename</em></code>
     <dd>the sequential dataset is loaded from a <b>binary</b> file.
         ascii/ebcdic translation is not currently supported.  Also,
