@@ -10,4 +10,4 @@
 --enable-setuid-hercifc=hercules \
 --enable-multi-cpu=32 \
 --enable-custom=`awk -F"[(,)]" '/^AM_INIT_AUTOMAKE/ {print $3}' configure.ac`\
--spinhawk-`git rev-parse --abbrev-ref HEAD`-`git log --oneline | wc -l`
+-spinhawk-`git rev-parse --abbrev-ref HEAD`-`git log --oneline | wc -l | sed 's/ //g'`
