@@ -53,6 +53,21 @@ Refer to file README.WIN32 or README.WIN64 for details.
 </ol>
 </p>
 
+<h3>Building from source - Mac OS X</h3>
+<ol>
+<li>Install <b>Xcode</b> from the
+<a href="http://itunes.apple.com/app/xcode/id497799835">
+App Store</a>.
+<li>Install <b>Homebrew</b> using the procedure described
+at <a href="http://brew.sh/">http://brew.sh/</a>
+<li>Use these commands to install pre-requisite software:
+<br><code>brew install autoconf</code>
+<br><code>brew install automake</code>
+<br><code>brew install gnu-sed</code>
+<br><code>automake --add-missing</code>
+<li>Proceed with <i>Building from source - Linux and Mac OS X</i> below.
+</ol>
+
 <h3>Building from source - Linux and Mac OS X</h3>
 <ol>
 <li>Download the distribution file
@@ -142,28 +157,21 @@ hercules</code>.</p>
 in subtle ways if the wrong optimization settings are used.</p>
 -->
 
-<!--
 <h3>Installing pre-built binaries for Mac OS X:</h3>
-
+<p>
+<a href="http://brew.sh>Homebrew">Homebrew</a> may be used to install
+Hercules on a Mac with an Intel processor and OS X 10.5 or above.
 <ol>
-<li>Download the compressed disk image: <a
-href="http://downloads.hercules-390.eu/hercules-3.10-tiger.dmg">hercules-3.10-tiger.dmg</a>,
-<a href="http://downloads.hercules-390.eu/hercules-3.10-leopard.dmg">hercules-3.10-leopard.dmg</a>,
-or <a href="http://downloads.hercules-390.eu/hercules-3.10-snowleopard.dmg">hercules-3.10-snowleopard.dmg</a>.
-This package is a universal binary and requires the OS X version in the
-name, either 10.4 (Tiger), 10.5 (Leopard), 10.6 (Snow Leopard) or later. The
-Leopard and Snow Leopard versions include native 64-bit host support, while
-the Tiger version does not. The Tiger and Leopard versions will run on Intel
-or PowerPC Macs, while the Snow Leopard version will only run on Intel, as
-with Snow Leopard itself.
-<li>Mount the image by double-clicking on it in the Finder.
-Your web browser may have done that for you already.
-<li>Installation and use instructions are in the
-file <code>OS&nbsp;X&nbsp;ReadMe.rtf</code>.
-<li>If you want to use CTC networking on your Hercules system, you will need
-to install the supplied Tunnel driver.
+<li>Homebrew requires <b>Xcode</b> which can be installed from the
+<a href="http://itunes.apple.com/app/xcode/id497799835">
+App Store</a>.
+<li>Install <b>Homebrew</b> using the procedure described
+at <a href="http://brew.sh/">http://brew.sh/</a>
+<li>Enter these commands at a terminal prompt:
+<br><code>brew help</code>
+<br><code>brew doctor</code>
+<br><code>brew install hercules</code>
 </ol>
--->
 
 <h3>Installing pre-built binaries for Windows:</h3>
 <ol>
