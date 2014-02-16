@@ -490,7 +490,7 @@ DEVINITTAB      DevInitTab[]  =         /* Initialization table      */
 /*-------------------------------------------------------------------*/
 /* Initialize the device handler                                     */
 /*-------------------------------------------------------------------*/
-static int tapedev_init_handler (DEVBLK *dev, int argc, char *argv[])
+int tapedev_init_handler (DEVBLK *dev, int argc, char *argv[])
 {
 int             rc;
 DEVINITTAB*     pDevInitTab;
@@ -739,7 +739,7 @@ int             attn = 0;
 /*-------------------------------------------------------------------*/
 /* Close the device                                                  */
 /*-------------------------------------------------------------------*/
-static int tapedev_close_device ( DEVBLK *dev )
+int tapedev_close_device ( DEVBLK *dev )
 {
     autoload_close(dev);
     dev->tmh->close(dev);
@@ -1481,7 +1481,7 @@ int  mountnewtape ( DEVBLK *dev, int argc, char **argv )
 /*-------------------------------------------------------------------*/
 /* Query the device definition                                       */
 /*-------------------------------------------------------------------*/
-static void tapedev_query_device ( DEVBLK *dev, char **class,
+void tapedev_query_device ( DEVBLK *dev, char **class,
                 int buflen, char *buffer )
 {
     char devparms[ MAX_PATH+1 + 128 ];
