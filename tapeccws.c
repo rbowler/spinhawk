@@ -3747,6 +3747,8 @@ int sense_built;
 /*-------------------------------------------------------------------*/
 void build_sense_3410_3420 (int ERCode, DEVBLK *dev, BYTE *unitstat, BYTE ccwcode)
 {
+    UNREFERENCED(ccwcode);
+
     // NOTE: caller should have cleared sense area to zeros
     //       if this isn't a 'TAPE_BSENSE_STATUSONLY' call
 
@@ -4053,7 +4055,6 @@ int sns4mat = TAPE_SNS7_FMT_20_3480;
         {
             dev->sense[27] = 0xe0;                  // indicate same as 3490 for now
         }
-        else ;
 
         /* create a serial Number */
         dev->sense[27] |= 0x0C;
@@ -4134,6 +4135,8 @@ void build_sense_3590 (int ERCode, DEVBLK *dev, BYTE *unitstat, BYTE ccwcode)
 /*-------------------------------------------------------------------*/
 void build_sense_Streaming (int ERCode, DEVBLK *dev, BYTE *unitstat, BYTE ccwcode)
 {
+    UNREFERENCED(ccwcode);
+
     // NOTE: caller should have cleared sense area to zeros
     //       if this isn't a 'TAPE_BSENSE_STATUSONLY' call
 
