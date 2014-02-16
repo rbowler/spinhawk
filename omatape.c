@@ -1177,6 +1177,7 @@ S32             nxthdro;                /* Offset of next header     */
         else
             prvhdro = -1;
         break;
+    default:
     case 'T':
         /* For OMA ASCII text files, new previous block is unknown */
         prvhdro = -1;
