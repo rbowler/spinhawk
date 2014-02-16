@@ -1589,6 +1589,8 @@ void* get_stape_status_thread( void* notused )
     struct mtget  mtget;
     int           timeout;
 
+    UNREFERENCED(notused);
+
     logmsg (_("HHCTA300I SCSI-Tape status monitoring thread started; "
             "tid="TIDPAT", pri=%d, pid=%d\n"),
             thread_id(), getpriority(PRIO_PROCESS,0), getpid());
@@ -2009,6 +2011,8 @@ void *scsi_tapemountmon_thread( void *notused )
     LIST_ENTRY*     pListEntry;
     STMNTDRQ*       req;
     DEVBLK*         dev = NULL;
+
+    UNREFERENCED(notused);
 
     logmsg
     (
