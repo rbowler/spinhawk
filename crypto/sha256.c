@@ -451,6 +451,7 @@ SHA256_Update(SHA256_CTX *context, const u_int8_t *data, size_t len)
  usedspace = freespace = 0;
 }
 
+#if 0 // Functions not used by dyncrypt
 void
 SHA256_Final(u_int8_t digest[], SHA256_CTX *context)
 {
@@ -507,6 +508,7 @@ SHA256_Final(u_int8_t digest[], SHA256_CTX *context)
  bzero(context, sizeof(*context));
  usedspace = 0;
 }
+#endif // Functions not used by dyncrypt
 
 
 /* Hashing-only functions called by dyncrypt */
@@ -745,6 +747,7 @@ SHA512_Update(SHA512_CTX *context, const u_int8_t *data, size_t len)
  usedspace = freespace = 0;
 }
 
+#if 0 // Functions not used by dyncrypt
 void
 SHA512_Last(SHA512_CTX *context)
 {
@@ -851,4 +854,5 @@ SHA384_Final(u_int8_t digest[], SHA384_CTX *context)
  /* Zero out state data */
  bzero(context, sizeof(*context));
 }
+#endif // Functions not used by dyncrypt
 
