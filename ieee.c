@@ -85,9 +85,6 @@
 #define divide_ebfp ARCH_DEP(divide_ebfp)
 #define divide_lbfp ARCH_DEP(divide_lbfp)
 #define divide_sbfp ARCH_DEP(divide_sbfp)
-#define integer_ebfp ARCH_DEP(integer_ebfp)
-#define integer_lbfp ARCH_DEP(integer_lbfp)
-#define integer_sbfp ARCH_DEP(integer_sbfp)
 #define load_test_ebfp ARCH_DEP(load_test_ebfp)
 #define load_test_lbfp ARCH_DEP(load_test_lbfp)
 #define load_test_sbfp ARCH_DEP(load_test_sbfp)
@@ -1474,42 +1471,6 @@ DEF_INST(convert_bfp_short_to_fix64_reg)
 
 } /* end DEF_INST(convert_bfp_short_to_fix64_reg) */
 #endif /*defined(FEATURE_ESAME)*/
-
-/*-------------------------------------------------------------------*/
-/* FP INTEGER (long)                                                 */
-/*-------------------------------------------------------------------*/
-static int integer_lbfp(float64 *op, int mode, REGS *regs)
-{
-    int code;
-    float64 result;
-
-    float_clear_exception_flags();
-    set_rounding_mode(regs->fpc, mode);
-    result = float64_round_to_int(*op);
-    set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
-    code = float_exception(regs);
-    *op = result;
-    return code;
-
-} /* end function integer_lbfp */
-
-/*-------------------------------------------------------------------*/
-/* FP INTEGER (short)                                                */
-/*-------------------------------------------------------------------*/
-static int integer_sbfp(float32 *op, int mode, REGS *regs)
-{
-    int code;
-    float32 result;
-
-    float_clear_exception_flags();
-    set_rounding_mode(regs->fpc, mode);
-    result = float32_round_to_int(*op);
-    set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
-    code = float_exception(regs);
-    *op = result;
-    return code;
-
-} /* end function integer_sbfp */
 
 /*-------------------------------------------------------------------*/
 /* DIVIDE (extended)                                                 */
