@@ -1,4 +1,4 @@
-
+/* THIS FILE HAS BEEN MODIFIED FOR USE WITH THE HERCULES PROJECT */
 /*============================================================================
 
 This C source fragment is part of the SoftFloat IEC/IEEE Floating-point
@@ -368,7 +368,7 @@ INLINE void
  )
 {
     bits64 z0, z1, z2;
-    int8 carry0, carry1;
+    uint8 carry0, carry1;
 
     z2 = a2 + b2;
     carry1 = ( z2 < a2 );
@@ -424,7 +424,7 @@ INLINE void
  )
 {
     bits64 z0, z1, z2;
-    int8 borrow0, borrow1;
+    uint8 borrow0, borrow1;
 
     z2 = a2 - b2;
     borrow1 = ( a2 < b2 );
@@ -705,6 +705,7 @@ INLINE flag lt128( bits64 a0, bits64 a1, bits64 b0, bits64 b1 )
 
 }
 
+#if 0
 /*----------------------------------------------------------------------------
 | Returns 1 if the 128-bit value formed by concatenating `a0' and `a1' is
 | not equal to the 128-bit value formed by concatenating `b0' and `b1'.
@@ -717,4 +718,5 @@ INLINE flag ne128( bits64 a0, bits64 a1, bits64 b0, bits64 b1 )
     return ( a0 != b0 ) || ( a1 != b1 );
 
 }
+#endif
 
