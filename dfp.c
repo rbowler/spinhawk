@@ -1089,7 +1089,7 @@ decContext      setmax;                 /* Working context           */
     /* Round decimal number to integer using current rounding mode */
     decNumberToIntegralValue(&p, b, pset);
 
-    /* If rounded value is less than zero then set invalid operation 
+    /* If rounded value is less than zero then set invalid operation
        and return zero result */
     if (decNumberIsNegative(&p))
     {
@@ -1185,7 +1185,7 @@ decContext      setmax;                 /* Working context           */
     /* Round decimal number to integer using current rounding mode */
     decNumberToIntegralValue(&p, b, pset);
 
-    /* If rounded value is less than zero then set invalid operation 
+    /* If rounded value is less than zero then set invalid operation
        and return zero result */
     if (decNumberIsNegative(&p))
     {
@@ -1279,7 +1279,7 @@ char            c;                      /* Character work area       */
             /* Data exception if invalid sign code */
             return 1;
         }
-    } 
+    }
 
     /* Convert zoned number to a decimal string */
     for (i=0; i <= len; i++)
@@ -2723,7 +2723,7 @@ BYTE            dxc;                    /* Data exception code       */
 
 } /* end DEF_INST(convert_dfp_long_to_fix32_reg) */
 
- 
+
 /*-------------------------------------------------------------------*/
 /* B94B CLFXTR - Convert from DFP Ext Register to unsigned 32 [RRF]  */
 /*-------------------------------------------------------------------*/
