@@ -3,7 +3,7 @@ sysclear
 archmode esame
 r 1a0=00000001800000000000000000000200 # z/Arch restart PSW
 r 1d0=0002000180000000000000000000DEAD # z/Arch pgm new PSW
-r 200=B7000310     # LCTL R0,R0,CTLR0  Set CR0 bit 45
+r 200=B7000320     # LCTL R0,R0,CTLR0  Set CR0 bit 45
 r 204=4100000C     # LA R0,12          R0=Number of tests
 r 208=41100340     # LA R1,TEST1       R1=>Test data table
 r 20C=68601000     #A LD F6,0(,R1)     Load FPR6=TESTn
@@ -18,10 +18,13 @@ r 22E=4770021C     # BNZ T             Loop to test next bit
 r 232=60D01100     #X STD F13,RESn     Store bit number in result table
 r 236=41101008     # LA R1,8(,R1)      R1=>Next TESTn
 r 23A=4600020C     # BCT R0,A          Loop to end of table
-r 23E=B2B20300     # LPSWE WAITPSW     Load enabled wait PSW
-r 300=07020001800000000000000000FED0D0 # WAITPSW Enabled wait state PSW
-r 310=00040000     # CTLR0             Control register 0 (bit45 AFP control)
-r 314=00000000     # FPCREG            Floating point control register        
+r 23E=D55F04400540 # CLC RES1(12*8),EXP1  Compare with expected results
+r 244=A7740004     # JNE *+8           Error if not equal
+r 248=B2B20300     # LPSWE WAITPSW     Load enabled wait PSW
+r 24C=B2B20310     # LPSWE DISWAIT     Load disabled wait PSW
+r 300=07020001800000000000000000AAAAAA # WAITPSW Enabled wait state PSW
+r 310=00020001800000000000000000BADBAD # DISWAIT Disabled wait state PSW
+r 320=00040000     # CTLR0             Control register 0 (bit45 AFP control)
 r 330=2238000000000052 # DFP52 DC DD'52'
 r 338=2238000000000001 # DFP01 DC DD'1'
 r 340=2238000000000000 # TEST1 DC DD'0' Zero positive (52)
@@ -36,9 +39,19 @@ r 380=7C00000000001234 # TEST9 DC DD'QNAN' QNaN positive (60)
 r 388=FC0000000000ABCD # TESTA DC DD'-QNAN' QNaN negative (61)
 r 390=7E00000000001234 # TESTB DC DD'SNAN' SNaN positive (62)
 r 398=FE0000000000ABCD # TESTC DC DD'-SNAN' SNaN negative (63)
+* Expected results
+r 540=22380000 00000052 22380000 00000053
+r 550=22380000 00000054 22380000 00000055
+r 560=22380000 00000056 22380000 00000057
+r 570=22380000 00000058 22380000 00000059
+r 580=22380000 00000060 22380000 00000061
+r 590=22380000 00000062 22380000 00000063
+ostailor null
 restart
 pause 1
 * Display test data
 r 340.60 
-* Display results
+* Display expected results
+r 540.60 
+* Display actual results
 r 440.60 
