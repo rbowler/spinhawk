@@ -648,8 +648,8 @@ decContext      setmax;                 /* Working context for mp,mn */
 static inline void
 dfp_shift_coeff(decContext *pset, decNumber *dn, int count)
 {
-size_t          len;                    /* String length             */
-size_t          maxlen;                 /* Maximum coefficient length*/
+int             len;                    /* String length             */
+int             maxlen;                 /* Maximum coefficient length*/
 int32_t         exp;                    /* Original exponent         */
 uint8_t         bits;                   /* Original flag bits        */
 char            zd[MAXDECSTRLEN+64];    /* Zoned decimal work area   */
@@ -664,7 +664,7 @@ char            zd[MAXDECSTRLEN+64];    /* Zoned decimal work area   */
 
     /* Convert coefficient digits to zoned decimal */
     decNumberToString(dn, zd);
-    len = strlen(zd);
+    len = (int)strlen(zd);
 
     /* Shift zoned digits left or right */
     if (count > 0)
