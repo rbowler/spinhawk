@@ -25,6 +25,8 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 
 */
 
+#define UNREFERENCED(x) ((void)(x))
+
 #if HAVE_CONFIG_H
   #include "config.h" // Hercules build configuration options/settings
 #endif
@@ -1099,7 +1101,7 @@ sys_dl_open (loader_data, filename)
      const char *filename;
 {
   lt_module   module   = dlopen (filename, LT_GLOBAL | LT_LAZY_OR_NOW);
-  loader_data=loader_data;
+  UNREFERENCED(loader_data);
 
   if (!module)
     {
@@ -1116,7 +1118,7 @@ sys_dl_close (loader_data, module)
 {
   int errors = 0;
 
-  loader_data=loader_data;
+  UNREFERENCED(loader_data);
   if (dlclose (module) != 0)
     {
       LT_DLMUTEX_SETERROR (DLERROR (CANNOT_CLOSE));
@@ -1133,7 +1135,7 @@ sys_dl_sym (loader_data, module, symbol)
      const char *symbol;
 {
   lt_ptr address = dlsym (module, symbol);
-  loader_data=loader_data;
+  UNREFERENCED(loader_data);
 
   if (!address)
     {
@@ -1946,7 +1948,7 @@ presym_init (loader_data)
 {
   int errors = 0;
 
-  loader_data=loader_data;
+  UNREFERENCED(loader_data);
   LT_DLMUTEX_LOCK ();
 
   preloaded_symbols = 0;
@@ -1986,7 +1988,7 @@ static int
 presym_exit (loader_data)
      lt_user_data loader_data;
 {
-  loader_data=loader_data;
+  UNREFERENCED(loader_data);
   presym_free_symlists ();
   return 0;
 }
@@ -2037,7 +2039,7 @@ presym_open (loader_data, filename)
   lt_dlsymlists_t *lists;
   lt_module    module = (lt_module) 0;
 
-  loader_data=loader_data;
+  UNREFERENCED(loader_data);
   LT_DLMUTEX_LOCK ();
   lists = preloaded_symbols;
 
@@ -2086,7 +2088,7 @@ presym_close (loader_data, module)
      lt_module module;
 {
   /* Just to silence gcc -Wall */
-  loader_data=loader_data;
+  UNREFERENCED(loader_data);
   module = 0;
   return 0;
 }
@@ -2098,7 +2100,7 @@ presym_sym (loader_data, module, symbol)
      const char *symbol;
 {
   lt_dlsymlist *syms = (lt_dlsymlist*) module;
-  loader_data=loader_data;
+  UNREFERENCED(loader_data);
 
   ++syms;
   while (syms->address)
@@ -2773,7 +2775,7 @@ find_handle_callback (filename, data, ignored)
   lt_dlhandle  *handle      = (lt_dlhandle *) data;
   int       notfound    = access (filename, R_OK);
 
-  ignored=ignored;
+  UNREFERENCED(ignored);
   /* Bail out if file cannot be read...  */
   if (notfound)
     return 0;
@@ -2817,7 +2819,7 @@ load_deplibs (handle, deplibs)
 #endif
   int   errors = 0;
 
-  deplibs=deplibs;
+  UNREFERENCED(deplibs);
   handle->depcount = 0;
 
 #if LTDL_DLOPEN_DEPLIBS
