@@ -1333,6 +1333,8 @@ char            zwork[MAXDECSTRLEN+64]; /* Decimal string work area  */
 int             zwlen;                  /* Length of zwork string    */
 int             zwind;                  /* Index into zwork string   */
 
+    UNREFERENCED(pset);
+
     /* Determine if the number is negative or positive */
     sign = (decNumberIsNegative(dn)) ? 1 : 0;
 
