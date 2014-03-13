@@ -77,18 +77,6 @@ BYTE ckd_ident[] = {0x43, 0x4B, 0x44, 0x5F}; /* CKD_ in ASCII */
 #endif /*!defined(HAVE_LIBZ)*/
 
 /*-------------------------------------------------------------------*/
-/* Subroutine to exit the program                                    */
-/*-------------------------------------------------------------------*/
-void delayed_exit (int exit_code)
-{
-    /* Delay exiting is to give the system
-     * time to display the error message. */
-    usleep(100000);
-    exit(exit_code);
-}
-#define  EXIT(rc)   delayed_exit(rc)   /* (use this macro to exit)   */
-
-/*-------------------------------------------------------------------*/
 /* Subroutine to display command syntax and exit                     */
 /*-------------------------------------------------------------------*/
 static void
@@ -106,7 +94,7 @@ argexit ( int code )
             "\t-q       = suppress progress messages\n");
     if (sizeof(off_t) > 4) fprintf(stderr,
             "\t-lfs     = build one large output file\n");
-    EXIT(code);
+    exit(code);
 } /* end function argexit */
 
 /*-------------------------------------------------------------------*/
@@ -134,7 +122,7 @@ int     len = 0;                        /* Number of bytes read      */
             fprintf (stderr,
                     "%s read error: %s\n",
                     ifname, strerror(errno));
-            EXIT(3);
+            exit(3);
         }
         len += rc;
     } /* end while */
@@ -146,7 +134,7 @@ int     len = 0;                        /* Number of bytes read      */
                 "Expected %d bytes at offset %8.8X,"
                 " found %d bytes\n",
                 ifname, reqlen, offset, len);
-        EXIT(3);
+        exit(3);
     }
 
 } /* end function read_input_data */
@@ -298,7 +286,7 @@ char            pathname[MAX_PATH];     /* file path in host format  */
                 "Cannot open %s: %s\n",
                 ifname,
                 errno == 0 ? "gzopen error" : strerror(errno));
-        EXIT(3);
+        exit(3);
     }
   #else /*!defined(HAVE_LIBZ)*/
     if (strcmp(ifname, "-") == 0)
@@ -312,7 +300,7 @@ char            pathname[MAX_PATH];     /* file path in host format  */
             fprintf (stderr,
                     "Cannot open %s: %s\n",
                     ifname, strerror(errno));
-            EXIT(3);
+            exit(3);
         }
     }
   #endif /*!defined(HAVE_LIBZ)*/
@@ -329,7 +317,7 @@ char            pathname[MAX_PATH];     /* file path in host format  */
                 "Input file %s appears to be a .gz file\n"
                 "but this program was compiled without compression support\n",
                 ifname);
-        EXIT(3);
+        exit(3);
     }
   #endif /*!defined(HAVE_LIBZ)*/
 
@@ -339,7 +327,7 @@ char            pathname[MAX_PATH];     /* file path in host format  */
         fprintf (stderr,
                 "Input file %s is already in CKD format, use dasdcopy\n",
                 ifname);
-        EXIT(3);
+        exit(3);
     }
 
     /* Extract the device type code from the track header */
@@ -368,7 +356,7 @@ char            pathname[MAX_PATH];     /* file path in host format  */
                 "Unknown device code %4.4X" \
                 " at offset 00000000 in input file %s\n",
                 code, ifname);
-        EXIT(3);
+        exit(3);
     } /* end switch(code) */
 
     /* Use the device type to determine the input image track size */
@@ -383,7 +371,7 @@ char            pathname[MAX_PATH];     /* file path in host format  */
     case 0x9345: itrklen = 0xBC00; break;
     default:
         fprintf (stderr, "Unknown device type: %4.4X\n", dt);
-        EXIT(3);
+        exit(3);
     } /* end switch(dt) */
 
     /* Obtain the input track buffer */
@@ -393,7 +381,7 @@ char            pathname[MAX_PATH];     /* file path in host format  */
         fprintf (stderr,
                 "Cannot obtain storage for input track buffer: %s\n",
                 strerror(errno));
-        EXIT(3);
+        exit(3);
     }
 
     /* Copy the first track header to the input track buffer */
@@ -513,7 +501,7 @@ char            pathname[MAX_PATH];     /* file path in host format  */
     {
         fprintf (stderr, "%s open error: %s\n",
                 ofname, strerror(errno));
-        EXIT(8);
+        exit(8);
     }
 
     /* Create the device header */
@@ -538,7 +526,7 @@ char            pathname[MAX_PATH];     /* file path in host format  */
     {
         fprintf (stderr, "%s device header write error: %s\n",
                 ofname, errno ? strerror(errno) : "incomplete");
-        EXIT(1);
+        exit(1);
     }
 
     /* Write each cylinder */
@@ -583,7 +571,7 @@ char            pathname[MAX_PATH];     /* file path in host format  */
                         "   Found cyl=%4.4X head=%4.4X\n",
                         offset, ifname,
                         cyl, head, ihc, ihh);
-                EXIT(8);
+                exit(8);
             }
              
             /* Clear the output track image to zeroes */
@@ -619,7 +607,7 @@ char            pathname[MAX_PATH];     /* file path in host format  */
                             "at offset %8.8X in input file %s\n",
                             rc, (unsigned int)(iptr-itrkbuf), cyl, head,
                             offset, ifname);
-                    EXIT(9);
+                    exit(9);
                 }
 
                 /* Build AWSCKD record header in output buffer */
@@ -656,7 +644,7 @@ char            pathname[MAX_PATH];     /* file path in host format  */
                         "%s cylinder %u head %u write error: %s\n",
                         ofname, cyl, head,
                         errno ? strerror(errno) : "incomplete");
-                EXIT(1);
+                exit(1);
             }
 
         } /* end for(head) */
@@ -669,7 +657,7 @@ char            pathname[MAX_PATH];     /* file path in host format  */
     {
         fprintf (stderr, "%s close error: %s\n",
                 ofname, strerror(errno));
-        EXIT(10);
+        exit(10);
     }
 
     /* Display completion message */
@@ -749,7 +737,7 @@ U32             trksize;                /* AWSCKD image track length */
         fprintf (stderr,
                 "Cylinder count %u is outside range %u-%u\n",
                 volcyls, mincyls, maxcyls);
-        EXIT(4);
+        exit(4);
     }
 
     /* Obtain track data buffer */
@@ -758,7 +746,7 @@ U32             trksize;                /* AWSCKD image track length */
     {
         fprintf (stderr, "Cannot obtain track buffer: %s\n",
                 strerror(errno));
-        EXIT(6);
+        exit(6);
     }
 
     /* Display progress message */
@@ -896,7 +884,7 @@ int             lfs = 0;                /* 1 = Build large file      */
     case 0x9345: heads = 15; maxdlen = 46456; break;
     default:
         fprintf (stderr, "Unknown device type: %4.4X\n", devtype);
-        EXIT(3);
+        exit(3);
     } /* end switch(devtype) */
 
     /* Create the device */
