@@ -5353,7 +5353,7 @@ DEF_INST(perform_frame_management_function)
 {
 int     r1, r2;                         /* Register values           */
 U32     mask;                           /* Mask bits from R1         */
-int     fc;                             /* Frame count               */
+int     fc = 1;                         /* Frame count               */
 RADR    addr, aaddr;                    /* Address of storage frame  */
 int     page_offset;                    /* Low order bits of R2      */
 
