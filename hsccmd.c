@@ -15,7 +15,7 @@
 /* near the end of this module.                                      */
 /*-------------------------------------------------------------------*/
 
-/* 
+/*
 
    Standard conventions are:
 
@@ -41,7 +41,7 @@
    return rc
 
    }
-   
+
 
 */
 
@@ -79,7 +79,7 @@ static void fcb_dump(DEVBLK*, char *, unsigned int);
 
 /* $test_cmd - do something or other */
 
-#ifdef _MSVC_ 
+#ifdef _MSVC_
 #pragma optimize( "", off )
 #endif
 
@@ -178,7 +178,7 @@ int test_cmd(int argc, char *argv[],char *cmdline)
     return 0;
 }
 
-#ifdef _MSVC_ 
+#ifdef _MSVC_
 #pragma optimize( "", on )
 #endif
 
@@ -551,7 +551,7 @@ unsigned uptime, weeks, days, hours, mins, secs;
 
 #define  SECS_PER_MIN     ( 60                 )
 #define  SECS_PER_HOUR    ( 60 * SECS_PER_MIN  )
-#define  SECS_PER_DAY     ( 24 * SECS_PER_HOUR ) 
+#define  SECS_PER_DAY     ( 24 * SECS_PER_HOUR )
 #define  SECS_PER_WEEK    (  7 * SECS_PER_DAY  )
 
     weeks = uptime /  SECS_PER_WEEK;
@@ -650,7 +650,7 @@ int fcb_cmd(int argc, char *argv[], char *cmdline)
         return -1;
     }
 
-    if ( argc == 2 ) 
+    if ( argc == 2 )
     {
         fcb_dump(dev, wbuf, sizeof(wbuf));
         logmsg("HHCPN210I %d:%4.4X %s\n",
@@ -708,7 +708,7 @@ int fcb_cmd(int argc, char *argv[], char *cmdline)
             }
             continue;
         }
-        
+
         if (strncasecmp("lpp=", argv[iarg], 4) == 0)
         {
             ptr = argv[iarg]+4;
@@ -813,7 +813,7 @@ int fcb_cmd(int argc, char *argv[], char *cmdline)
                     return -1;
                 }
             }
-                
+
             continue;
         }
 
@@ -3079,7 +3079,7 @@ int restart_cmd(int argc, char *argv[], char *cmdline)
     UNREFERENCED(cmdline);
     UNREFERENCED(argc);
     UNREFERENCED(argv);
-     
+
     /* Check that target processor type allows IPL */
     if (sysblk.ptyp[sysblk.pcpu] == SCCB_PTYP_IFA
      || sysblk.ptyp[sysblk.pcpu] == SCCB_PTYP_SUP)
@@ -3089,7 +3089,7 @@ int restart_cmd(int argc, char *argv[], char *cmdline)
                 sysblk.pcpu, sysblk.ptyp[sysblk.pcpu]);
         return -1;
     }
-      
+
     logmsg( _("HHCPN038I Restart key depressed\n") );
 
     /* Obtain the interrupt lock */
@@ -3660,7 +3660,7 @@ BYTE    c;
     {
         if (argv[1] != NULL
           && strlen(argv[1]) >= 1 && strlen(argv[1]) <= 2
-          && sscanf(argv[1], "%hx%c", &id, &c) == 1)  
+          && sscanf(argv[1], "%hx%c", &id, &c) == 1)
         {
             sysblk.lparnum = id;
             sysblk.lparnuml = strlen(argv[1]);
@@ -6718,7 +6718,7 @@ int aea_cmd(int argc, char *argv[], char *cmdline)
     if(regs->aea_common[32] > 0)
         logmsg(" %2.2x",regs->aea_common[32]);
     else
-        logmsg(" %2d",regs->aea_common[32]);    
+        logmsg(" %2d",regs->aea_common[32]);
     for (i = 0; i < 16; i++)
         if(regs->aea_common[i] > 0)
             logmsg(" %2.2x",regs->aea_common[i]);
