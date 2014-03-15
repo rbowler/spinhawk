@@ -1039,7 +1039,7 @@ int i,j;
         sprintf(cpuname,"cpu%d",i);
         if((cpustate = cgi_variable(webblk,cpuname)))
             sscanf(cpustate,"%d",&cpuonline);
-        
+
         OBTAIN_INTLOCK(NULL);
 
         switch(cpuonline) {
@@ -1155,7 +1155,7 @@ void cgibin_hwrite(WEBBLK *webblk, char *msg, int msg_len)
             break;
         }
 
-        if ((buf_used + new_len) > sizeof(buffer))
+        if ((buf_used + new_len) > (int)sizeof(buffer))
         {
             // new piece won't fit, write forced
             hwrite(webblk->sock, buffer,  buf_used);
