@@ -1762,6 +1762,7 @@ if test "$hc_cv_auto_optimize" = "yes"; then
             hc_cv_optimization_flags="$hc_cv_optimization_flags -fno-omit-frame-pointer"
         fi
     fi
+    hc_cv_optimization_flags="$hc_cv_optimization_flags -fno-strict-aliasing"
 fi
 
 if test "x$hc_cv_optimization_flags" = "x"; then
