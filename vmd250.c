@@ -1388,6 +1388,7 @@ RADR   bufbeg;    /* Address where the read/write will occur   */
 RADR   bufend;    /* Last byte read or written                 */
 
    xcode = 0;   /* Initialize the address check exception code */
+   status = 0xFF;  /* Set undefined status */
    
    /* Preserve pending sense if any and establish my ownership */
    /* of the device by reserving it if shared and locking it   */
@@ -1987,9 +1988,9 @@ BYTE   status;    /* Returned BIOE status                      */
 int    physblk;   /* Physical block number                     */
 RADR   bufbeg;    /* Address where the read/write will occur   */
 RADR   bufend;    /* Last byte read or written                 */
-        
 
    xcode = 0;   /* Initialize the address check exception code */
+   status = 0xFF;  /* Set undefined status */
    
    /* Preserve pending sense if any and establish my ownership */
    /* of the device by reserving it if shared and locking it   */
