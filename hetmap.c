@@ -182,7 +182,7 @@ main( int argc, char *argv[] )
     U32  totblocks;
     U32  totubytes;
     U32  totcbytes;
-    U32  opts;
+    U32  opts = 0;
     char pgmpath[MAX_PATH];
     char *pgm;
 
