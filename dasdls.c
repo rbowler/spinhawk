@@ -308,7 +308,11 @@ int list_contents(CIFBLK *cif, char *volser, DSXTENT *extent, char *fname, char 
                     /* LRECL */
 
                     lrecl = (f1dscb->ds1lrecl[0] << 8) | f1dscb->ds1lrecl[1];
-                    printf((lrecl ? " %5d" : "      "), lrecl);
+                    if (lrecl) {
+                        printf(" %5d", lrecl);
+                    } else {
+                        printf("      ");
+                    }
 
                     /* BLKSZ, KEYLN */
 
