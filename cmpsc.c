@@ -1385,7 +1385,7 @@ static void ARCH_DEP(cmpsc_expand)(int r1, int r2, REGS *regs, REGS *iregs)
   struct ec ec;                        /* Expand cache                        */
   int i;                               /* Index                               */
   U16 is;                              /* Index symbol                        */
-  U16 iss[8];                          /* Index symbols                       */
+  U16 iss[8] = {0};                    /* Index symbols                       */
 
   /* Initialize values */
   dcten = GR0_dcten(regs);
@@ -1690,7 +1690,6 @@ static void ARCH_DEP(cmpsc_fetch_iss)(struct ec *ec, U16 is[8])
   /* Calculate the 8 index symbols */
   switch(ec->smbsz)
   {
-    default: /* Never occurs but prevents "warning: may be used uninitialized" */
     case 9: /* 9-bits */
     {
       /* 0       1       2       3       4       5       6       7       8        */
