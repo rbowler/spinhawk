@@ -79,6 +79,16 @@ typedef  uint8_t    QWORD[16];  // unsigned quadword   (16 bytes)
 #define  I64_FMTX         "%16.16" I64_FMT "X"
 
 #if defined(SIZEOF_INT_P) && SIZEOF_INT_P >= 8
+ #define FMT_PFX_P        "%16.16"
+#else // !defined(SIZEOF_INT_P) || SIZEOF_INT_P < 8
+ #define FMT_PFX_P          "%8.8"
+#endif
+
+#if defined(__PRI_64_LENGTH_MODIFIER__) // MAC
+ #define UINT_PTR_FMT              PRIuPTR
+ #define      PTR_FMTx   FMT_PFX_P PRIxPTR
+ #define      PTR_FMTX   FMT_PFX_P PRIXPTR
+#elif defined(SIZEOF_INT_P) && SIZEOF_INT_P >= 8
  #define UINT_PTR_FMT              I64_FMT
  #define      PTR_FMTx             I64_FMTx
  #define      PTR_FMTX             I64_FMTX
@@ -89,6 +99,16 @@ typedef  uint8_t    QWORD[16];  // unsigned quadword   (16 bytes)
 #endif
 
 #if defined(SIZEOF_SIZE_T) && SIZEOF_SIZE_T >= 8
+ #define FMT_PFX_Z        "%16.16"
+#else // !defined(SIZEOF_INT_P) || SIZEOF_INT_P < 8
+ #define FMT_PFX_Z          "%8.8"
+#endif
+
+#if defined(__PRI_64_LENGTH_MODIFIER__) // MAC
+ #define   SIZE_T_FMT              PRIuPTR
+ #define   SIZE_T_FMTx   FMT_PFX_Z PRIxPTR
+ #define   SIZE_T_FMTX   FMT_PFX_Z PRIXPTR
+#elif defined(SIZEOF_SIZE_T) && SIZEOF_SIZE_T >= 8
   #define  SIZE_T_FMT              I64_FMT
   #define  SIZE_T_FMTx             I64_FMTx
   #define  SIZE_T_FMTX             I64_FMTX
