@@ -5715,7 +5715,7 @@ int             l;
         if (p)
         {
             l = sprintf ((char *)p, "%s" "." "%6.6ld %4.4X:",
-                      tbuf+11, tv.tv_usec, dev ? dev->devnum : 0);
+                      tbuf+11, (long)(tv.tv_usec), dev ? dev->devnum : 0);
             vsprintf ((char *)p + l, msg, vl);
         }
     }
