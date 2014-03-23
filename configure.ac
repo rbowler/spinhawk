@@ -15,6 +15,7 @@ AM_INIT_AUTOMAKE(hercules,3.10)         # (the version of our software package)
 AM_CONFIG_HEADER(config.h)              # (the file the resulting configure script will produce)
 AM_MAINTAINER_MODE()
 AC_CANONICAL_HOST()                     # (sets $host_cpu, $host_vendor, and $host_os)
+m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
 ###############################################################################
 #   Programs section...
