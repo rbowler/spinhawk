@@ -1,5 +1,5 @@
-/* HMACROS.H    (c) Copyright Roger Bowler, 1999-2009                */
-/*               Hercules macros                                     */
+/* HMACROS.H    (c) Copyright Roger Bowler, 1999-2014                */
+/*              Hercules macros                                      */
 
 #ifndef _HMACROS_H
 #define _HMACROS_H
@@ -265,7 +265,7 @@ typedef U32  (*s390_trace_br_func) (int amode,  U32 ia, REGS *regs);
 typedef U64  (*z900_trace_br_func) (int amode,  U64 ia, REGS *regs);
 
 /*-------------------------------------------------------------------*/
-/* compiler optimization hints         (for performance)             */
+/* Compiler optimization hints (for performance)                     */
 /*-------------------------------------------------------------------*/
 
 #undef likely
@@ -273,8 +273,8 @@ typedef U64  (*z900_trace_br_func) (int amode,  U64 ia, REGS *regs);
 
 #ifdef _MSVC_
 
-  #define likely(_c)      ( (_c) ? ( __assume((_c)), 1 ) :                    0   )
-  #define unlikely(_c)    ( (_c) ?                   1   : ( __assume(!(_c)), 0 ) )
+  #define likely(_c)      ( (_c) ? ( __assume((_c)), 1 ) : 0 )
+  #define unlikely(_c)    ( (_c) ? 1 : ( __assume(!(_c)), 0 ) )
 
 #else // !_MSVC_
 
