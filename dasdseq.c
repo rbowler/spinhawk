@@ -175,7 +175,7 @@ void showf1(    FILE            *fmsg,
     if (verbose > 1) {
         fprintf(stderr, "Dataset has %d extent(s)\n", num_extents);
         if (verbose > 2)
-            data_dump((void *)extent, sizeof(extent) * MAX_EXTENTS);
+            data_dump((void *)extent, sizeof(DSXTENT) * MAX_EXTENTS);
         fprintf(stderr, "Extent Information:\n");
         fprintf(stderr, "     EXTENT --begin-- ---end---\n");
         fprintf(stderr, "TYPE NUMBER CCCC HHHH CCCC HHHH\n");
