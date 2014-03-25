@@ -273,11 +273,6 @@ void *tmp;
 }
 
 
-static inline void copy_opcode(zz_func to_table[256], zz_func from_table[256][GEN_MAXARCH], int opcode, int arch_mode)
-{
-    to_table[opcode] = from_table[opcode][arch_mode];
-}
-
 /* Libtool static name colision resolution */
 /* note : lt_dlopen will look for symbol & modulename_LTX_symbol */
 #if !defined(HDL_BUILD_SHARED) && defined(HDL_USE_LIBTOOL)
