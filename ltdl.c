@@ -2089,7 +2089,7 @@ presym_close (loader_data, module)
 {
   /* Just to silence gcc -Wall */
   UNREFERENCED(loader_data);
-  module = 0;
+  UNREFERENCED(module);
   return 0;
 }
 
