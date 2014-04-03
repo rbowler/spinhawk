@@ -21,17 +21,11 @@ m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 #   Programs section...
 ###############################################################################
 
-#HC_PROG_CC()                           #    ((( DEPRECATED )))
-#
-# CFLAGS *MUST* BE SET 1ST - BEFORE CALL AC_PROG_CC OTHERWISE AUTOCONF TRIES TO IMPOSE
-#        ITS OWN CHOICES...
-# FIXME :
-#        Unfortunatelly, these are gcc flags.. so going to have
-#        to find something better...
-#
+# Set CFLAGS first to override the AC_PROG_CC default setting
+
 CFLAGS="$CFLAGS -W -Wall"
 
-AC_PROG_CC()                            # (back to using this again)
+AC_PROG_CC()                            # (set CC to the name of the compiler)
 
 # -----------------------------------------------------------------------------
 #  PROGRAMMING NOTE: The below 'AC_SUBST' macro causes AC_OUTPUT to replace
@@ -1771,6 +1765,23 @@ if test "x$hc_cv_optimization_flags" = "x"; then
 else
     AC_MSG_RESULT( [$hc_cv_optimization_flags] )
 fi
+
+
+AC_CACHE_SAVE()
+
+###############################################################################
+#   Set additional Warning options for the compiler
+###############################################################################
+
+# Avoid warnings when the instruction decoders load unused register numbers
+# from the instruction, and also to avoid modifying decNumber and softfloat
+HC_ADD_TO_CFLAGS_IF_SUPPORTED([-Wno-unused-but-set-variable],
+        hc_have_unused_set_variable)
+
+# MSVC requires all declarations to be at the start of a block, whereas gcc
+# only issues a warning. This makes gcc flag mixed declarations as an error
+HC_ADD_TO_CFLAGS_IF_SUPPORTED([-Werror=declaration-after-statement],
+        hc_have_decl_after_stmt)
 
 AC_CACHE_SAVE()
 

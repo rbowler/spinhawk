@@ -349,6 +349,38 @@ AC_DEFUN([HC_CHECK_NEED_GETOPT_OPTRESET],
     fi
 ])
 
+#-----------------------------------------------------------------------------
+#
+# Macro:  HC_ADD_TO_CFLAGS_IF_SUPPORTED()
+#
+#  Checks whether the compiler supports 'option', adds to CFLAGS if yes
+#
+# Parms:   1. 'option' to be added
+#          2. 'symbol' to be set
+# Input:   nothing
+# Output:  'option' is appended to CFLAGS if the compiler supports it;
+#          'symbol' is set to "yes" or "no"
+#
+#-----------------------------------------------------------------------------
+
+AC_DEFUN([HC_ADD_TO_CFLAGS_IF_SUPPORTED],
+[
+    AC_CACHE_CHECK( [whether compiler supports $1],
+        [$2],
+        [
+            hc_temp="$CFLAGS"
+            CFLAGS="$CFLAGS -Werror $1"
+            AC_TRY_COMPILE([],
+                [return(0);],
+                $2="yes",
+                $2="no")
+            CFLAGS="$hc_temp"
+        ])
+    if test "${$2}" = "yes"; then
+        CFLAGS="$CFLAGS $1"
+    fi
+])
+
 ###############################################################################
 #   (end-of-file)
 ###############################################################################
