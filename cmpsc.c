@@ -1,4 +1,4 @@
-/* CMPSC.C      (c) Bernard van der Helm, 2000-2013                  */
+/* CMPSC.C      (c) Bernard van der Helm, 2000-2014                  */
 /*              S/390 compression call instruction                   */
 
 /*----------------------------------------------------------------------------*/
@@ -18,7 +18,7 @@
 /*   Compression dead end determination and elimination.                      */
 /*   Proactive dead end determination and elimination.                        */
 /*                                                                            */
-/*                              (c) Copyright Bernard van der Helm, 2000-2013 */
+/*                              (c) Copyright Bernard van der Helm, 2000-2014 */
 /*                              Noordwijkerhout, The Netherlands.             */
 /*                                                                            */
 /*----------------------------------------------------------------------------*/
@@ -974,7 +974,7 @@ static int ARCH_DEP(cmpsc_search_sd)(struct cc *cc, U16 *is)
   U16 index;                           /* Index within dictionary             */
   int scs;                             /* Number of sibling characters        */
   BYTE *sd1;                           /* Sibling descriptor fmt-0|1 part 1   */
-  BYTE *sd2;                           /* Sibling descriptor fmt-1 part 2     */
+  BYTE *sd2 = NULL;                    /* Sibling descriptor fmt-1 part 2     */
   int sd_ptr;                          /* Pointer to sibling descriptor       */
   int searched;                        /* Number of children searched         */
   int y_in_parent;                     /* Indicator if y bits are in parent   */
