@@ -2135,7 +2135,8 @@ int      i;                             /* Loop index                */
 int      id;                            /* Identifier                */
 
     do {
-        dev->shrdid = (++dev->shrdid) & 0xffff;
+        ++dev->shrdid;
+        dev->shrdid &= 0xffff;
         if (dev->shrdid == DEV_SYS_LOCAL
          || dev->shrdid == DEV_SYS_NONE)
             dev->shrdid = 1;
