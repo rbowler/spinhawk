@@ -673,6 +673,8 @@ S64      dreg;
                 rc = z900_load_psw(regs, (BYTE *)&buf);
                 break;
 #endif
+            default: /* regs->arch_mode not valid (should not occur) */
+                rc = 99;
             } /* switch (regs->arch_mode) */
             if (rc != 0 && memcmp(buf, zeros, len))
             {
@@ -1295,6 +1297,8 @@ S64      dreg;
                                     z900_execute_ccw_chain, dev, "device thread");
                 break;
 #endif
+            default: /* sysblk.arch_mode not valid (should not occur) */
+                rc = 99;
             } /* switch (sysblk.arch_mode) */
             if (rc != 0)
             {
