@@ -321,7 +321,7 @@ REGS    *regs = NULL;
 U16      devnum=0;
 U16      lcss=0;
 U16      hw;
-int      devargc;
+int      devargc=0;
 char    *devargv[16];
 int      devargx=0;
 DEVBLK  *dev = NULL;
