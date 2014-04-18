@@ -1037,6 +1037,19 @@ static float128
 #endif
 
 /*----------------------------------------------------------------------------
+| Returns the result of converting the 32-bit unsigned integer `a' to the
+| single-precision floating-point format.
+*----------------------------------------------------------------------------*/
+
+float32 uint32_to_float32( uint32 a )
+{
+
+    if ( a == 0 ) return 0;
+    return normalizeRoundAndPackFloat32( 0, 0x9C, a );
+
+}
+
+/*----------------------------------------------------------------------------
 | Returns the result of converting the 32-bit two's complement integer `a'
 | to the single-precision floating-point format.  The conversion is performed
 | according to the IEC/IEEE Standard for Binary Floating-Point Arithmetic.
@@ -1050,6 +1063,23 @@ float32 int32_to_float32( int32 a )
     if ( a == (sbits32) 0x80000000 ) return packFloat32( 1, 0x9E, 0 );
     zSign = ( a < 0 );
     return normalizeRoundAndPackFloat32( zSign, 0x9C, zSign ? - a : a );
+
+}
+
+/*----------------------------------------------------------------------------
+| Returns the result of converting the 32-bit unsigned integer `a' to the
+| double-precision floating-point format.
+*----------------------------------------------------------------------------*/
+
+float64 uint32_to_float64( uint32 a )
+{
+    int8 shiftCount;
+    bits64 zSig;
+
+    if ( a == 0 ) return 0;
+    shiftCount = countLeadingZeros32( a ) + 21;
+    zSig = a;
+    return packFloat64( 0, 0x432 - shiftCount, zSig<<shiftCount );
 
 }
 
@@ -1103,6 +1133,23 @@ floatx80 int32_to_floatx80( int32 a )
 #endif
 
 #ifdef FLOAT128
+
+/*----------------------------------------------------------------------------
+| Returns the result of converting the 32-bit unsigned integer `a' to the
+| quadruple-precision floating-point format.
+*----------------------------------------------------------------------------*/
+
+float128 uint32_to_float128( uint32 a )
+{
+    int8 shiftCount;
+    bits64 zSig0;
+
+    if ( a == 0 ) return packFloat128( 0, 0, 0, 0 );
+    shiftCount = countLeadingZeros32( a ) + 17;
+    zSig0 = a;
+    return packFloat128( 0, 0x402E - shiftCount, zSig0<<shiftCount, 0 );
+
+}
 
 /*----------------------------------------------------------------------------
 | Returns the result of converting the 32-bit two's complement integer `a' to
