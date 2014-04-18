@@ -115,6 +115,18 @@ void float_raise( int8 );
 #define float32_default_nan 0x7FC00000
 
 /*----------------------------------------------------------------------------
+| Unsigned-integer to floating-point conversion routines.
+*----------------------------------------------------------------------------*/
+float32 uint32_to_float32( uint32 );
+float32 uint64_to_float32( uint64 );
+float64 uint32_to_float64( uint32 );
+float64 uint64_to_float64( uint64 );
+#ifdef FLOAT128
+float128 uint32_to_float128( uint32 );
+float128 uint64_to_float128( uint64 );
+#endif
+
+/*----------------------------------------------------------------------------
 | Software IEC/IEEE integer-to-floating-point conversion routines.
 *----------------------------------------------------------------------------*/
 float32 int32_to_float32( int32 );
@@ -132,6 +144,18 @@ floatx80 int64_to_floatx80( int64 );
 #endif
 #ifdef FLOAT128
 float128 int64_to_float128( int64 );
+#endif
+
+/*----------------------------------------------------------------------------
+| Floating-point to unsigned-integer conversion routines.
+*----------------------------------------------------------------------------*/
+uint32 float32_to_uint32( float32 );
+uint64 float32_to_uint64( float32 );
+uint32 float64_to_uint32( float64 );
+uint64 float64_to_uint64( float64 );
+#ifdef FLOAT128
+uint32 float128_to_uint32( float128 );
+uint64 float128_to_uint64( float128 );
 #endif
 
 /*----------------------------------------------------------------------------
