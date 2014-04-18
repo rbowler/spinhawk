@@ -1176,6 +1176,33 @@ float128 int32_to_float128( int32 a )
 #endif
 
 /*----------------------------------------------------------------------------
+| Returns the result of converting the 64-bit unsigned integer `a' to the
+| single-precision floating-point format.
+*----------------------------------------------------------------------------*/
+
+float32 uint64_to_float32( uint64 a )
+{
+    int8 shiftCount;
+
+    if ( a == 0 ) return 0;
+    shiftCount = countLeadingZeros64( a ) - 40;
+    if ( 0 <= shiftCount ) {
+        return packFloat32( 0, 0x95 - shiftCount, a<<shiftCount );
+    }
+    else {
+        shiftCount += 7;
+        if ( shiftCount < 0 ) {
+            shift64RightJamming( a, - shiftCount, &a );
+        }
+        else {
+            a <<= shiftCount;
+        }
+        return roundAndPackFloat32( 0, 0x9C - shiftCount, a );
+    }
+
+}
+
+/*----------------------------------------------------------------------------
 | Returns the result of converting the 64-bit two's complement integer `a'
 | to the single-precision floating-point format.  The conversion is performed
 | according to the IEC/IEEE Standard for Binary Floating-Point Arithmetic.
@@ -1204,6 +1231,19 @@ float32 int64_to_float32( int64 a )
         }
         return roundAndPackFloat32( zSign, 0x9C - shiftCount, absA );
     }
+
+}
+
+/*----------------------------------------------------------------------------
+| Returns the result of converting the 64-bit unsigned integer `a' to the
+| double-precision floating-point format.
+*----------------------------------------------------------------------------*/
+
+float64 uint64_to_float64( uint64 a )
+{
+
+    if ( a == 0 ) return 0;
+    return normalizeRoundAndPackFloat64( 0, 0x43C, a );
 
 }
 
@@ -1252,6 +1292,34 @@ floatx80 int64_to_floatx80( int64 a )
 #endif
 
 #ifdef FLOAT128
+
+/*----------------------------------------------------------------------------
+| Returns the result of converting the 64-bit unsigned integer `a' to the
+| quadruple-precision floating-point format.
+*----------------------------------------------------------------------------*/
+
+float128 uint64_to_float128( uint64 a )
+{
+    int8 shiftCount;
+    int32 zExp;
+    bits64 zSig0, zSig1;
+
+    if ( a == 0 ) return packFloat128( 0, 0, 0, 0 );
+    shiftCount = countLeadingZeros64( a ) + 49;
+    zExp = 0x406E - shiftCount;
+    if ( 64 <= shiftCount ) {
+        zSig1 = 0;
+        zSig0 = a;
+        shiftCount -= 64;
+    }
+    else {
+        zSig1 = a;
+        zSig0 = 0;
+    }
+    shortShift128Left( zSig0, zSig1, shiftCount, &zSig0, &zSig1 );
+    return packFloat128( 0, zExp, zSig0, zSig1 );
+
+}
 
 /*----------------------------------------------------------------------------
 | Returns the result of converting the 64-bit two's complement integer `a' to
