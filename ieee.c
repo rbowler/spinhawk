@@ -72,6 +72,7 @@
 #define vfetch8 ARCH_DEP(vfetch8)
 
 /* locally defined architecture-dependent functions */
+#define float_exception_masked ARCH_DEP(float_exception_masked)
 #define float_exception ARCH_DEP(float_exception)
 #define vfetch_float32 ARCH_DEP(vfetch_float32)
 #define vfetch_float64 ARCH_DEP(vfetch_float64)
@@ -117,8 +118,10 @@
 
 /*
  * Convert from Softfloat IEEE exception to Pop IEEE exception
+ * with suppression of exceptions according to mask bits:
+ *  - mask bit 0x04 (XxC) suppresses the inexact exception
  */
-static inline int float_exception(REGS * regs)
+static int float_exception_masked(REGS * regs, int mask)
 {
     int fpc = 0;
     int dxc = 0;
@@ -140,6 +143,14 @@ static inline int float_exception(REGS * regs)
     }
 
     exc = (fpc & FPC_FLAG) & ((regs->fpc & FPC_MASK) >> 8);
+
+#if defined(FEATURE_FLOATING_POINT_EXTENSION_FACILITY)
+    /* Suppress inexact exception if the XxC mask bit is set */
+    if (mask & 0x04) {
+        exc &= ~FPC_FLAG_SFX;
+    }
+#endif /*defined(FEATURE_FLOATING_POINT_EXTENSION_FACILITY)*/
+
     if (exc & FPC_FLAG_SFI) {
         dxc = DXC_IEEE_INVALID_OP;
     } else if (exc & FPC_FLAG_SFZ) {
@@ -172,6 +183,15 @@ static inline int float_exception(REGS * regs)
         return 0;
     }
 
+} /* end function float_exception_masked */
+
+/*
+ * Convert from Softfloat IEEE exception to Pop IEEE exception
+ * without suppression of exceptions by mask bits
+ */
+static inline int float_exception(REGS * regs)
+{
+    return float_exception_masked(regs, 0);
 } /* end function float_exception */
 
 #if !defined(_IEEE_C)
