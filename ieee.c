@@ -149,6 +149,8 @@ static int float_exception_masked(REGS * regs, int mask)
     if (mask & 0x04) {
         exc &= ~FPC_FLAG_SFX;
     }
+#else
+    UNREFERENCED(mask);
 #endif /*defined(FEATURE_FLOATING_POINT_EXTENSION_FACILITY)*/
 
     if (exc & FPC_FLAG_SFI) {
