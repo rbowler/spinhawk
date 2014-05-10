@@ -211,7 +211,7 @@ static void     CTCT_Send( DEVBLK* pDEVBLK,   U16   sCount,
                             BYTE*   pIOBuf,    BYTE* pUnitStat,
                             U16*    pResidual );
 
-static void*    CTCT_RecvThread( void* argp );
+static void*    CTCT_RecvThread( DEVBLK* pDEVBLK );
 
 static void*    CTCT_ListenThread( void* argp );
 
@@ -1021,7 +1021,7 @@ static int  CTCT_Init( DEVBLK *dev, int argc, char *argv[] )
 
             if( strlen( ctceSmlChr ) > 5 ||
                 sscanf( ctceSmlChr, "%u%c", &ctceSmlBin, &c ) != 1 ||
-                ctceSmlBin < sizeof(CTCE_SOKPFX) || ctceSmlBin > mtu )
+                ctceSmlBin < (int)sizeof(CTCE_SOKPFX) || ctceSmlBin > mtu )
             {
                 ctceSmlBin = sizeof(CTCE_SOKPFX);
                 logmsg( _("HHCCT083W %4.4X: Invalid Small MTU size %s ignored\n"),
