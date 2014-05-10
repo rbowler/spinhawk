@@ -10,12 +10,20 @@ EXPORTS
     float_get_exception_flags
     float_clear_exception_flags
     float_raise
+    uint32_to_float32
+    uint32_to_float64
+    uint32_to_float128
+    uint64_to_float32
+    uint64_to_float64
+    uint64_to_float128
     int32_to_float32
     int32_to_float64
     int32_to_float128
     int64_to_float32
     int64_to_float64
     int64_to_float128
+    float32_to_uint32
+    float32_to_uint64
     float32_to_int32
     float32_to_int32_round_to_zero
     float32_to_int64
@@ -47,6 +55,8 @@ EXPORTS
     float32_build
     float32_exp
     float32_fract
+    float64_to_uint32
+    float64_to_uint64
     float64_to_int32
     float64_to_int32_round_to_zero
     float64_to_int64
@@ -78,6 +88,8 @@ EXPORTS
     float64_build
     float64_exp
     float64_fract
+    float128_to_uint32
+    float128_to_uint64
     float128_to_int32
     float128_to_int32_round_to_zero
     float128_to_int64

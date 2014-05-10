@@ -23,6 +23,9 @@
  * For details, see html/herclic.html
  * Based very loosely on float.c by Peter Kuschnerus, (c) 2000-2006.
  * Converted to use J.R.Hauser's softfloat package - RB, Oct 2013.
+ * Floating-point extension facility - RB, April 2014:
+ *  CELFBR,CDLFBR,CXLFBR,CLFEBR,CLFDBR,CLFXBR,
+ *  CELGBR,CDLGBR,CXLGBR,CLGEBR,CLGDBR,CLGXBR.
  */
 
 #include "hstdinc.h"
@@ -72,6 +75,7 @@
 #define vfetch8 ARCH_DEP(vfetch8)
 
 /* locally defined architecture-dependent functions */
+#define float_exception_masked ARCH_DEP(float_exception_masked)
 #define float_exception ARCH_DEP(float_exception)
 #define vfetch_float32 ARCH_DEP(vfetch_float32)
 #define vfetch_float64 ARCH_DEP(vfetch_float64)
@@ -117,8 +121,10 @@
 
 /*
  * Convert from Softfloat IEEE exception to Pop IEEE exception
+ * with suppression of exceptions according to mask bits:
+ *  - mask bit 0x04 (XxC) suppresses the inexact exception
  */
-static inline int float_exception(REGS * regs)
+static int float_exception_masked(REGS * regs, int mask)
 {
     int fpc = 0;
     int dxc = 0;
@@ -140,6 +146,16 @@ static inline int float_exception(REGS * regs)
     }
 
     exc = (fpc & FPC_FLAG) & ((regs->fpc & FPC_MASK) >> 8);
+
+#if defined(FEATURE_FLOATING_POINT_EXTENSION_FACILITY)
+    /* Suppress inexact exception if the XxC mask bit is set */
+    if (mask & 0x04) {
+        exc &= ~FPC_FLAG_SFX;
+    }
+#else
+    UNREFERENCED(mask);
+#endif /*defined(FEATURE_FLOATING_POINT_EXTENSION_FACILITY)*/
+
     if (exc & FPC_FLAG_SFI) {
         dxc = DXC_IEEE_INVALID_OP;
     } else if (exc & FPC_FLAG_SFZ) {
@@ -172,6 +188,15 @@ static inline int float_exception(REGS * regs)
         return 0;
     }
 
+} /* end function float_exception_masked */
+
+/*
+ * Convert from Softfloat IEEE exception to Pop IEEE exception
+ * without suppression of exceptions by mask bits
+ */
+static inline int float_exception(REGS * regs)
+{
+    return float_exception_masked(regs, 0);
 } /* end function float_exception */
 
 #if !defined(_IEEE_C)
@@ -1158,6 +1183,80 @@ DEF_INST(convert_fix32_to_bfp_short_reg)
 
 } /* end DEF_INST(convert_fix32_to_bfp_short_reg) */
 
+#if defined(FEATURE_FLOATING_POINT_EXTENSION_FACILITY)
+/*-------------------------------------------------------------------*/
+/* B392 CXLFBR - CONVERT FROM LOGICAL (32 to extended BFP)     [RRF] */
+/*-------------------------------------------------------------------*/
+DEF_INST(convert_u32_to_bfp_ext_reg)
+{
+    int r1, r2, m3, m4;
+    float128 op1;
+    U32 op2;
+
+    RRF_MM(inst, regs, r1, r2, m3, m4);
+    //logmsg("CXLFBR r1=%d r2=%d m3=%d m4=%d\n", r1, r2, m3, m4);
+    BFPINST_CHECK(regs);
+    BFPREGPAIR_CHECK(r1, regs);
+    BFPRM_CHECK(m3,regs);
+
+    op2 = regs->GR_L(r2);
+    op1 = uint32_to_float128(op2);
+    put_float128(&op1, regs->fpr + FPR2I(r1));
+
+} /* end DEF_INST(convert_u32_to_bfp_ext_reg) */
+
+/*-------------------------------------------------------------------*/
+/* B391 CDLFBR - CONVERT FROM LOGICAL (32 to long BFP)         [RRF] */
+/*-------------------------------------------------------------------*/
+DEF_INST(convert_u32_to_bfp_long_reg)
+{
+    int r1, r2, m3, m4;
+    float64 op1;
+    U32 op2;
+
+    RRF_MM(inst, regs, r1, r2, m3, m4);
+    //logmsg("CDLFBR r1=%d r2=%d m3=%d m4=%d\n", r1, r2, m3, m4);
+    BFPINST_CHECK(regs);
+    BFPRM_CHECK(m3,regs);
+
+    op2 = regs->GR_L(r2);
+    op1 = uint32_to_float64(op2);
+    put_float64(&op1, regs->fpr + FPR2I(r1));
+
+} /* end DEF_INST(convert_u32_to_bfp_long_reg) */
+
+/*-------------------------------------------------------------------*/
+/* B390 CELFBR - CONVERT FROM LOGICAL (32 to short BFP)        [RRF] */
+/*-------------------------------------------------------------------*/
+DEF_INST(convert_u32_to_bfp_short_reg)
+{
+    int r1, r2, m3, m4;
+    float32 op1;
+    U32 op2;
+    int pgm_check;
+
+    RRF_MM(inst, regs, r1, r2, m3, m4);
+    //logmsg("CELFBR r1=%d r2=%d m3=%d m4=%d\n", r1, r2, m3, m4);
+    BFPINST_CHECK(regs);
+    BFPRM_CHECK(m3,regs);
+
+    op2 = regs->GR_L(r2);
+
+    float_clear_exception_flags();
+    set_rounding_mode(regs->fpc, m3);
+    op1 = uint32_to_float32(op2);
+    pgm_check = float_exception_masked(regs, m4);
+    set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
+
+    put_float32(&op1, regs->fpr + FPR2I(r1));
+
+    if (pgm_check) {
+        regs->program_interrupt(regs, pgm_check);
+    }
+
+} /* end DEF_INST(convert_u32_to_bfp_short_reg) */
+#endif /*defined(FEATURE_FLOATING_POINT_EXTENSION_FACILITY)*/
+
 #if defined(FEATURE_ESAME)
 /*-------------------------------------------------------------------*/
 /* B3A6 CXGBR - CONVERT FROM FIXED (64 to extended BFP)        [RRE] */
@@ -1241,6 +1340,93 @@ DEF_INST(convert_fix64_to_bfp_short_reg)
 
 } /* end DEF_INST(convert_fix64_to_bfp_short_reg) */
 #endif /*defined(FEATURE_ESAME)*/
+
+#if defined(FEATURE_FLOATING_POINT_EXTENSION_FACILITY)
+#if defined(FEATURE_ESAME)
+/*-------------------------------------------------------------------*/
+/* B3A2 CXLGBR - CONVERT FROM LOGICAL (64 to extended BFP)     [RRF] */
+/*-------------------------------------------------------------------*/
+DEF_INST(convert_u64_to_bfp_ext_reg)
+{
+    int r1, r2, m3, m4;
+    float128 op1;
+    U64 op2;
+
+    RRF_MM(inst, regs, r1, r2, m3, m4);
+    //logmsg("CXLGBR r1=%d r2=%d m3=%d m4=%d\n", r1, r2, m3, m4);
+    BFPINST_CHECK(regs);
+    BFPREGPAIR_CHECK(r1, regs);
+    BFPRM_CHECK(m3,regs);
+
+    op2 = regs->GR_G(r2);
+    op1 = uint64_to_float128(op2);
+    put_float128(&op1, regs->fpr + FPR2I(r1));
+
+} /* end DEF_INST(convert_u64_to_bfp_ext_reg) */
+
+/*-------------------------------------------------------------------*/
+/* B3A1 CDLGBR - CONVERT FROM LOGICAL (64 to long BFP)         [RRF] */
+/*-------------------------------------------------------------------*/
+DEF_INST(convert_u64_to_bfp_long_reg)
+{
+    int r1, r2, m3, m4;
+    float64 op1;
+    U64 op2;
+    int pgm_check;
+
+    RRF_MM(inst, regs, r1, r2, m3, m4);
+    //logmsg("CDLGBR r1=%d r2=%d m3=%d m4=%d\n", r1, r2, m3, m4);
+    BFPINST_CHECK(regs);
+    BFPRM_CHECK(m3,regs);
+
+    op2 = regs->GR_G(r2);
+
+    float_clear_exception_flags();
+    set_rounding_mode(regs->fpc, m3);
+    op1 = uint64_to_float64(op2);
+    pgm_check = float_exception_masked(regs, m4);
+    set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
+
+    put_float64(&op1, regs->fpr + FPR2I(r1));
+
+    if (pgm_check) {
+        regs->program_interrupt(regs, pgm_check);
+    }
+
+} /* end DEF_INST(convert_u64_to_bfp_long_reg) */
+
+/*-------------------------------------------------------------------*/
+/* B3A0 CELGBR - CONVERT FROM LOGICAL (64 to short BFP)        [RRF] */
+/*-------------------------------------------------------------------*/
+DEF_INST(convert_u64_to_bfp_short_reg)
+{
+    int r1, r2, m3, m4;
+    float32 op1;
+    U64 op2;
+    int pgm_check;
+
+    RRF_MM(inst, regs, r1, r2, m3, m4);
+    //logmsg("CELGBR r1=%d r2=%d m3=%d m4=%d\n", r1, r2, m3, m4);
+    BFPINST_CHECK(regs);
+    BFPRM_CHECK(m3,regs);
+
+    op2 = regs->GR_G(r2);
+
+    float_clear_exception_flags();
+    set_rounding_mode(regs->fpc, m3);
+    op1 = uint64_to_float32(op2);
+    pgm_check = float_exception_masked(regs, m4);
+    set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
+
+    put_float32(&op1, regs->fpr + FPR2I(r1));
+
+    if (pgm_check) {
+        regs->program_interrupt(regs, pgm_check);
+    }
+
+} /* end DEF_INST(convert_u64_to_bfp_short_reg) */
+#endif /*defined(FEATURE_ESAME)*/
+#endif /*defined(FEATURE_FLOATING_POINT_EXTENSION_FACILITY)*/
 
 /*-------------------------------------------------------------------*/
 /* B39A CFXBR - CONVERT TO FIXED (extended BFP to 32)          [RRF] */
@@ -1353,6 +1539,119 @@ DEF_INST(convert_bfp_short_to_fix32_reg)
     }
 
 } /* end DEF_INST(convert_bfp_short_to_fix32_reg) */
+
+#if defined(FEATURE_FLOATING_POINT_EXTENSION_FACILITY)
+/*-------------------------------------------------------------------*/
+/* B39E CLFXBR - CONVERT TO LOGICAL (extended BFP to 32)       [RRF] */
+/*-------------------------------------------------------------------*/
+DEF_INST(convert_bfp_ext_to_u32_reg)
+{
+    int r1, r2, m3, m4;
+    U32 op1;
+    float128 op2;
+    int pgm_check;
+
+    RRF_MM(inst, regs, r1, r2, m3, m4);
+    //logmsg("CLFXBR r1=%d r2=%d m3=%d m4=%d\n", r1, r2, m3, m4);
+    BFPINST_CHECK(regs);
+    BFPREGPAIR_CHECK(r2, regs);
+    BFPRM_CHECK(m3,regs);
+
+    get_float128(&op2, regs->fpr + FPR2I(r2));
+
+    float_clear_exception_flags();
+    set_rounding_mode(regs->fpc, m3);
+
+    op1 = float128_to_uint32(op2);
+    pgm_check = float_exception_masked(regs, m4);
+    set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
+
+    regs->GR_L(r1) = op1;
+    regs->psw.cc =
+        (float_get_exception_flags() & float_flag_invalid) ? 3 :
+        float128_is_zero(op2) ? 0 :
+        float128_is_neg(op2) ? 1 : 2;
+
+    if (pgm_check) {
+        regs->program_interrupt(regs, pgm_check);
+    }
+
+} /* end DEF_INST(convert_bfp_ext_to_u32_reg) */
+
+/*-------------------------------------------------------------------*/
+/* B39D CLFDBR - CONVERT TO LOGICAL (long BFP to 32)           [RRF] */
+/*-------------------------------------------------------------------*/
+DEF_INST(convert_bfp_long_to_u32_reg)
+{
+    int r1, r2, m3, m4;
+    U32 op1;
+    float64 op2;
+    int pgm_check;
+
+    RRF_MM(inst, regs, r1, r2, m3, m4);
+    //logmsg("CLFDBR r1=%d r2=%d m3=%d m4=%d\n", r1, r2, m3, m4);
+    BFPINST_CHECK(regs);
+    BFPRM_CHECK(m3,regs);
+
+    get_float64(&op2, regs->fpr + FPR2I(r2));
+
+    float_clear_exception_flags();
+    set_rounding_mode(regs->fpc, m3);
+
+    op1 = float64_to_uint32(op2);
+    pgm_check = float_exception_masked(regs, m4);
+
+    set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
+
+    regs->GR_L(r1) = op1;
+    regs->psw.cc =
+        (float_get_exception_flags() & float_flag_invalid) ? 3 :
+        float64_is_zero(op2) ? 0 :
+        float64_is_neg(op2) ? 1 : 2;
+
+    if (pgm_check) {
+        regs->program_interrupt(regs, pgm_check);
+    }
+
+} /* end DEF_INST(convert_bfp_long_to_u32_reg) */
+
+/*-------------------------------------------------------------------*/
+/* B39C CLFEBR - CONVERT TO LOGICAL (short BFP to 32)          [RRF] */
+/*-------------------------------------------------------------------*/
+DEF_INST(convert_bfp_short_to_u32_reg)
+{
+    int r1, r2, m3, m4;
+    U32 op1;
+    float32 op2;
+    int pgm_check;
+
+    RRF_MM(inst, regs, r1, r2, m3, m4);
+    //logmsg("CLFEBR r1=%d r2=%d m3=%d m4=%d\n", r1, r2, m3, m4);
+    BFPINST_CHECK(regs);
+    BFPRM_CHECK(m3,regs);
+
+    get_float32(&op2, regs->fpr + FPR2I(r2));
+
+    float_clear_exception_flags();
+    set_rounding_mode(regs->fpc, m3);
+
+    op1 = float32_to_uint32(op2);
+    pgm_check = float_exception_masked(regs, m4);
+
+    set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
+
+    regs->GR_L(r1) = op1;
+    regs->psw.cc =
+        (float_get_exception_flags() & float_flag_invalid) ? 3 :
+        float32_is_zero(op2) ? 0 :
+        float32_is_neg(op2) ? 1 : 2;
+
+    if (pgm_check) {
+        regs->program_interrupt(regs, pgm_check);
+    }
+
+} /* end DEF_INST(convert_bfp_short_to_u32_reg) */
+#endif /*defined(FEATURE_FLOATING_POINT_EXTENSION_FACILITY)*/
 
 #if defined(FEATURE_ESAME)
 /*-------------------------------------------------------------------*/
@@ -1471,6 +1770,122 @@ DEF_INST(convert_bfp_short_to_fix64_reg)
 
 } /* end DEF_INST(convert_bfp_short_to_fix64_reg) */
 #endif /*defined(FEATURE_ESAME)*/
+
+#if defined(FEATURE_FLOATING_POINT_EXTENSION_FACILITY)
+#if defined(FEATURE_ESAME)
+/*-------------------------------------------------------------------*/
+/* B3AE CLGXBR - CONVERT TO LOGICAL (extended BFP to 64)       [RRF] */
+/*-------------------------------------------------------------------*/
+DEF_INST(convert_bfp_ext_to_u64_reg)
+{
+    int r1, r2, m3, m4;
+    U64 op1;
+    float128 op2;
+    int pgm_check;
+
+    RRF_MM(inst, regs, r1, r2, m3, m4);
+    //logmsg("CLGXBR r1=%d r2=%d m3=%d m4=%d\n", r1, r2, m3, m4);
+    BFPINST_CHECK(regs);
+    BFPREGPAIR_CHECK(r2, regs);
+    BFPRM_CHECK(m3,regs);
+
+    get_float128(&op2, regs->fpr + FPR2I(r2));
+
+    float_clear_exception_flags();
+    set_rounding_mode(regs->fpc, m3);
+
+    op1 = float128_to_uint64(op2);
+    pgm_check = float_exception_masked(regs, m4);
+
+    set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
+
+    regs->GR_G(r1) = op1;
+    regs->psw.cc =
+        (float_get_exception_flags() & float_flag_invalid) ? 3 :
+        float128_is_zero(op2) ? 0 :
+        float128_is_neg(op2) ? 1 : 2;
+
+    if (pgm_check) {
+        regs->program_interrupt(regs, pgm_check);
+    }
+
+} /* end DEF_INST(convert_bfp_ext_to_u64_reg) */
+
+/*-------------------------------------------------------------------*/
+/* B3AD CLGDBR - CONVERT TO LOGICAL (long BFP to 64)           [RRF] */
+/*-------------------------------------------------------------------*/
+DEF_INST(convert_bfp_long_to_u64_reg)
+{
+    int r1, r2, m3, m4;
+    U64 op1;
+    float64 op2;
+    int pgm_check;
+
+    RRF_MM(inst, regs, r1, r2, m3, m4);
+    //logmsg("CLGDBR r1=%d r2=%d m3=%d m4=%d\n", r1, r2, m3, m4);
+    BFPINST_CHECK(regs);
+    BFPRM_CHECK(m3,regs);
+
+    get_float64(&op2, regs->fpr + FPR2I(r2));
+
+    float_clear_exception_flags();
+    set_rounding_mode(regs->fpc, m3);
+
+    op1 = float64_to_uint64(op2);
+    pgm_check = float_exception_masked(regs, m4);
+
+    set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
+
+    regs->GR_G(r1) = op1;
+    regs->psw.cc =
+        (float_get_exception_flags() & float_flag_invalid) ? 3 :
+        float64_is_zero(op2) ? 0 :
+        float64_is_neg(op2) ? 1 : 2;
+
+    if (pgm_check) {
+        regs->program_interrupt(regs, pgm_check);
+    }
+
+} /* end DEF_INST(convert_bfp_long_to_u64_reg) */
+
+/*-------------------------------------------------------------------*/
+/* B3AC CLGEBR - CONVERT TO LOGICAL (short BFP to 64)          [RRF] */
+/*-------------------------------------------------------------------*/
+DEF_INST(convert_bfp_short_to_u64_reg)
+{
+    int r1, r2, m3, m4;
+    U64 op1;
+    float32 op2;
+    int pgm_check;
+
+    RRF_MM(inst, regs, r1, r2, m3, m4);
+    //logmsg("CLGEBR r1=%d r2=%d m3=%d m4=%d\n", r1, r2, m3, m4);
+    BFPINST_CHECK(regs);
+    BFPRM_CHECK(m3,regs);
+
+    get_float32(&op2, regs->fpr + FPR2I(r2));
+
+    float_clear_exception_flags();
+    set_rounding_mode(regs->fpc, m3);
+
+    op1 = float32_to_uint64(op2);
+    pgm_check = float_exception_masked(regs, m4);
+
+    set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
+
+    regs->GR_G(r1) = op1;
+    regs->psw.cc =
+        (float_get_exception_flags() & float_flag_invalid) ? 3 :
+        float32_is_zero(op2) ? 0 :
+        float32_is_neg(op2) ? 1 : 2;
+
+    if (pgm_check) {
+        regs->program_interrupt(regs, pgm_check);
+    }
+
+} /* end DEF_INST(convert_bfp_short_to_u64_reg) */
+#endif /*defined(FEATURE_ESAME)*/
+#endif /*defined(FEATURE_FLOATING_POINT_EXTENSION_FACILITY)*/
 
 /*-------------------------------------------------------------------*/
 /* DIVIDE (extended)                                                 */

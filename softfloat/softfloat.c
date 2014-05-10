@@ -111,6 +111,49 @@ static int32 roundAndPackInt32( flag zSign, bits64 absZ )
 }
 
 /*----------------------------------------------------------------------------
+| Takes a 64-bit fixed-point value `absZ' with binary point after bit 56,
+| and returns the corresponding rounded 32-bit unsigned integer.
+| Bit 63 of `absZ' must be zero.  Ordinarily, the fixed-point input is
+| rounded to an integer, with the inexact exception raised if the input
+| cannot be represented exactly as an integer.  However, if the fixed-point
+| input is too large, the invalid exception is raised and the largest
+| unsigned integer is returned.
+*----------------------------------------------------------------------------*/
+
+static uint32 roundAndPackU32( bits64 absZ )
+{
+    int8 roundingMode;
+    flag roundNearestEven;
+    int8 roundIncrement, roundBits;
+    uint32 z;
+
+    roundingMode = float_rounding_mode;
+    roundNearestEven = ( roundingMode == float_round_nearest_even );
+    if ( roundNearestEven ) {
+        roundIncrement = 0x40;
+    }
+    else if ( roundingMode == float_round_down
+            || roundingMode == float_round_to_zero ) {
+        roundIncrement = 0;
+    }
+    else {
+        roundIncrement = 0x7F;
+    }
+    roundBits = absZ & 0x7F;
+    absZ = ( absZ + roundIncrement )>>7;
+    absZ &= ~ ( ( ( roundBits ^ 0x40 ) == 0 ) & roundNearestEven );
+    z = absZ;
+    if ( absZ>>32 ) {
+        float_raise( float_flag_inexact ); /*@Z900*/
+        float_raise( float_flag_invalid );
+        return 0xFFFFFFFF;
+    }
+    if ( roundBits ) float_exception_flags |= float_flag_inexact;
+    return z;
+
+}
+
+/*----------------------------------------------------------------------------
 | Takes the 128-bit fixed-point value formed by concatenating `absZ0' and
 | `absZ1', with binary point between bits 63 and 64 (between the input words),
 | and returns the properly rounded 64-bit integer corresponding to the input.
@@ -159,6 +202,48 @@ static int64 roundAndPackInt64( flag zSign, bits64 absZ0, bits64 absZ1 )
               zSign ? (sbits64) LIT64( 0x8000000000000000 )
             : LIT64( 0x7FFFFFFFFFFFFFFF );
     }
+    if ( absZ1 ) float_exception_flags |= float_flag_inexact;
+    return z;
+
+}
+
+/*----------------------------------------------------------------------------
+| Takes the 128-bit fixed-point value formed by concatenating `absZ0' and
+| `absZ1', with binary point between bits 63 and 64 (between the input words),
+| and returns the corresponding rounded 64-bit unsigned integer.
+| Ordinarily, the fixed-point input is simply rounded to an integer, with
+| the inexact exception raised if the input cannot be represented exactly as
+| an integer.  However, if the fixed-point input is too large, the invalid
+| exception is raised and the largest unsigned integer is returned.
+*----------------------------------------------------------------------------*/
+
+static uint64 roundAndPackU64( bits64 absZ0, bits64 absZ1 )
+{
+    int8 roundingMode;
+    flag roundNearestEven, increment;
+    uint64 z;
+
+    roundingMode = float_rounding_mode;
+    roundNearestEven = ( roundingMode == float_round_nearest_even );
+    increment = ( (sbits64) absZ1 < 0 );
+    if ( ! roundNearestEven ) {
+        if ( roundingMode == float_round_to_zero ) {
+            increment = 0;
+        }
+        else {
+            increment = ( roundingMode == float_round_up ) && absZ1;
+        }
+    }
+    if ( increment ) {
+        ++absZ0;
+        if ( absZ0 == 0 ) {
+            float_raise( float_flag_inexact ); /*@Z900*/
+            float_raise( float_flag_invalid );
+            return LIT64( 0xFFFFFFFFFFFFFFFF );
+        }
+        absZ0 &= ~ ( ( (bits64) ( absZ1<<1 ) == 0 ) & roundNearestEven );
+    }
+    z = absZ0;
     if ( absZ1 ) float_exception_flags |= float_flag_inexact;
     return z;
 
@@ -1037,6 +1122,19 @@ static float128
 #endif
 
 /*----------------------------------------------------------------------------
+| Returns the result of converting the 32-bit unsigned integer `a' to the
+| single-precision floating-point format.
+*----------------------------------------------------------------------------*/
+
+float32 uint32_to_float32( uint32 a )
+{
+
+    if ( a == 0 ) return 0;
+    return normalizeRoundAndPackFloat32( 0, 0x9C, a );
+
+}
+
+/*----------------------------------------------------------------------------
 | Returns the result of converting the 32-bit two's complement integer `a'
 | to the single-precision floating-point format.  The conversion is performed
 | according to the IEC/IEEE Standard for Binary Floating-Point Arithmetic.
@@ -1050,6 +1148,23 @@ float32 int32_to_float32( int32 a )
     if ( a == (sbits32) 0x80000000 ) return packFloat32( 1, 0x9E, 0 );
     zSign = ( a < 0 );
     return normalizeRoundAndPackFloat32( zSign, 0x9C, zSign ? - a : a );
+
+}
+
+/*----------------------------------------------------------------------------
+| Returns the result of converting the 32-bit unsigned integer `a' to the
+| double-precision floating-point format.
+*----------------------------------------------------------------------------*/
+
+float64 uint32_to_float64( uint32 a )
+{
+    int8 shiftCount;
+    bits64 zSig;
+
+    if ( a == 0 ) return 0;
+    shiftCount = countLeadingZeros32( a ) + 21;
+    zSig = a;
+    return packFloat64( 0, 0x432 - shiftCount, zSig<<shiftCount );
 
 }
 
@@ -1105,6 +1220,23 @@ floatx80 int32_to_floatx80( int32 a )
 #ifdef FLOAT128
 
 /*----------------------------------------------------------------------------
+| Returns the result of converting the 32-bit unsigned integer `a' to the
+| quadruple-precision floating-point format.
+*----------------------------------------------------------------------------*/
+
+float128 uint32_to_float128( uint32 a )
+{
+    int8 shiftCount;
+    bits64 zSig0;
+
+    if ( a == 0 ) return packFloat128( 0, 0, 0, 0 );
+    shiftCount = countLeadingZeros32( a ) + 17;
+    zSig0 = a;
+    return packFloat128( 0, 0x402E - shiftCount, zSig0<<shiftCount, 0 );
+
+}
+
+/*----------------------------------------------------------------------------
 | Returns the result of converting the 32-bit two's complement integer `a' to
 | the quadruple-precision floating-point format.  The conversion is performed
 | according to the IEC/IEEE Standard for Binary Floating-Point Arithmetic.
@@ -1127,6 +1259,33 @@ float128 int32_to_float128( int32 a )
 }
 
 #endif
+
+/*----------------------------------------------------------------------------
+| Returns the result of converting the 64-bit unsigned integer `a' to the
+| single-precision floating-point format.
+*----------------------------------------------------------------------------*/
+
+float32 uint64_to_float32( uint64 a )
+{
+    int8 shiftCount;
+
+    if ( a == 0 ) return 0;
+    shiftCount = countLeadingZeros64( a ) - 40;
+    if ( 0 <= shiftCount ) {
+        return packFloat32( 0, 0x95 - shiftCount, a<<shiftCount );
+    }
+    else {
+        shiftCount += 7;
+        if ( shiftCount < 0 ) {
+            shift64RightJamming( a, - shiftCount, &a );
+        }
+        else {
+            a <<= shiftCount;
+        }
+        return roundAndPackFloat32( 0, 0x9C - shiftCount, a );
+    }
+
+}
 
 /*----------------------------------------------------------------------------
 | Returns the result of converting the 64-bit two's complement integer `a'
@@ -1157,6 +1316,19 @@ float32 int64_to_float32( int64 a )
         }
         return roundAndPackFloat32( zSign, 0x9C - shiftCount, absA );
     }
+
+}
+
+/*----------------------------------------------------------------------------
+| Returns the result of converting the 64-bit unsigned integer `a' to the
+| double-precision floating-point format.
+*----------------------------------------------------------------------------*/
+
+float64 uint64_to_float64( uint64 a )
+{
+
+    if ( a == 0 ) return 0;
+    return normalizeRoundAndPackFloat64( 0, 0x43C, a );
 
 }
 
@@ -1207,6 +1379,34 @@ floatx80 int64_to_floatx80( int64 a )
 #ifdef FLOAT128
 
 /*----------------------------------------------------------------------------
+| Returns the result of converting the 64-bit unsigned integer `a' to the
+| quadruple-precision floating-point format.
+*----------------------------------------------------------------------------*/
+
+float128 uint64_to_float128( uint64 a )
+{
+    int8 shiftCount;
+    int32 zExp;
+    bits64 zSig0, zSig1;
+
+    if ( a == 0 ) return packFloat128( 0, 0, 0, 0 );
+    shiftCount = countLeadingZeros64( a ) + 49;
+    zExp = 0x406E - shiftCount;
+    if ( 64 <= shiftCount ) {
+        zSig1 = 0;
+        zSig0 = a;
+        shiftCount -= 64;
+    }
+    else {
+        zSig1 = a;
+        zSig0 = 0;
+    }
+    shortShift128Left( zSig0, zSig1, shiftCount, &zSig0, &zSig1 );
+    return packFloat128( 0, zExp, zSig0, zSig1 );
+
+}
+
+/*----------------------------------------------------------------------------
 | Returns the result of converting the 64-bit two's complement integer `a' to
 | the quadruple-precision floating-point format.  The conversion is performed
 | according to the IEC/IEEE Standard for Binary Floating-Point Arithmetic.
@@ -1240,6 +1440,34 @@ float128 int64_to_float128( int64 a )
 }
 
 #endif
+
+/*----------------------------------------------------------------------------
+| Returns the result of converting the single-precision floating-point value
+| `a' to the 32-bit unsigned integer format.  If `a' is negative or is NaN,
+| a zero result is returned.  Otherwise, if the conversion overflows, the
+| largest unsigned integer is returned.
+*----------------------------------------------------------------------------*/
+
+uint32 float32_to_uint32( float32 a )
+{
+    flag aSign;
+    int16 aExp, shiftCount;
+    bits32 aSig;
+    bits64 aSig64;
+
+    aSig = extractFloat32Frac( a );
+    aExp = extractFloat32Exp( a );
+    aSign = extractFloat32Sign( a );
+    if ( aSign ) return 0;
+    if ( ( aExp == 0xFF ) && aSig ) return 0;
+    if ( aExp ) aSig |= 0x00800000;
+    shiftCount = 0xAF - aExp;
+    aSig64 = aSig;
+    aSig64 <<= 32;
+    if ( 0 < shiftCount ) shift64RightJamming( aSig64, shiftCount, &aSig64 );
+    return roundAndPackU32( aSig64 );
+
+}
 
 /*----------------------------------------------------------------------------
 | Returns the result of converting the single-precision floating-point value
@@ -1313,6 +1541,41 @@ int32 float32_to_int32_round_to_zero( float32 a )
     }
     if ( aSign ) z = - z;
     return z;
+
+}
+
+/*----------------------------------------------------------------------------
+| Returns the result of converting the single-precision floating-point value
+| `a' to the 64-bit unsigned integer format. If `a' is negative or is a NaN,
+| zero is returned.  Otherwise, if the conversion overflows, the largest
+| unsigned integer is returned.
+*----------------------------------------------------------------------------*/
+
+uint64 float32_to_uint64( float32 a )
+{
+    flag aSign;
+    int16 aExp, shiftCount;
+    bits32 aSig;
+    bits64 aSig64, aSigExtra;
+
+    aSig = extractFloat32Frac( a );
+    aExp = extractFloat32Exp( a );
+    aSign = extractFloat32Sign( a );
+    if ( aSign ) return LIT64( 0x0000000000000000 );
+    shiftCount = 0xBE - aExp;
+    if ( shiftCount < 0 ) {
+        float_raise( float_flag_inexact );      /*@Z900*/
+        float_raise( float_flag_invalid );
+        if ( ( aExp == 0xFF ) && aSig ) {       /*@Z900*/
+            return LIT64( 0x0000000000000000 ); /*@Z900*/
+        }                                       /*@Z900*/
+        return LIT64( 0xFFFFFFFFFFFFFFFF );
+    }
+    if ( aExp ) aSig |= 0x00800000;
+    aSig64 = aSig;
+    aSig64 <<= 40;
+    shift64ExtraRightJamming( aSig64, 0, shiftCount, &aSig64, &aSigExtra );
+    return roundAndPackU64( aSig64, aSigExtra );
 
 }
 
@@ -2166,6 +2429,31 @@ flag float32_lt_quiet( float32 a, float32 b )
 
 /*----------------------------------------------------------------------------
 | Returns the result of converting the double-precision floating-point value
+| `a' to the 32-bit unsigned integer format. If `a' is negative or is a NaN,
+| zero is returned.  Otherwise, if the conversion overflows, the largest
+| unsigned integer is returned.
+*----------------------------------------------------------------------------*/
+
+uint32 float64_to_uint32( float64 a )
+{
+    flag aSign;
+    int16 aExp, shiftCount;
+    bits64 aSig;
+
+    aSig = extractFloat64Frac( a );
+    aExp = extractFloat64Exp( a );
+    aSign = extractFloat64Sign( a );
+    if ( aSign ) return 0;
+    if ( ( aExp == 0x7FF ) && aSig ) return 0;
+    if ( aExp ) aSig |= LIT64( 0x0010000000000000 );
+    shiftCount = 0x42C - aExp;
+    if ( 0 < shiftCount ) shift64RightJamming( aSig, shiftCount, &aSig );
+    return roundAndPackU32( aSig );
+
+}
+
+/*----------------------------------------------------------------------------
+| Returns the result of converting the double-precision floating-point value
 | `a' to the 32-bit two's complement integer format.  The conversion is
 | performed according to the IEC/IEEE Standard for Binary Floating-Point
 | Arithmetic---which means in particular that the conversion is rounded
@@ -2237,6 +2525,46 @@ int32 float64_to_int32_round_to_zero( float64 a )
         float_exception_flags |= float_flag_inexact;
     }
     return z;
+
+}
+
+/*----------------------------------------------------------------------------
+| Returns the result of converting the double-precision floating-point value
+| `a' to the 64-bit unsigned integer format. If `a' is negative or is a NaN,
+| zero is returned.  Otherwise, if the conversion overflows, the largest
+| unsigned integer is returned.
+*----------------------------------------------------------------------------*/
+
+uint64 float64_to_uint64( float64 a )
+{
+    flag aSign;
+    int16 aExp, shiftCount;
+    bits64 aSig, aSigExtra;
+
+    aSig = extractFloat64Frac( a );
+    aExp = extractFloat64Exp( a );
+    aSign = extractFloat64Sign( a );
+    if ( aSign ) return LIT64( 0x0000000000000000 );
+    if ( aExp ) aSig |= LIT64( 0x0010000000000000 );
+    shiftCount = 0x433 - aExp;
+    if ( shiftCount <= 0 ) {
+        if ( 0x43E < aExp ) {
+            float_raise( float_flag_inexact );           /*@Z900*/
+            float_raise( float_flag_invalid );
+            if ( ( aExp == 0x7FF )                       /*@Z900*/
+              && ( aSig != LIT64( 0x0010000000000000 ) ) /*@Z900*/
+               ) {                                       /*@Z900*/
+                return LIT64( 0x0000000000000000 );      /*@Z900*/
+            }                                            /*@Z900*/
+            return LIT64( 0xFFFFFFFFFFFFFFFF );
+        }
+        aSigExtra = 0;
+        aSig <<= - shiftCount;
+    }
+    else {
+        shift64ExtraRightJamming( aSig, 0, shiftCount, &aSig, &aSigExtra );
+    }
+    return roundAndPackU64( aSig, aSigExtra );
 
 }
 
@@ -4095,6 +4423,33 @@ flag floatx80_lt_quiet( floatx80 a, floatx80 b )
 
 /*----------------------------------------------------------------------------
 | Returns the result of converting the quadruple-precision floating-point
+| value `a' to the 32-bit unsigned integer format. If `a' is negative or
+| is a NaN, zero is returned.  Otherwise, if the conversion overflows, the
+| largest unsigned integer is returned.
+*----------------------------------------------------------------------------*/
+
+uint32 float128_to_uint32( float128 a )
+{
+    flag aSign;
+    int32 aExp, shiftCount;
+    bits64 aSig0, aSig1;
+
+    aSig1 = extractFloat128Frac1( a );
+    aSig0 = extractFloat128Frac0( a );
+    aExp = extractFloat128Exp( a );
+    aSign = extractFloat128Sign( a );
+    if ( aSign ) return 0;
+    if ( ( aExp == 0x7FFF ) && ( aSig0 | aSig1 ) ) return 0;
+    if ( aExp ) aSig0 |= LIT64( 0x0001000000000000 );
+    aSig0 |= ( aSig1 != 0 );
+    shiftCount = 0x4028 - aExp;
+    if ( 0 < shiftCount ) shift64RightJamming( aSig0, shiftCount, &aSig0 );
+    return roundAndPackU32( aSig0 );
+
+}
+
+/*----------------------------------------------------------------------------
+| Returns the result of converting the quadruple-precision floating-point
 | value `a' to the 32-bit two's complement integer format.  The conversion
 | is performed according to the IEC/IEEE Standard for Binary Floating-Point
 | Arithmetic---which means in particular that the conversion is rounded
@@ -4170,6 +4525,46 @@ int32 float128_to_int32_round_to_zero( float128 a )
         float_exception_flags |= float_flag_inexact;
     }
     return z;
+
+}
+
+/*----------------------------------------------------------------------------
+| Returns the result of converting the quadruple-precision floating-point
+| value `a' to the 64-bit unsigned integer format. If `a' is negative or
+| is a NaN, zero is returned.  Otherwise, if the conversion overflows, the
+| largest unsigned integer is returned.
+*----------------------------------------------------------------------------*/
+
+uint64 float128_to_uint64( float128 a )
+{
+    flag aSign;
+    int32 aExp, shiftCount;
+    bits64 aSig0, aSig1;
+
+    aSig1 = extractFloat128Frac1( a );
+    aSig0 = extractFloat128Frac0( a );
+    aExp = extractFloat128Exp( a );
+    aSign = extractFloat128Sign( a );
+    if ( aSign ) return LIT64( 0x0000000000000000 );
+    if ( aExp ) aSig0 |= LIT64( 0x0001000000000000 );
+    shiftCount = 0x402F - aExp;
+    if ( shiftCount <= 0 ) {
+        if ( 0x403E < aExp ) {
+            float_raise( float_flag_inexact );               /*@Z900*/
+            float_raise( float_flag_invalid );
+            if ( ( aExp == 0x7FFF ) && ( aSig1               /*@Z900*/
+              || ( aSig0 != LIT64( 0x0001000000000000 ) ) )  /*@Z900*/
+               ) {                                           /*@Z900*/
+                return LIT64( 0x0000000000000000 );          /*@Z900*/
+            }                                                /*@Z900*/
+            return LIT64( 0xFFFFFFFFFFFFFFFF );
+        }
+        shortShift128Left( aSig0, aSig1, - shiftCount, &aSig0, &aSig1 );
+    }
+    else {
+        shift64ExtraRightJamming( aSig0, aSig1, shiftCount, &aSig0, &aSig1 );
+    }
+    return roundAndPackU64( aSig0, aSig1 );
 
 }
 
