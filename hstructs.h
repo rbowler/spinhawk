@@ -1025,8 +1025,8 @@ struct DEVBLK {                         /* Device configuration block*/
         BYTE    ctceyState;             /* CTCE State   y-side  @PJJ */
         BYTE    ctceyCmd;               /* CTCE Command y-side  @PJJ */
         BYTE    ctceyCmdSCB;            /* CTCE Cmd SCB source  @PJJ */
-        int     ctcefd;                 /* CTCE RecvThread file @PJJ */
-                                        /* desc / socket number @PJJ */
+        int     ctcefd;                 /* CTCE RecvThread File @PJJ */
+                                        /* Desc / socket number @PJJ */
         LOCK    ctceEventLock;          /* CTCE Condition LOCK  @PJJ */
         COND    ctceEvent;              /* CTCE Recvd Condition @PJJ */
 

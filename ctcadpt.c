@@ -21,9 +21,9 @@
 // =============
 //   Enhanced CTCT has been added here and not (yet) moved to a
 //   separate module.  It is designed to support full 3088 CTCA
-//   functionality (e.g. as needed for GRS and other components)
-//   by communicating using a pair of TCP sockets with a likewise
-//   configured Hercules instance on a different PC (or same PC).
+//   functionality by communicating using a pair of TCP sockets
+//   with a likewise configured Hercules instance on a
+//   different PC (or same PC).
 
 //   The implementation is based mostly on an IBM publication,
 //   "ESCON Channel-to-Channel Adapter", SA22-7203-00, although
@@ -446,11 +446,10 @@ void  CTCX_ExecuteCCW( DEVBLK* pDEVBLK, BYTE  bCode,
         pDEVBLK->ctcexCmd = bCode;
 
         // The code below did not work, causing Wait State 064 RSN 9
-        // at NIP time during IPL with GRS enabled in zOS.  Skipping
-        // the initial NOT READY emulation (see CTCT_Init)  bypasses
-        // the problem, and seemed not have any ill effects so far.
-        // So this code remains disabled for the time being.
-        //                                             (PJJ, April 2014)
+        // at NIP time during IPL when anabled.  Skipping the initial
+        // NOT READY emulation (see CTCT_Init) bypasses the problem,
+        // and seemed not have any ill effects so far.  So this code
+        // remains disabled for the time being.        (PJJ, April 2014)
 #if 0
         // Commands different from sense adapter state (SAS) or sense ID
         // or read configuration data (RCD) with either or both sides of
