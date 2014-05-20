@@ -3731,10 +3731,30 @@ char            pathname[MAX_PATH];     /* xfname in host path format*/
             continue;
         }
 
+        /* Copy the logical record to the data block */
+        if ((recfm & RECFM_FORMAT) == RECFM_FORMAT_V) {
+            /* Insert BDW for variable length block */
+            datablk.kdarea[0] = (xreclen + 8) >> 8;
+            datablk.kdarea[1] = (xreclen + 8) & 0xFF;
+            datablk.kdarea[2] = 0x00;
+            datablk.kdarea[3] = 0x00;
+            /* Insert RDW for variable length record */
+            datablk.kdarea[4] = (xreclen + 4) >> 8;
+            datablk.kdarea[5] = (xreclen + 4) & 0xFF;
+            datablk.kdarea[6] = 0x00;
+            datablk.kdarea[7] = 0x00;
+            /* Copy variable length data after the RDW */
+            memcpy(datablk.kdarea + 8, xbuf, xreclen);
+            keylen = 0;
+            datalen = xreclen + 8;
+        } else {
+            /* Copy data only for record format F or U */
+            memcpy(datablk.kdarea, xbuf, xreclen);
+            keylen = 0;
+            datalen = xreclen;
+        }
+
         /* Write the data block to the output file */
-        memcpy(datablk.kdarea, xbuf, xreclen);
-        keylen = 0;
-        datalen = xreclen;
         rc = write_block (cif, ofname, &datablk, keylen, datalen,
                     devtype, heads, trklen, maxtrks,
                     &outusedv, &outusedr, &outtrkbr,
