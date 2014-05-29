@@ -312,5 +312,6 @@
 #define CTC_CTCI        7               /* CTC link to TCP/IP stack  */
 #define CTC_VMNET       8               /* CTC link via wfk's vmnet  */
 #define CTC_CFC         9               /* Coupling facility channel */
+#define CTC_CTCE       10               /* Enhanced CTC link via TCP */
 
 #endif // _HCONSTS_H
