@@ -1,0 +1,48 @@
+* OC,NC tests $Id$
+sysclear
+archmode esame
+r 1a0=00000001800000000000000000000200 # z/Arch restart PSW
+r 1d0=0002000180000000000000000000DEAD # z/Arch pgm new PSW
+r 200=B7110320     # LCTL R1,R1,CTLR1  Load CR1
+r 204=41000006     # LA R0,6           R0=Number of tests
+r 208=41100380     # LA R1,TEST1       R1=>Test data table
+r 20C=58601000     #A L R6,0(,R1)      Load R6=dest addr
+r 210=58701004     # L R7,4(,R1)       Load R7=source addr
+r 214=D20360000330 # MVC 0(4,R6),DATA1 Copy operand 1 data 
+r 21A=D20370000334 # MVC 0(4,R7),DATA2 Copy operand 2 data
+r 220=D60360007000 # OC 0(4,R6),0(R7)  OR operand 1 with operand 2
+r 226=47B002E0     # BNL BCC           Branch if not CC1
+r 22A=D50360000338 # CLC 0(4,R6),EXPOC Test for expected result
+r 230=477002E4     # BNE BAD           Branch if error
+r 234=D20360000330 # MVC 0(4,R6),DATA1 Copy operand 1 data 
+r 23A=D40360007000 # NC 0(4,R6),0(R7)  AND operand 1 with operand 2
+r 240=47B002E0     # BNL BCC           Branch if not CC1
+r 244=D5036000033C # CLC 0(4,R6),EXPNC Test for expected result
+r 24A=477002E4     # BNE BAD           Branch if error
+r 24E=41101008     # LA R1,8(,R1)      R1=>Next TESTn
+r 252=4600020C     # BCT R0,A          Loop to end of table
+r 256=B2B20300     # LPSWE WAITPSW     Load enabled wait PSW
+r 2E0=92CC031F     #BCC MVI DISWAIT+15,X'CC' Set wait state code BADBCC
+r 2E4=B2220020     #BAD IPM R2         Insert cond code and mask into R2
+r 2E8=54200344     # N R2,CCMASK       Isolate cond code
+r 2EC=BF3F6000     # ICM R3,15,0(R6)   Load bad result
+r 2F0=B2B20310     # LPSWE DISWAIT     Load disabled wait PSW
+r 300=07020001800000000000000000AAAAAA # WAITPSW Enabled wait state PSW
+r 310=00020001800000000000000000BADBAD # DISWAIT Disabled wait state PSW
+r 330=88442211         # DATA1         Operand 1 data
+r 334=81422418         # DATA2         Operand 2 data
+r 338=89462619         # EXPOC         Expected result of OC
+r 33C=80402010         # EXPNC         Expected result of NC
+r 340=00000000         # CTLR1         Control register 1
+r 344=F0000000         # CCMASK        Mask bits for cond code
+r 380=00004FFC00005FFC # TEST1         Neither operand crosses page boundary
+r 388=00004FFD00005FFC # TEST2         First operand crosses page boundary
+r 390=00004FFC00005FFD # TEST3         Second operand crosses page boundary
+r 398=00004FFD00005FFD # TEST4         Operands cross page boundary at same time
+r 3A0=00004FFE00005FFD # TEST5         Destination crosses page boundary first
+r 3A8=00004FFE00005FFF # TEST6         Source crosses page boundary first
+ostailor null
+restart
+pause 1
+* cond code in R2, result in R3, dest addr in R6, source addr in R7
+gpr

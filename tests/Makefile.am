@@ -82,6 +82,7 @@ EXTRA_DIST =        \
     mvcos.txt       \
     mxbr.txt        \
     mxtr.txt        \
+    oc.txt          \
     pfmf.txt        \
     pcc.txt         \
     popcnt.txt      \
