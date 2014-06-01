@@ -2294,7 +2294,7 @@ static int  BuildOAT( char* pszOATName, PLCSBLK pLCSBLK )
 #if defined(OPTION_CONFIG_SYMBOLS)
         // Make a copy of the OAT statement with symbols resolved
         pszStatement = resolve_symbol_string( szBuff );
-#else 
+#else
         // Make a copy of the OAT statement
         pszStatement = strdup( szBuff );
 #endif
@@ -2696,6 +2696,7 @@ HDL_DEVICE_SECTION;
     HDL_DEVICE(3088, ctcadpt_device_hndinfo );
     HDL_DEVICE(CTCI, ctci_device_hndinfo    );
     HDL_DEVICE(CTCT, ctct_device_hndinfo    );
+    HDL_DEVICE(CTCE, ctce_device_hndinfo    );
     HDL_DEVICE(VMNET,vmnet_device_hndinfo   );
 #if defined(WIN32)
     HDL_DEVICE(CTCI-W32,ctci_device_hndinfo );

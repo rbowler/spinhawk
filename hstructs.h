@@ -442,7 +442,7 @@ struct SYSBLK {
         BYTE    wkvpdea_reg[24];        /* Pattern registers         */
 #endif /*defined(_FEATURE_MESSAGE_SECURITY_ASSIST)*/
 
-     /* CPU Measurement Counter facility 
+     /* CPU Measurement Counter facility
         CPU Measurement Sampling facility
         Load Program Parameter facility */
         U64     program_parameter;      /* Program Parameter Register*/
@@ -1015,6 +1015,21 @@ struct DEVBLK {                         /* Device configuration block*/
         BYTE    ctctype;                /* CTC_xxx device type       */
         BYTE    netdevname[IFNAMSIZ];   /* network device name       */
 
+        /*  Device dependent fields for ctcadpt : Enhanced CTC  @PJJ */
+
+        U16     ctcePktSeq;             /* CTCE Packet Sequence @PJJ */
+                                        /*      # in debug msgs @PJJ */
+        int     ctceSndSml;             /* CTCE Send Small size @PJJ */
+        BYTE    ctcexState;             /* CTCE State   x-side  @PJJ */
+        BYTE    ctcexCmd;               /* CTCE Command x-side  @PJJ */
+        BYTE    ctceyState;             /* CTCE State   y-side  @PJJ */
+        BYTE    ctceyCmd;               /* CTCE Command y-side  @PJJ */
+        BYTE    ctceyCmdSCB;            /* CTCE Cmd SCB source  @PJJ */
+        int     ctcefd;                 /* CTCE RecvThread File @PJJ */
+                                        /*      Desc / socket # @PJJ */
+        LOCK    ctceEventLock;          /* CTCE Condition LOCK  @PJJ */
+        COND    ctceEvent;              /* CTCE Recvd Condition @PJJ */
+
         /*  Device dependent fields for printer                      */
 
         int     printpos;               /* Number of bytes already
@@ -1044,7 +1059,7 @@ struct DEVBLK {                         /* Device configuration block*/
         int     index;                  /* 3211 indexing             */
         int     lpp;                    /* lines per page            */
         int     ffchan ;                /* ff when skip here         */
-#define FCBSIZE 256         
+#define FCBSIZE 256
         int     fcb[FCBSIZE+1];         /* FCB image                 */
         int     fcbisdef;               /* FCB is default            */
 
