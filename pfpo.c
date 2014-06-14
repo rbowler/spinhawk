@@ -49,6 +49,7 @@ typedef struct
 }
 PFPO_FLOAT;
 
+#if 0 // PFPO not yet implemented
 /*-------------------------------------------------------------------*/
 /* Binary floating point routines                                    */
 /*-------------------------------------------------------------------*/
@@ -546,6 +547,7 @@ static void HFPextGet(PFPO_FLOAT *f, U64 h, U64 l)
       break;
   }
 }
+#endif // PFPO not yet implemented
 
 /*-------------------------------------------------------------------*/
 /* 010A PFPO  - Perform Floating Point Operation                 [E] */
