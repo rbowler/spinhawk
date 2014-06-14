@@ -193,8 +193,6 @@ DEF_INST(trap2)
 {
     E(inst, regs);
 
-    UNREFERENCED(inst);
-
     ARCH_DEP(trap_x) (0, regs, 0);
 
 } /* end DEF_INST(trap2) */
@@ -4601,8 +4599,6 @@ DEF_INST(test_addressing_mode)
 {
     E(inst, regs);
 
-    UNREFERENCED(inst);
-
     regs->psw.cc =
 #if defined(FEATURE_ESAME)
                    (regs->psw.amode64 << 1) |
@@ -4622,8 +4618,6 @@ DEF_INST(set_addressing_mode_24)
 VADR    ia = PSW_IA(regs, 0);           /* Unupdated instruction addr*/
 
     E(inst, regs);
-
-    UNREFERENCED(inst);
 
     /* Set the bear register */
     SET_BEAR_REG(regs, regs->bear_ip);
@@ -4658,9 +4652,6 @@ VADR    ia = PSW_IA(regs, 0);           /* Unupdated instruction addr*/
 
     E(inst, regs);
 
-    UNREFERENCED(inst);
-
-
     /* Set the bear register */
     SET_BEAR_REG(regs, regs->bear_ip);
 
@@ -4691,8 +4682,6 @@ VADR    ia = PSW_IA(regs, 0);           /* Unupdated instruction addr*/
 DEF_INST(set_addressing_mode_64)
 {
     E(inst, regs);
-
-    UNREFERENCED(inst);
 
     /* Set the bear register */
     SET_BEAR_REG(regs, regs->bear_ip);
@@ -4956,8 +4945,6 @@ DEF_INST(perform_timing_facility_function)
 {
     E(inst, regs);
 
-    UNREFERENCED(inst);
-
     SIE_INTERCEPT(regs);
 
     if(regs->GR_L(0) & PTFF_GPR0_RESV)
@@ -5005,7 +4992,8 @@ DEF_INST(perform_timing_facility_function)
             PTT(PTT_CL_ERR,"*PTFF",regs->GR_L(0),regs->GR_L(1),regs->psw.IA_L);
             regs->psw.cc = 3;
     }
-}
+
+} /* end DEF_INST(perform_timing_facility_function) */
 #endif /*defined(FEATURE_TOD_CLOCK_STEERING)*/
 
 
@@ -5380,7 +5368,7 @@ int     page_offset;                    /* Low order bits of R2      */
         /* Prefixing is not applied in multipage mode */
         fc = 0x100 - ((regs->GR_L(r2) & 0xFF000) >> 12);
         break;
-#if defined(FEATURE_ENHANCED_DAT_FACILITY_2)       
+#if defined(FEATURE_ENHANCED_DAT_FACILITY_2)
     case PFMF_FSC_2G:
         /* Program check if 2GB frame size with 24-bit addressing mode */
         if (regs->psw.amode64 == 0 && regs->psw.amode == 0) {

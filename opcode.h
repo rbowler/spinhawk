@@ -985,6 +985,7 @@ do { \
 #define E_DECODER(_inst, _regs, _len, _ilc) \
         { \
             INST_UPDATE_PSW((_regs), (_len), (_ilc)); \
+            UNREFERENCED(_inst); \
         }
 
 /* IE extended op code with two 4-bit immediate fields */       /*912*/

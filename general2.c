@@ -1818,7 +1818,6 @@ BYTE    lbyte;                          /* Left result byte of pair  */
 /*              (c) Copyright Peter Kuschnerus, 1999-2009            */
 /*              (c) Copyright "Fish" (David B. Trout), 2005-2009     */
 /*-------------------------------------------------------------------*/
-
 DEF_INST(update_tree)
 {
 GREG    index;                          /* tree index                */
@@ -1830,8 +1829,6 @@ BYTE    a64 = regs->psw.amode64;        /* 64-bit mode flag          */
 #endif
 
     E(inst, regs);
-
-    UNREFERENCED(inst);
 
     /*
     **  GR0, GR1    node values (codeword and other data) of node
@@ -1960,7 +1957,9 @@ BYTE    a64 = regs->psw.amode64;        /* 64-bit mode flag          */
 
     /* Commit GR5 with the actual index value we stopped on */
     SET_GR_A(5,regs,index);
-}
+
+} /* end DEF_INST(update_tree) */
+
 
 #if defined(FEATURE_EXTENDED_TRANSLATION_FACILITY_3)
 /*-------------------------------------------------------------------*/

@@ -3351,8 +3351,6 @@ int     rc;                             /* return code from load_psw */
 
     E(inst, regs);
 
-    UNREFERENCED(inst);
-
     SIE_XC_INTERCEPT(regs);
 
 #if defined(_FEATURE_SIE)
@@ -4589,8 +4587,6 @@ DEF_INST(set_clock_programmable_field)
 {
     E(inst, regs);
 
-    UNREFERENCED(inst);
-
     PRIV_CHECK(regs);
 
     /* Program check if register 0 bits 0-15 are not zeroes */
@@ -4599,7 +4595,8 @@ DEF_INST(set_clock_programmable_field)
 
     /* Set TOD programmable register from register 0 */
     regs->todpr = regs->GR_LHL(0);
-}
+
+} /* end DEF_INST(set_clock_programmable_field) */
 #endif /*defined(FEATURE_EXTENDED_TOD_CLOCK)*/
 
 
