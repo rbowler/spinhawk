@@ -48,15 +48,23 @@
 /* Definitions of BFP rounding methods */
 #define RM_DEFAULT_ROUNDING             0
 #define RM_BIASED_ROUND_TO_NEAREST      1
+#define RM_PREPARE_SHORTER_PRECISION    3
 #define RM_ROUND_TO_NEAREST             4
 #define RM_ROUND_TOWARD_ZERO            5
 #define RM_ROUND_TOWARD_POS_INF         6
 #define RM_ROUND_TOWARD_NEG_INF         7
 
 /* Macro to generate program check if invalid BFP rounding method */
+#undef BFPRM_CHECK
+#if !defined(FEATURE_FLOATING_POINT_EXTENSION_FACILITY)
 #define BFPRM_CHECK(x,regs) \
         {if (!((x)==0 || (x)==1 || ((x)>=4 && (x)<=7))) \
             {regs->program_interrupt(regs, PGM_SPECIFICATION_EXCEPTION);}}
+#else /*defined(FEATURE_FLOATING_POINT_EXTENSION_FACILITY)*/
+#define BFPRM_CHECK(x,regs) \
+        {if (!((x)==0 || (x)==1 || ((x)>=3 && (x)<=7))) \
+            {regs->program_interrupt(regs, PGM_SPECIFICATION_EXCEPTION);}}
+#endif /*defined(FEATURE_FLOATING_POINT_EXTENSION_FACILITY)*/
 
 #if !defined(_IEEE_C)
 /* Architecture independent code goes within this ifdef */
