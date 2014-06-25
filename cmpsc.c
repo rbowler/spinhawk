@@ -460,11 +460,8 @@ static void ARCH_DEP(cmpsc_compress)(int r1, int r2, REGS *regs, REGS *iregs)
   cc.dctsz = GR0_dctsz(regs);
   memset(cc.deadadm, 0, sizeof(cc.deadadm));
   cc.dest = NULL;
-  for(i = 0; i < (0x01 << GR0_cdss(regs)); i++)
-  {
-    cc.dict[i] = NULL;
-    cc.edict[i] = NULL;
-  }
+  memset(cc.dict, 0, sizeof(cc.dict));
+  memset(cc.edict, 0, sizeof(cc.edict));
   cc.dictor = GR1_dictor(iregs);
   cc.f1 = GR0_f1(regs);
   cc.iregs = iregs;
@@ -1394,20 +1391,17 @@ static void ARCH_DEP(cmpsc_expand)(int r1, int r2, REGS *regs, REGS *iregs)
   /* Initialize expansion context */
   ec.dest = NULL;
   ec.dictor = GR1_dictor(iregs);
-  for(i = 0; i < (0x01 << GR0_cdss(regs)); i++)
-    ec.dict[i] = NULL;
+  memset(ec.dict, 0, sizeof(ec.dict));
 
   /* Initialize expanded index symbol cache and prefill with alphabet entries */
+  memset(ec.ecl, 0, sizeof(ec.ecl));
   for(i = 0; i < 256; i++)             /* Alphabet entries                    */
   {
     ec.ec[i] = i;
     ec.eci[i] = i;
     ec.ecl[i] = 1;
   }
-  for(i = 256; i < dcten; i++)         /* Clear all other index symbols       */
-    ec.ecl[i] = 0;
   ec.ecwm = 256;                       /* Set watermark after alphabet part   */
-
   ec.iregs = iregs;
   ec.r1 = r1;
   ec.r2 = r2;
