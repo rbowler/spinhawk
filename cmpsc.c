@@ -1377,7 +1377,6 @@ static int ARCH_DEP(cmpsc_test_ec)(struct cc *cc, BYTE *cce)
 /*----------------------------------------------------------------------------*/
 static void ARCH_DEP(cmpsc_expand)(int r1, int r2, REGS *regs, REGS *iregs)
 {
-  int dcten;                           /* Number of different symbols         */
   GREG destlen;                        /* Destination length                  */
   struct ec ec;                        /* Expand cache                        */
   int i;                               /* Index                               */
@@ -1385,7 +1384,6 @@ static void ARCH_DEP(cmpsc_expand)(int r1, int r2, REGS *regs, REGS *iregs)
   U16 iss[8] = {0};                    /* Index symbols                       */
 
   /* Initialize values */
-  dcten = GR0_dcten(regs);
   destlen = GR_A(r1 + 1, iregs);
 
   /* Initialize expansion context */
