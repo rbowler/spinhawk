@@ -1535,12 +1535,14 @@ static void ARCH_DEP(cmpsc_expand_is)(struct ec *ec, U16 is)
 {
   int csl;                             /* Complete symbol length              */
   unsigned cw;                         /* Characters written                  */
+  unsigned def;                        /* Expansion dict entries fetched      */
   BYTE *ece;                           /* Expansion Character Entry           */
   U16 index;                           /* Index within dictionary             */
   int psl;                             /* Partial symbol length               */
 
   /* Initialize values */
   cw = 0;
+  def = 1;                             /* First entry fetched hereunder       */
 
   /* Get expansion character entry */
   index = is * 8;
@@ -1556,23 +1558,23 @@ static void ARCH_DEP(cmpsc_expand_is)(struct ec *ec, U16 is)
 
   /* Process preceded entries */
   psl = ECE_psl(ece);
-
   while(likely(psl))
   {
-    /* Count and check for writing child 261 and check valid psl */
+    /* Count and check for writing ch 261, valid psl and fetching ECE 127 */
     cw += psl;
-    if(unlikely(cw > 260 || psl > 5))
+    if(unlikely(cw > 260 || psl > 5 || def > 127))
       ARCH_DEP(program_interrupt)((ec->regs), PGM_DATA_EXCEPTION);
 
     /* Process extension characters in preceded entry */
     memcpy(&ec->oc[ec->ocl + ECE_ofst(ece)], &ece[2], psl);
 
-    /* Get preceding entry */
+    /* Get and count preceding entry */
     index = ECE_pptr(ece) * 8;
     if(unlikely(!ec->dict[index / 0x800]))
       ec->dict[index / 0x800] = MADDR((ec->dictor + (index / 0x800) * 0x800) & ADDRESS_MAXWRAP(ec->regs), ec->r2, ec->regs, ACCTYPE_READ, ec->regs->psw.pkey);
     ece = &ec->dict[index / 0x800][index % 0x800];
     ITIMER_SYNC((ec->dictor + index) & ADDRESS_MAXWRAP(ec->regs), 8 - 1, ec->regs);
+    def++;
 
 #ifdef OPTION_CMPSC_DEBUG
     logmsg("fetch_ece: index %04X\n", index / 8);
@@ -1583,10 +1585,10 @@ static void ARCH_DEP(cmpsc_expand_is)(struct ec *ec, U16 is)
     psl = ECE_psl(ece);
   }
 
-  /* Count and check for writing child 261, valid csl and invalid bits */
+  /* Count and check for writing ch 261, valid csl, invalid bits and fetched ECE 127 */
   csl = ECE_csl(ece);
   cw += csl;
-  if(unlikely(cw > 260 || !csl || ECE_bit34(ece)))
+  if(unlikely(cw > 260 || !csl || ECE_bit34(ece) || def > 127))
     ARCH_DEP(program_interrupt)((ec->regs), PGM_DATA_EXCEPTION);
 
   /* Process extension characters in unpreceded entry */
