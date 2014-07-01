@@ -460,11 +460,8 @@ static void ARCH_DEP(cmpsc_compress)(int r1, int r2, REGS *regs, REGS *iregs)
   cc.dctsz = GR0_dctsz(regs);
   memset(cc.deadadm, 0, sizeof(cc.deadadm));
   cc.dest = NULL;
-  for(i = 0; i < (0x01 << GR0_cdss(regs)); i++)
-  {
-    cc.dict[i] = NULL;
-    cc.edict[i] = NULL;
-  }
+  memset(cc.dict, 0, sizeof(cc.dict));
+  memset(cc.edict, 0, sizeof(cc.edict));
   cc.dictor = GR1_dictor(iregs);
   cc.f1 = GR0_f1(regs);
   cc.iregs = iregs;
@@ -1380,7 +1377,6 @@ static int ARCH_DEP(cmpsc_test_ec)(struct cc *cc, BYTE *cce)
 /*----------------------------------------------------------------------------*/
 static void ARCH_DEP(cmpsc_expand)(int r1, int r2, REGS *regs, REGS *iregs)
 {
-  int dcten;                           /* Number of different symbols         */
   GREG destlen;                        /* Destination length                  */
   struct ec ec;                        /* Expand cache                        */
   int i;                               /* Index                               */
@@ -1388,24 +1384,21 @@ static void ARCH_DEP(cmpsc_expand)(int r1, int r2, REGS *regs, REGS *iregs)
   U16 iss[8] = {0};                    /* Index symbols                       */
 
   /* Initialize values */
-  dcten = GR0_dcten(regs);
   destlen = GR_A(r1 + 1, iregs);
 
   /* Initialize expansion context */
   ec.dest = NULL;
   ec.dictor = GR1_dictor(iregs);
-  for(i = 0; i < (0x01 << GR0_cdss(regs)); i++)
-    ec.dict[i] = NULL;
+  memset(cc.dict, 0, sizeof(cc.dict));
 
   /* Initialize expanded index symbol cache and prefill with alphabet entries */
+  memset(ec.ecl, 0, sizeof(ec.ecl));
   for(i = 0; i < 256; i++)             /* Alphabet entries                    */
   {
     ec.ec[i] = i;
     ec.eci[i] = i;
     ec.ecl[i] = 1;
   }
-  for(i = 256; i < dcten; i++)         /* Clear all other index symbols       */
-    ec.ecl[i] = 0;
   ec.ecwm = 256;                       /* Set watermark after alphabet part   */
 
   ec.iregs = iregs;
@@ -1535,12 +1528,14 @@ static void ARCH_DEP(cmpsc_expand_is)(struct ec *ec, U16 is)
 {
   int csl;                             /* Complete symbol length              */
   unsigned cw;                         /* Characters written                  */
+  unsigned def;                        /* Expansion dict entries fetched      */
   BYTE *ece;                           /* Expansion Character Entry           */
   U16 index;                           /* Index within dictionary             */
   int psl;                             /* Partial symbol length               */
 
   /* Initialize values */
   cw = 0;
+  def = 1;                             /* First entry fetched hereunder       */
 
   /* Get expansion character entry */
   index = is * 8;
@@ -1556,23 +1551,23 @@ static void ARCH_DEP(cmpsc_expand_is)(struct ec *ec, U16 is)
 
   /* Process preceded entries */
   psl = ECE_psl(ece);
-
   while(likely(psl))
   {
-    /* Count and check for writing child 261 and check valid psl */
+    /* Count and check for writing ch 261, valid psl and fetching ECE 127 */
     cw += psl;
-    if(unlikely(cw > 260 || psl > 5))
+    if(unlikely(cw > 260 || psl > 5 || def > 127))
       ARCH_DEP(program_interrupt)((ec->regs), PGM_DATA_EXCEPTION);
 
     /* Process extension characters in preceded entry */
     memcpy(&ec->oc[ec->ocl + ECE_ofst(ece)], &ece[2], psl);
 
-    /* Get preceding entry */
+    /* Get and count preceding entry */
     index = ECE_pptr(ece) * 8;
     if(unlikely(!ec->dict[index / 0x800]))
       ec->dict[index / 0x800] = MADDR((ec->dictor + (index / 0x800) * 0x800) & ADDRESS_MAXWRAP(ec->regs), ec->r2, ec->regs, ACCTYPE_READ, ec->regs->psw.pkey);
     ece = &ec->dict[index / 0x800][index % 0x800];
     ITIMER_SYNC((ec->dictor + index) & ADDRESS_MAXWRAP(ec->regs), 8 - 1, ec->regs);
+    def++;
 
 #ifdef OPTION_CMPSC_DEBUG
     logmsg("fetch_ece: index %04X\n", index / 8);
@@ -1583,10 +1578,10 @@ static void ARCH_DEP(cmpsc_expand_is)(struct ec *ec, U16 is)
     psl = ECE_psl(ece);
   }
 
-  /* Count and check for writing child 261, valid csl and invalid bits */
+  /* Count and check for writing ch 261, valid csl, invalid bits and fetched ECE 127 */
   csl = ECE_csl(ece);
   cw += csl;
-  if(unlikely(cw > 260 || !csl || ECE_bit34(ece)))
+  if(unlikely(cw > 260 || !csl || ECE_bit34(ece) || def > 127))
     ARCH_DEP(program_interrupt)((ec->regs), PGM_DATA_EXCEPTION);
 
   /* Process extension characters in unpreceded entry */
