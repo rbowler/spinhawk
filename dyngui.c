@@ -1,4 +1,4 @@
-/* DYNGUI.C     (c) Copyright "Fish" (David B. Trout), 2003-2009     */
+/* DYNGUI.C     (c) Copyright "Fish" (David B. Trout), 2003-2014     */
 /*              Hercules External GUI Interface DLL                  */
 
 #include "hstdinc.h"
@@ -133,7 +133,7 @@ REGS* CopyREGS( int cpu )               // (same logic as in panel.c)
 {
     REGS* regs;
 
-    if (cpu < 0 || cpu >= MAX_CPU_ENGINES)
+    if (cpu < 0 || cpu >= sysblk.maxcpu)
         cpu = 0;
 
     obtain_lock( &sysblk.cpulock[cpu] );
@@ -334,13 +334,13 @@ BYTE   gui_wants_fregs64     = 0;
 BYTE   gui_wants_devlist     = 0;
 BYTE   gui_wants_new_devlist = 1;       // (should always be initially on)
 #if defined(OPTION_MIPS_COUNTING)
+BYTE   gui_wants_aggregates  = 1;
 BYTE   gui_wants_cpupct      = 0;
-#endif
-
-#ifdef OPTION_MIPS_COUNTING
+BYTE   gui_wants_cpupct_all  = 0;
+int    prev_cpupct    [ MAX_CPU_ENGINES ];
 U32    prev_mips_rate  = 0;
 U32    prev_sios_rate  = 0;
-#endif
+#endif // defined(OPTION_MIPS_COUNTING)
 
 ///////////////////////////////////////////////////////////////////////////////
 // Our Hercules "panel_command" override...
@@ -367,7 +367,17 @@ void*  gui_panel_command (char* pszCommand)
 
     if (strncasecmp(pszCommand,"SCD=",4) == 0)
     {
-        chdir(pszCommand+4);
+        // (set current directory)
+        if (chdir(pszCommand+4) != 0)
+        {
+            // (inform gui of error)
+            char *cwd = getcwd( NULL, 0 );
+            if (cwd)
+            {
+                debug_cd_cmd( cwd );
+                free( cwd );
+            }
+        }
         return NULL;
     }
 
@@ -442,7 +452,11 @@ void*  gui_panel_command (char* pszCommand)
         // future versions of HercGUI to know whether the version of Hercules
         // that it's talking to supports a given feature or not. Slick, eh? :)
         gui_fprintf(fStatusStream,"MAINSIZE=%s\n",VERSION);
-        gui_fprintf(fStatusStream,"MAINSIZE=%d\n",(U32)sysblk.mainsize);
+
+        if (gui_version < 1.12)
+            gui_fprintf(fStatusStream,"MAINSIZE=%d\n",(U32)sysblk.mainsize);
+        else
+            gui_fprintf(fStatusStream,"MAINSIZE=%"UINT_PTR_FMT"d\n",(uintptr_t)sysblk.mainsize);
         return NULL;
     }
 
@@ -450,6 +464,18 @@ void*  gui_panel_command (char* pszCommand)
     if (strncasecmp(pszCommand,"CPUPCT=",7) == 0)
     {
         gui_wants_cpupct = atoi(pszCommand+7);
+        return NULL;
+    }
+    if (strncasecmp(pszCommand,"CPUPCTALL=",10) == 0)
+    {
+        if (!(gui_wants_cpupct_all = atoi(pszCommand+10)))
+            memset( &prev_cpupct[0], 0xFF, sizeof(prev_cpupct) );
+        return NULL;
+    }
+    if (strncasecmp(pszCommand,"AGGREGATE=",10) == 0)
+    {
+        gui_wants_aggregates = atoi(pszCommand+10);
+        gui_forced_refresh = 1;
         return NULL;
     }
 #endif
@@ -464,7 +490,8 @@ NotSpecialGUICommand:
 
     if ('*' == pszCommand[0] || '#' == pszCommand[0])
     {
-        logmsg("%s\n",pszCommand);      // (log comment to console)
+        if ('*' == pszCommand[0])       // (LOUD comment?)
+            logmsg("%s\n",pszCommand);  // (then log to console)
         return NULL;                    // (and otherwise ignore it)
     }
 
@@ -476,7 +503,7 @@ NotSpecialGUICommand:
     next_panel_command_handler = HDL_FINDNXT( gui_panel_command );
 
     if (!next_panel_command_handler)    // (extremely unlikely!)
-        return NULL;                    // (extremely unlikely!)
+        return (char *)-1;              // (extremely unlikely!)
 
     return  next_panel_command_handler( pszCommand );
 }
@@ -531,12 +558,57 @@ void  UpdateStatus ()
 #if defined(OPTION_MIPS_COUNTING)
     if (gui_wants_cpupct)
     {
+        if (gui_wants_aggregates)
+        {
+            int cpu, cpupct = 0, started = 0;
+            for (cpupct=0, cpu=0; cpu < sysblk.maxcpu; cpu++)
+            {
+                if (1
+                    && IS_CPU_ONLINE( cpu )
+                    && CPUSTATE_STARTED == sysblk.regs[ cpu ]->cpustate
+                )
+                {
+                    started++;
+                    cpupct += sysblk.regs[ cpu ]->cpupct;
+                }
+            }
+            gui_fprintf(fStatusStream,
+
+                "CPUPCT=%d\n"
+
+                ,started ? (cpupct / started) : 0
+            );
+        }
+        else
+        {
             gui_fprintf(fStatusStream,
 
                 "CPUPCT=%d\n"
 
                 ,pTargetCPU_REGS->cpupct
             );
+        }
+    }
+    if (gui_wants_cpupct_all)
+    {
+        int  i, cpupct;
+
+        for (i = 0; i < sysblk.hicpu; i++)
+        {
+            if (0
+                || !IS_CPU_ONLINE(i)
+                || CPUSTATE_STARTED != sysblk.regs[i]->cpustate
+            )
+                cpupct = 0;
+            else
+                cpupct = sysblk.regs[i]->cpupct;
+
+            if (cpupct != prev_cpupct[i])
+            {
+                prev_cpupct[i] = cpupct;
+                gui_fprintf( fStatusStream, "CPUPCT%02d=%d\n", i, cpupct );
+            }
+        }
     }
 #endif
 
@@ -644,6 +716,11 @@ void HandleForcedRefresh()
 
     memset(   &prev_fpr64[0], 0xFF,
         sizeof(prev_fpr64) );
+
+#if defined(OPTION_MIPS_COUNTING)
+    memset(   &prev_cpupct   [0], 0xFF,
+        sizeof(prev_cpupct   ) );
+#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -659,32 +736,32 @@ void  UpdateCPUStatus ()
 
         gui_fprintf(fStatusStream, "STATUS="
 
-            "CPU%4.4X (((((((((((((((((((((((( OFFLINE ))))))))))))))))))))))))\n"
+            "%s%02X (((((((((((((((((((((((( OFFLINE ))))))))))))))))))))))))\n",
 
-            ,pcpu);
+            PTYPSTR(pcpu) ,pcpu);
     }
     else // pTargetCPU_REGS != &sysblk.dummyregs; cpu is online
     {
         // CPU status line...  (PSW, status indicators, and instruction count)
-    
+
         gui_fprintf(fStatusStream, "STATUS="
-    
-            "CPU%4.4X "
-    
+
+            "%s%02X "
+
             "PSW=%2.2X%2.2X%2.2X%2.2X "
                 "%2.2X%2.2X%2.2X%2.2X "
                 "%2.2X%2.2X%2.2X%2.2X%2.2X%2.2X%2.2X%2.2X "
-    
+
             "%c%c%c%c%c%c%c%c "
-    
+
             "instcount=%" I64_FMT "u\n"
-    
-            ,pTargetCPU_REGS->cpuad
-    
+
+            ,PTYPSTR(pTargetCPU_REGS->cpuad), pTargetCPU_REGS->cpuad
+
             ,psw[0], psw[1], psw[2],  psw[3]
             ,psw[4], psw[5], psw[6],  psw[7]
             ,psw[8], psw[9], psw[10], psw[11], psw[12], psw[13], psw[14], psw[15]
-    
+
             ,CPUSTATE_STOPPED == pTargetCPU_REGS->cpustate ? 'M' : '.'
             ,sysblk.inststep                               ? 'T' : '.'
             ,wait_bit                                      ? 'W' : '.'
@@ -703,42 +780,53 @@ void  UpdateCPUStatus ()
 #else  // !defined(_900)
                                                                    '.'
 #endif //  defined(_900)
-            ,(long long)INSTCOUNT(pTargetCPU_REGS)
+            ,(U64)INSTCOUNT(pTargetCPU_REGS)
         );
 
     } // endif cpu is online/offline
 
-    // MIPS rate and SIOS rate...
-
 #if defined(OPTION_MIPS_COUNTING)
 
-    // MIPS rate...
-
-    if (sysblk.mipsrate != prev_mips_rate)
+    // MIPS rate and SIOS rate...
     {
-        gui_fprintf(fStatusStream,
+        U32* mipsrate;
+        U32* siosrate;
 
-            "MIPS=%2.1d.%2.2d\n"
+        if (gui_wants_aggregates)
+        {
+            mipsrate = &sysblk.mipsrate;
+            siosrate = &sysblk.siosrate;
+        }
+        else
+        {
+            mipsrate = &pTargetCPU_REGS->mipsrate;
+            siosrate = &pTargetCPU_REGS->siosrate;
+        }
 
-            , sysblk.mipsrate / 1000000
-            ,(sysblk.mipsrate % 1000000) / 10000
-        );
+        if (*mipsrate != prev_mips_rate)
+        {
+            gui_fprintf( fStatusStream,
 
-        prev_mips_rate = sysblk.mipsrate;
-    }
+                "MIPS=%4d.%2.2d\n"
 
-    // SIOS rate...
+                , *mipsrate / 1000000
+                ,(*mipsrate % 1000000) / 10000
+            );
 
-    if (sysblk.siosrate != prev_sios_rate)
-    {
-        gui_fprintf(fStatusStream,
+            prev_mips_rate = *mipsrate;
+        }
 
-            "SIOS=%5d\n"
+        if (*siosrate != prev_sios_rate)
+        {
+            gui_fprintf( fStatusStream,
 
-            ,sysblk.siosrate
-        );
+                "SIOS=%4d\n"
 
-        prev_sios_rate = sysblk.siosrate;
+                ,*siosrate
+            );
+
+            prev_sios_rate = *siosrate;
+        }
     }
 
     update_maxrates_hwm(); // (update high-water-mark values)
@@ -1599,6 +1687,25 @@ void  UpdateDeviceStatus ()
 
         // Send status message back to gui...
 
+#if defined(_FEATURE_INTEGRATED_3270_CONSOLE)
+        if (pDEVBLK == sysblk.sysgdev)
+        {
+            gui_fprintf( fStatusStream,
+
+                "DEV=0000 SYSG %-4.4s %c%c%c%c %s\n"
+
+                ,pDEVClass
+
+                ,chOnlineStat
+                ,chBusyStat
+                ,chPendingStat
+                ,chOpenStat
+
+                ,szQueryDeviceBuff
+            );
+        }
+        else
+#endif // defined(_FEATURE_INTEGRATED_3270_CONSOLE)
         gui_fprintf(fStatusStream,
 
             "DEV=%4.4X %4.4X %-4.4s %c%c%c%c %s\n"
@@ -1628,11 +1735,12 @@ void  UpdateDeviceStatus ()
 
 void  NewUpdateDevStats ()
 {
-    DEVBLK*   pDEVBLK;
-    GUISTAT*  pGUIStat;
-    char*     pDEVClass;
-    BYTE      chOnlineStat, chBusyStat, chPendingStat, chOpenStat;
-    BOOL      bUpdatesSent = FALSE;
+    DEVBLK*     pDEVBLK;
+    GUISTAT*    pGUIStat;
+    char*       pDEVClass;
+    BYTE        chOnlineStat, chBusyStat, chPendingStat, chOpenStat;
+    BOOL        bUpdatesSent = FALSE;
+    static BOOL bFirstBatch  = TRUE;
 
     if (sysblk.shutdown) return;
 
@@ -1681,7 +1789,6 @@ void  NewUpdateDevStats ()
                 _("HHCDG005E Device query buffer overflow! (device=%4.4X)\n")
 
                 ,pDEVBLK->devnum
-
             );
         }
 
@@ -1702,6 +1809,26 @@ void  NewUpdateDevStats ()
         // Build a new "device added" or "device changed"
         // status string for this device...
 
+#if defined(_FEATURE_INTEGRATED_3270_CONSOLE)
+        if (pDEVBLK == sysblk.sysgdev)
+        {
+            snprintf( pGUIStat->pszNewStatStr, GUI_STATSTR_BUFSIZ,
+
+                "DEV%c=0000 SYSG %-4.4s %c%c%c%c %s"
+
+                ,*pGUIStat->pszOldStatStr ? 'C' : 'A'
+                ,pDEVClass
+
+                ,chOnlineStat
+                ,chBusyStat
+                ,chPendingStat
+                ,chOpenStat
+
+                ,szQueryDeviceBuff
+            );
+        }
+        else
+#endif // defined(_FEATURE_INTEGRATED_3270_CONSOLE)
         snprintf( pGUIStat->pszNewStatStr, GUI_STATSTR_BUFSIZ,
 
             "DEV%c=%4.4X %4.4X %-4.4s %c%c%c%c %s"
@@ -1739,8 +1866,14 @@ void  NewUpdateDevStats ()
         }
     }
 
-    if ( bUpdatesSent )
+    // Only send End-of-Batch indicator if we sent any updates or
+    // if this is the first device-list update since powering on.
+
+    if ( bUpdatesSent || bFirstBatch )
+    {
+        bFirstBatch = FALSE;
         gui_fprintf(fStatusStream, "DEVX=\n");  // (send end-of-batch indicator)
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1812,8 +1945,8 @@ void gui_fprintf( FILE* stream, const char* pszFormat, ... )
     va_list vl;
     va_start( vl, pszFormat );
     obtain_lock ( &gui_fprintf_lock );
-    vfprintf( stream, pszFormat, vl ); 
-    fflush( stream );  
+    vfprintf( stream, pszFormat, vl );
+    fflush( stream );
     release_lock( &gui_fprintf_lock );
 }
 
@@ -1823,12 +1956,6 @@ void gui_fprintf( FILE* stream, const char* pszFormat, ... )
 
 void  Initialize ()
 {
-    initialize_lock( &gui_fprintf_lock );
-
-    // reject any unload attempt
-
-    gui_nounload = 1;
-
     // Initialize streams...
 
     fOutputStream = OUTPUT_STREAM_FILE_PTR;
@@ -1846,7 +1973,7 @@ void  Initialize ()
         exit(0);
     }
 
-    memset(pszInputBuff,0,nInputBuffSize);
+    memset(pszInputBuff, 0, nInputBuffSize);
     nInputLen = 0;
 
     // Allocate command processing buffer...
@@ -1859,7 +1986,7 @@ void  Initialize ()
         exit(0);
     }
 
-    memset(pszCommandBuff,0,nCommandBuffSize);
+    memset(pszCommandBuff, 0, nCommandBuffSize);
     nCommandLen = 0;
 
     // Initialize some variables...
@@ -1930,12 +2057,12 @@ static char *DisQuietCmd[] = { "$zapcmd", "quiet", "NoCmd" };
 #define hdl_fini dyngui_LTX_hdl_fini
 #endif
 
-HDL_DEPENDENCY_SECTION;
+HDL_DEPENDENCY_SECTION;         // (define module dependencies)
 
-HDL_DEPENDENCY ( HERCULES );        // hercules itself
-HDL_DEPENDENCY ( SYSBLK   );        // master control block
-HDL_DEPENDENCY ( REGS     );        // cpu regs and such
-HDL_DEPENDENCY ( DEVBLK   );        // device info block
+    HDL_DEPENDENCY ( HERCULES );        // Hercules itself
+    HDL_DEPENDENCY ( SYSBLK   );        // Master control block
+    HDL_DEPENDENCY ( REGS     );        // CPU regs and such
+    HDL_DEPENDENCY ( DEVBLK   );        // Device info block
 
 END_DEPENDENCY_SECTION
 
@@ -1949,48 +2076,54 @@ END_DEPENDENCY_SECTION
 // yet OTHER dlls may have further overridden whatever overrides we register
 // here, such as would likely be the case for panel command overrides).
 
-HDL_REGISTER_SECTION;       // ("Register" our entry-points)
+HDL_REGISTER_SECTION;           // ("Register" our entry-points)
+{
+    // Perform static module initialization...
 
-//             Hercules's       Our
-//             registered       overriding
-//             entry-point      entry-point
-//             name             value
+    gui_nounload = 1;                       // (reject any unload attempt)
+    initialize_lock( &gui_fprintf_lock );   // (initialize GUI fprintf LOCK)
 
-HDL_REGISTER ( panel_display,   gui_panel_display   );// (Yep! We override EITHER!)
-HDL_REGISTER ( daemon_task,     gui_panel_display   );// (Yep! We override EITHER!)
-HDL_REGISTER ( debug_cpu_state, gui_debug_cpu_state );
-HDL_REGISTER ( debug_cd_cmd,    gui_debug_cd_cmd    );
-HDL_REGISTER ( panel_command,   gui_panel_command   );
+    // Register all of our override entry-points...
 
+    //             Hercules's       Our
+    //             registered       overriding
+    //             entry-point      entry-point
+    //             name             value
+    HDL_REGISTER ( panel_display,   gui_panel_display   );// (Yep! We override EITHER!)
+    HDL_REGISTER ( daemon_task,     gui_panel_display   );// (Yep! We override EITHER!)
+    HDL_REGISTER ( debug_cpu_state, gui_debug_cpu_state );
+    HDL_REGISTER ( debug_cd_cmd,    gui_debug_cd_cmd    );
+    HDL_REGISTER ( panel_command,   gui_panel_command   );
+}
 END_REGISTER_SECTION
 
 #if defined( WIN32 ) && !defined( HDL_USE_LIBTOOL )
 #if !defined( _MSVC_ )
   #undef sysblk
 #endif
-  ///////////////////////////////////////////////////////////////////////////////
-  //                        HDL_RESOLVER_SECTION
-  // The following section "resolves" entry-points that this module needs. The
-  // below HDL_RESOLVE entries define the names of Hercules's registered entry-
-  // points that we need "imported" to us (so that we may call those functions
-  // directly ourselves). The HDL_RESOLVE_PTRVAR entries set the named pointer
-  // variable value (i.e. the name of OUR pointer variable) to the registered
-  // entry-point value that was registered by Hercules or some other DLL.
+///////////////////////////////////////////////////////////////////////////////
+//                        HDL_RESOLVER_SECTION
+// The following section "resolves" entry-points that this module needs. The
+// below HDL_RESOLVE entries define the names of Hercules's registered entry-
+// points that we need "imported" to us (so that we may call those functions
+// directly ourselves). The HDL_RESOLVE_PTRVAR entries set the named pointer
+// variable value (i.e. the name of OUR pointer variable) to the registered
+// entry-point value that was registered by Hercules or some other DLL.
 
-  HDL_RESOLVER_SECTION;       // ("Resolve" needed entry-points)
-
-  //            Registered
-  //            entry-points
-  //            that we call
-  HDL_RESOLVE ( panel_command );
+HDL_RESOLVER_SECTION;           // ("Resolve" needed entry-points)
+{
+    //            Registered
+    //            entry-points
+    //            that we call
+    HDL_RESOLVE ( panel_command );
 
 #if !defined( _MSVC_ )
-  //                    Our pointer-     Registered entry-
-  //                    variable name    point value name
-  HDL_RESOLVE_PTRVAR (  psysblk,           sysblk         );
+    //                    Our pointer-     Registered entry-
+    //                    variable name    point value name
+    HDL_RESOLVE_PTRVAR (  psysblk,           sysblk         );
 #endif
-
-  END_RESOLVER_SECTION
+}
+END_RESOLVER_SECTION
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
