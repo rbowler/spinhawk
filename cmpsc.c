@@ -499,7 +499,17 @@ static void ARCH_DEP(cmpsc_compress)(int r1, int r2, REGS *regs, REGS *iregs)
     {
 
 #ifdef OPTION_CMPSC_DEBUG
-      logmsg("dead end : %04X %02X discovered\n", is, *cc.src);
+      logmsg("dead end : %04X in combination with", is);
+      for(j = 0; j < 0x100; j++)
+      {
+        if(!(j % 16))
+          logmsg("\n         :");	
+        if(BIT_get(cc.searchadm, 0, j))
+          logmsg("   ");
+        else
+          logmsg(" %02X", j);
+      }
+      logmsg("\n");
 #endif /* #ifdef OPTION_CMPSC_DEBUG */
 
       /* Registrate all discovered dead ends */
@@ -564,7 +574,17 @@ static void ARCH_DEP(cmpsc_compress)(int r1, int r2, REGS *regs, REGS *iregs)
         {
 
 #ifdef OPTION_CMPSC_DEBUG
-          logmsg("dead end : %04X %02X discovered\n", is, *cc.src);
+          logmsg("dead end : %04X in combination with", is);
+          for(j = 0; j < 0x100; j++)
+          {
+            if(!(j % 16))
+              logmsg("\n         :");	
+            if(BIT_get(cc.searchadm, 0, j))
+              logmsg("   ");
+            else
+              logmsg(" %02X", j);
+          }
+          logmsg("\n");
 #endif /* #ifdef OPTION_CMPSC_DEBUG */
 
           /* Registrate all discovered dead ends */ 
