@@ -1430,7 +1430,8 @@ char operands[64]
 // instructions using alternate mnemonic suffixed by 'A'                /*810*/
 #define DISASM_LOGMSG_ALTCODE \
     operands[sizeof(operands)-1]=0; \
-    return sprintf(p, "%sA %-19s    %s",mnemonic,operands,name)
+    return sprintf(p, "%sA %-*s    %s",mnemonic, \
+        (int)(23-strlen(mnemonic)),operands,name)
 
 int disasm_none (BYTE inst[], char mnemonic[], char *p)
 {
