@@ -235,8 +235,10 @@ struct ec                              /* Expand context                      */
 #endif /* #ifndef NO_2ND_COMPILE */
 
 static void  ARCH_DEP(cmpsc_compress)(int r1, int r2, REGS *regs, REGS *iregs);
+static int   ARCH_DEP(cmpsc_compress_single_is)(struct cc *cc);
 static void  ARCH_DEP(cmpsc_expand)(int r1, int r2, REGS *regs, REGS *iregs);
 static void  ARCH_DEP(cmpsc_expand_is)(struct ec *ec, U16 is);
+static int   ARCH_DEP(cmpsc_expand_single_is)(struct ec *ec);
 static BYTE *ARCH_DEP(cmpsc_fetch_cce)(struct cc *cc, unsigned index);
 static int   ARCH_DEP(cmpsc_fetch_ch)(struct cc *cc);
 static int   ARCH_DEP(cmpsc_fetch_is)(struct ec *ec, U16 *is);
@@ -453,9 +455,6 @@ static void ARCH_DEP(cmpsc_compress)(int r1, int r2, REGS *regs, REGS *iregs)
   int j;                               /* Index                               */
   GREG srclen;                         /* Source length                       */
 
-  /* Initialize values */
-  srclen = GR_A(r2 + 1, iregs);
-
   /* Initialize compression context */
   cc.dctsz = GR0_dctsz(regs);
   memset(cc.deadadm, 0, sizeof(cc.deadadm));
@@ -473,62 +472,20 @@ static void ARCH_DEP(cmpsc_compress)(int r1, int r2, REGS *regs, REGS *iregs)
   cc.srclen = 0;
   cc.st = GR0_st(regs) ? 1 : 0;
 
-  /*-------------------------------------------------------------------------*/
+  /* Initialize values */
+  srclen = GR_A(cc.r2 + 1, cc.iregs);
 
-  /* Process individual index symbols until cbn becomes zero */
-  while(unlikely(GR1_cbn(iregs)))
+  /*--------------------------------------------------------------------------*/
+  /* Process individual index symbols until cbn becomes zero                  */
+  while(unlikely(GR1_cbn(cc.iregs)))
   {
-    /* Get the next character, return on end of source */
-    if(unlikely(!cc.src && ARCH_DEP(cmpsc_fetch_ch)(&cc)))
+    if(unlikely(ARCH_DEP(cmpsc_compress_single_is)(&cc)))
       return;
-
-#ifdef OPTION_CMPSC_DEBUG
-    logmsg("fetch_ch : %02X at " F_VADR "\n", *cc.src, GR_A(cc.r2, cc.iregs));
-#endif /* #ifdef OPTION_CMPSC_DEBUG */
-
-    /* Set the alphabet entry and adjust registers */
-    is = *cc.src;
-    ADJUSTREGSC(&cc, cc.r2, cc.regs, cc.iregs, 1);
-
-    /* Get the alphabet entry and try to find a child */
-    cc.cce = ARCH_DEP(cmpsc_fetch_cce)(&cc, is);
-    while(ARCH_DEP(cmpsc_search_cce)(&cc, &is));
-
-    /* Registrate possible found dead ends */
-    if(unlikely(cc.deadend && cc.src))
-    {
-
-#ifdef OPTION_CMPSC_DEBUG
-      logmsg("dead end : %04X in combination with", is);
-      for(j = 0; j < 0x100; j++)
-      {
-        if(!(j % 16))
-          logmsg("\n         :");	
-        if(BIT_get(cc.searchadm, 0, j))
-          logmsg("   ");
-        else
-          logmsg(" %02X", j);
-      }
-      logmsg("\n");
-#endif /* #ifdef OPTION_CMPSC_DEBUG */
-
-      /* Registrate all discovered dead ends */
-      for(j = 0; j < 0x100 / 8; j++)
-        cc.deadadm[is][j] = ~cc.searchadm[0][j];
-    }
-
-    /* Write the last match, return on end of destination */
-    if(unlikely(ARCH_DEP(cmpsc_store_is)(&cc, is)))
-      return;
-
-    /* Commit registers */
-    COMMITREGS(regs, iregs, r1, r2);
   }
 
-  /*-------------------------------------------------------------------------*/
-
-  /* Block processing, cbn stays zero */
-  while(likely(GR_A(r1 + 1, iregs) >= cc.smbsz))
+  /*--------------------------------------------------------------------------*/
+  /* Block processing, cbn stays zero                                         */
+  while(likely(GR_A(cc.r1 + 1, cc.iregs) >= cc.smbsz))
   {
     for(i = 0; i < 8; i++)
     {
@@ -538,7 +495,7 @@ static void ARCH_DEP(cmpsc_compress)(int r1, int r2, REGS *regs, REGS *iregs)
         /* Write individual found index symbols */
         for(j = 0; j < i; j++)
           ARCH_DEP(cmpsc_store_is)(&cc, cc.is[j]);
-        COMMITREGS(regs, iregs, r1, r2);
+        COMMITREGS(cc.regs, cc.iregs, cc.r1, cc.r2);
         return;
       }
 
@@ -578,7 +535,7 @@ static void ARCH_DEP(cmpsc_compress)(int r1, int r2, REGS *regs, REGS *iregs)
           for(j = 0; j < 0x100; j++)
           {
             if(!(j % 16))
-              logmsg("\n         :");	
+              logmsg("\n         :");   
             if(BIT_get(cc.searchadm, 0, j))
               logmsg("   ");
             else
@@ -609,70 +566,101 @@ static void ARCH_DEP(cmpsc_compress)(int r1, int r2, REGS *regs, REGS *iregs)
 
     /* Write index symbols and commit */
     ARCH_DEP(cmpsc_store_iss)(&cc);
-    COMMITREGS2(regs, iregs, r1, r2);
+    COMMITREGS2(cc.regs, cc.iregs, cc.r1, cc.r2);
 
     /* Return with cc3 on interrupt pending after a minumum size of processing */
-    if(unlikely(srclen - GR_A(r2 + 1, iregs) >= MINPROC_SIZE && INTERRUPT_PENDING(regs)))
+    if(unlikely(srclen - GR_A(cc.r2 + 1, cc.iregs) >= MINPROC_SIZE && INTERRUPT_PENDING(cc.regs)))
     {
 
 #ifdef OPTION_CMPSC_DEBUG
       logmsg("Interrupt pending, commit and return with cc3\n");
 #endif /* #ifdef OPTION_CMPSC_DEBUG */
 
-      regs->psw.cc = 3;
+      cc.regs->psw.cc = 3;
       return;
     }
   }
 
-  /*-------------------------------------------------------------------------*/
+  /*--------------------------------------------------------------------------*/
+  /* Process individual index symbols until end of destination (or source)    */
+  while(!likely(ARCH_DEP(cmpsc_compress_single_is)(&cc)));
+}
 
-  /* Process individual index symbols until end of destination (or source) */
-  while(GR_A(r2 + 1, iregs))
+/*----------------------------------------------------------------------------*/
+/* cmpsc_compress_single_is                                                   */
+/*----------------------------------------------------------------------------*/
+static int ARCH_DEP(cmpsc_compress_single_is)(struct cc *cc)
+{
+  int i;                               /* Index                               */
+  U16 is;                              /* index symbol                        */
+
+  /* Get the next character, return -1 on end of source */
+  if(unlikely(!cc->src && ARCH_DEP(cmpsc_fetch_ch)(cc)))
+    return(-1);
+
+#ifdef OPTION_CMPSC_DEBUG
+  logmsg("fetch_ch : %02X at " F_VADR "\n", *cc->src, GR_A(cc->r2, cc->iregs));
+#endif /* #ifdef OPTION_CMPSC_DEBUG */
+
+  /* Set the alphabet entry and adjust registers */
+  is = *cc->src;
+  ADJUSTREGSC(cc, cc->r2, cc->regs, cc->iregs, 1);
+
+  /* Search for child when no src and no dead end combination */
+  if(unlikely(!(cc->src && BIT_get(cc->deadadm, is, *cc->src))))
   {
-    /* Get the next character, return on end of source */
-    if(unlikely(!cc.src && ARCH_DEP(cmpsc_fetch_ch)(&cc)))
-      return;
-
-#ifdef OPTION_CMPSC_DEBUG
-    logmsg("fetch_ch : %02X at " F_VADR "\n", *cc.src, GR_A(cc.r2, cc.iregs));
-#endif /* #ifdef OPTION_CMPSC_DEBUG */
-
-    /* Set the alphabet entry and adjust registers */
-    is = *cc.src;
-    ADJUSTREGSC(&cc, cc.r2, cc.regs, cc.iregs, 1);
-
-    /* Check for alphabet entry ch dead end combination */
-    if(unlikely(!(cc.src && BIT_get(cc.deadadm, is, *cc.src))))
+    /* Get the alphabet entry and try to find a child */
+    cc->cce = ARCH_DEP(cmpsc_fetch_cce)(cc, is);
+    while(ARCH_DEP(cmpsc_search_cce)(cc, &is))
     {
-      /* Get the alphabet entry and try to find a child */
-      cc.cce = ARCH_DEP(cmpsc_fetch_cce)(&cc, is);
-      while(ARCH_DEP(cmpsc_search_cce)(&cc, &is))
+      /* Check for (found cce entry + ch) dead end combination */
+      if(unlikely(cc->src && BIT_get(cc->deadadm, is, *cc->src)))
       {
-        /* Check for other dead end */
-        if(unlikely(cc.src && BIT_get(cc.deadadm, is, *cc.src)))
-        {
 
 #ifdef OPTION_CMPSC_DEBUG
-          logmsg("dead end : %04X %02X encountered\n", is, *cc.src);
+        logmsg("dead end : %04X %02X encountered\n", is, *cc->src);
 #endif /* #ifdef OPTION_CMPSC_DEBUG */
 
-          break;
-        }
+        break;
       }
     }
 
+    /* Registrate possible found dead ends */
+    if(unlikely(cc->deadend && cc->src))
+    {
+
 #ifdef OPTION_CMPSC_DEBUG
-    else
-      logmsg("dead end : %04X %02X encountered\n", is, *cc.src);
+      logmsg("dead end : %04X in combination with", is);
+      for(i = 0; i < 0x100; i++)
+      {
+        if(!(i % 16))
+          logmsg("\n         :");
+        if(BIT_get(cc->searchadm, 0, i))
+          logmsg("   ");
+        else
+          logmsg(" %02X", i);
+      }
+      logmsg("\n");
 #endif /* #ifdef OPTION_CMPSC_DEBUG */
 
-    /* Write the last match, return on end of destination */
-    if(unlikely(ARCH_DEP(cmpsc_store_is)(&cc, is)))
-      return;
-
-    /* Commit registers */
-    COMMITREGS(regs, iregs, r1, r2);
+      /* Registrate all discovered dead ends */ 
+      for(i = 0; i < 0x100 / 8; i++)
+        cc->deadadm[is][i] = ~cc->searchadm[0][i];
+    }
   }
+
+#ifdef OPTION_CMPSC_DEBUG
+  else
+    logmsg("dead end : %04X %02X encountered\n", is, *cc->src);
+#endif /* #ifdef OPTION_CMPSC_DEBUG */
+
+  /* Write the last match, return on end of destination */
+  if(unlikely(ARCH_DEP(cmpsc_store_is)(cc, is)))
+    return(-1);
+
+  /* Commit registers */
+  COMMITREGS(cc->regs, cc->iregs, cc->r1, cc->r2);
+  return(0);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -1394,7 +1382,6 @@ static void ARCH_DEP(cmpsc_expand)(int r1, int r2, REGS *regs, REGS *iregs)
   GREG destlen;                        /* Destination length                  */
   struct ec ec;                        /* Expand cache                        */
   int i;                               /* Index                               */
-  U16 is;                              /* Index symbol                        */
   U16 iss[8] = {0};                    /* Index symbols                       */
 
   /* Initialize values */
@@ -1430,34 +1417,17 @@ static void ARCH_DEP(cmpsc_expand)(int r1, int r2, REGS *regs, REGS *iregs)
   ec.dbgiss = 0;
 #endif /* #ifdef OPTION_CMPSC_DEBUG */
 
-  /*-------------------------------------------------------------------------*/
-  
-  /* Process individual index symbols until cbn becomes zero */
-  while(unlikely(GR1_cbn(iregs)))
+  /*--------------------------------------------------------------------------*/
+  /* Process individual index symbols until cbn becomes zero                  */
+  while(unlikely(GR1_cbn(ec.iregs)))
   {
-    if(unlikely(ARCH_DEP(cmpsc_fetch_is)(&ec, &is)))
+    if(unlikely(ARCH_DEP(cmpsc_expand_single_is)(&ec)))
       return;
-    if(likely(!ec.ecl[is]))
-    {
-      ec.ocl = 0;                      /* Initialize output cache             */
-      ARCH_DEP(cmpsc_expand_is)(&ec, is);
-      if(unlikely(ARCH_DEP(cmpsc_vstore)(&ec, ec.oc, ec.ocl)))
-        return;
-    }
-    else
-    {
-      if(unlikely(ARCH_DEP(cmpsc_vstore)(&ec, &ec.ec[ec.eci[is]], ec.ecl[is])))
-        return;
-    }
-
-    /* Commit, including GR1 */
-    COMMITREGS(regs, iregs, r1, r2);
   }
 
-  /*-------------------------------------------------------------------------*/
-
-  /* Block processing, cbn stays zero */
-  while(likely(GR_A(r2 + 1, iregs) >= ec.smbsz))
+  /*--------------------------------------------------------------------------*/
+  /* Block processing, cbn stays zero                                         */
+  while(likely(GR_A(ec.r2 + 1, ec.iregs) >= ec.smbsz))
   {
     ARCH_DEP(cmpsc_fetch_iss)(&ec, iss);
     ec.ocl = 0;                        /* Initialize output cache             */
@@ -1497,42 +1467,24 @@ static void ARCH_DEP(cmpsc_expand)(int r1, int r2, REGS *regs, REGS *iregs)
       return;
 
     /* Commit registers */
-    COMMITREGS2(regs, iregs, r1, r2);
+    COMMITREGS2(ec.regs, ec.iregs, ec.r1, ec.r2);
 
     /* Return with cc3 on interrupt pending */
-    if(unlikely(destlen - GR_A(r1 + 1, iregs) >= MINPROC_SIZE && INTERRUPT_PENDING(regs)))
+    if(unlikely(destlen - GR_A(ec.r1 + 1, ec.iregs) >= MINPROC_SIZE && INTERRUPT_PENDING(ec.regs)))
     {
 
 #ifdef OPTION_CMPSC_DEBUG
       logmsg("Interrupt pending, commit and return with cc3\n");
 #endif /* #ifdef OPTION_CMPSC_DEBUG */
 
-      regs->psw.cc = 3;
+      ec.regs->psw.cc = 3;
       return;
     }
   }
 
-  /*-------------------------------------------------------------------------*/
-
-  /* Process last index symbols, never mind about childs written */
-  while(likely(!ARCH_DEP(cmpsc_fetch_is)(&ec, &is)))
-  {
-    if(unlikely(!ec.ecl[is]))
-    {
-      ec.ocl = 0;                      /* Initialize output cache             */
-      ARCH_DEP(cmpsc_expand_is)(&ec, is);
-      if(unlikely(ARCH_DEP(cmpsc_vstore)(&ec, ec.oc, ec.ocl)))
-        return;
-    }
-    else
-    {
-      if(unlikely(ARCH_DEP(cmpsc_vstore)(&ec, &ec.ec[ec.eci[is]], ec.ecl[is])))
-        return;
-    }
-
-    /* Commit, including GR1 */
-    COMMITREGS(regs, iregs, r1, r2);
-  }
+  /*--------------------------------------------------------------------------*/
+  /* Process individual index symbols until end of source (or destination)    */
+  while(likely(!ARCH_DEP(cmpsc_expand_single_is)(&ec)));
 }
 
 /*----------------------------------------------------------------------------*/
@@ -1606,6 +1558,33 @@ static void ARCH_DEP(cmpsc_expand_is)(struct ec *ec, U16 is)
 
   /* Commit in output buffer */
   ec->ocl += cw;
+}
+
+/*----------------------------------------------------------------------------*/
+/* cmpsc_expand_single_is (index symbol)                                      */
+/*----------------------------------------------------------------------------*/
+static int ARCH_DEP(cmpsc_expand_single_is)(struct ec *ec)
+{
+  U16 is;                              /* Index symbol                        */
+
+  if(unlikely(ARCH_DEP(cmpsc_fetch_is)(ec, &is)))
+    return(-1);
+  if(!ec->ecl[is])
+  {
+    ec->ocl = 0;                       /* Initialize output cache             */
+    ARCH_DEP(cmpsc_expand_is)(ec, is);
+    if(unlikely(ARCH_DEP(cmpsc_vstore)(ec, ec->oc, ec->ocl)))
+      return(-1);
+  }
+  else
+  {
+    if(unlikely(ARCH_DEP(cmpsc_vstore)(ec, &ec->ec[ec->eci[is]], ec->ecl[is])))
+      return(-1);
+  }
+
+  /* Commit, including GR1 */
+  COMMITREGS(ec->regs, ec->iregs, ec->r1, ec->r2);
+  return(0);
 }
 
 /*----------------------------------------------------------------------------*/
