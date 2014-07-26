@@ -2917,7 +2917,7 @@ int     m3;                             /* Value of M field          */
     RRF_M(inst, regs, r1, r2, m3);
 
     /* Test M3 mask bit corresponding to condition code */
-    if (m3 & (0x80 >> regs->psw.cc))
+    if (m3 & (0x8 >> regs->psw.cc))
     {
         /* Copy R2 register bits 32-63 to R1 register */
         regs->GR_L(r1) = regs->GR_L(r2);
@@ -2938,7 +2938,7 @@ int     m3;                             /* Value of M field          */
     RRF_M(inst, regs, r1, r2, m3);
 
     /* Test M3 mask bit corresponding to condition code */
-    if (m3 & (0x80 >> regs->psw.cc))
+    if (m3 & (0x8 >> regs->psw.cc))
     {
         /* Copy R2 register bits 0-63 to R1 register */
         regs->GR_G(r1) = regs->GR_G(r2);
@@ -2961,7 +2961,7 @@ VADR    effective_addr2;                /* Effective address         */
     RSY(inst, regs, r1, m3, b2, effective_addr2);
 
     /* Test M3 mask bit corresponding to condition code */
-    if (m3 & (0x80 >> regs->psw.cc))
+    if (m3 & (0x8 >> regs->psw.cc))
     {
         /* Load R1 register bits 32-63 from second operand */
         regs->GR_L(r1) = ARCH_DEP(vfetch4) ( effective_addr2, b2, regs );
@@ -2984,7 +2984,7 @@ VADR    effective_addr2;                /* Effective address         */
     RSY(inst, regs, r1, m3, b2, effective_addr2);
 
     /* Test M3 mask bit corresponding to condition code */
-    if (m3 & (0x80 >> regs->psw.cc))
+    if (m3 & (0x8 >> regs->psw.cc))
     {
         /* Load R1 register bits 0-63 from second operand */
         regs->GR_G(r1) = ARCH_DEP(vfetch8) ( effective_addr2, b2, regs );
@@ -3007,7 +3007,7 @@ VADR    effective_addr2;                /* Effective address         */
     RSY(inst, regs, r1, m3, b2, effective_addr2);
 
     /* Test M3 mask bit corresponding to condition code */
-    if (m3 & (0x80 >> regs->psw.cc))
+    if (m3 & (0x8 >> regs->psw.cc))
     {
         /* Store R1 register bits 32-63 at operand address */
         ARCH_DEP(vstore4) ( regs->GR_L(r1), effective_addr2, b2, regs );
@@ -3030,7 +3030,7 @@ VADR    effective_addr2;                /* Effective address         */
     RSY(inst, regs, r1, m3, b2, effective_addr2);
 
     /* Test M3 mask bit corresponding to condition code */
-    if (m3 & (0x80 >> regs->psw.cc))
+    if (m3 & (0x8 >> regs->psw.cc))
     {
         /* Store R1 register bits 0-63 at operand address */
         ARCH_DEP(vstore8) ( regs->GR_G(r1), effective_addr2, b2, regs );
