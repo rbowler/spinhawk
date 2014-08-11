@@ -1682,16 +1682,17 @@ DEF_INST(convert_bfp_short_to_u32_reg)
 #if defined(FEATURE_ESAME)
 /*-------------------------------------------------------------------*/
 /* B3AA CGXBR - CONVERT TO FIXED (extended BFP to 64)          [RRF] */
+/* B3AA CGXBRA - CONVERT TO FIXED (extended BFP to 64)         [RRF] */
 /*-------------------------------------------------------------------*/
 DEF_INST(convert_bfp_ext_to_fix64_reg)
 {
-    int r1, r2, m3;
+    int r1, r2, m3, m4;
     S64 op1;
     float128 op2;
     int pgm_check;
 
-    RRF_M(inst, regs, r1, r2, m3);
-    //logmsg("CGXBR r1=%d r2=%d\n", r1, r2);
+    RRF_MMA(inst, regs, r1, r2, m3, m4);
+    //logmsg("CGXBR(A) r1=%d r2=%d m3=%d m4=%d\n", r1, r2, m3, m4);
     BFPINST_CHECK(regs);
     BFPREGPAIR_CHECK(r2, regs);
     BFPRM_CHECK(m3,regs);
@@ -1702,7 +1703,7 @@ DEF_INST(convert_bfp_ext_to_fix64_reg)
     set_rounding_mode(regs->fpc, m3);
 
     op1 = float128_to_int64(op2);
-    pgm_check = float_exception(regs);
+    pgm_check = float_exception_masked(regs, m4);
 
     set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
 
@@ -1722,16 +1723,17 @@ DEF_INST(convert_bfp_ext_to_fix64_reg)
 #if defined(FEATURE_ESAME)
 /*-------------------------------------------------------------------*/
 /* B3A9 CGDBR - CONVERT TO FIXED (long BFP to 64)              [RRF] */
+/* B3A9 CGDBRA - CONVERT TO FIXED (long BFP to 64)             [RRF] */
 /*-------------------------------------------------------------------*/
 DEF_INST(convert_bfp_long_to_fix64_reg)
 {
-    int r1, r2, m3;
+    int r1, r2, m3, m4;
     S64 op1;
     float64 op2;
     int pgm_check;
 
-    RRF_M(inst, regs, r1, r2, m3);
-    //logmsg("CGDBR r1=%d r2=%d\n", r1, r2);
+    RRF_MMA(inst, regs, r1, r2, m3, m4);
+    //logmsg("CGDBR(A) r1=%d r2=%d m3=%d m4=%d\n", r1, r2, m3, m4);
     BFPINST_CHECK(regs);
     BFPRM_CHECK(m3,regs);
 
@@ -1741,7 +1743,7 @@ DEF_INST(convert_bfp_long_to_fix64_reg)
     set_rounding_mode(regs->fpc, m3);
 
     op1 = float64_to_int64(op2);
-    pgm_check = float_exception(regs);
+    pgm_check = float_exception_masked(regs, m4);
 
     set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
 
@@ -1761,16 +1763,17 @@ DEF_INST(convert_bfp_long_to_fix64_reg)
 #if defined(FEATURE_ESAME)
 /*-------------------------------------------------------------------*/
 /* B3A8 CGEBR - CONVERT TO FIXED (short BFP to 64)             [RRF] */
+/* B3A8 CGEBRA - CONVERT TO FIXED (short BFP to 64)            [RRF] */
 /*-------------------------------------------------------------------*/
 DEF_INST(convert_bfp_short_to_fix64_reg)
 {
-    int r1, r2, m3;
+    int r1, r2, m3, m4;
     S64 op1;
     float32 op2;
     int pgm_check;
 
-    RRF_M(inst, regs, r1, r2, m3);
-    //logmsg("CGEBR r1=%d r2=%d\n", r1, r2);
+    RRF_MMA(inst, regs, r1, r2, m3, m4);
+    //logmsg("CGEBR(A) r1=%d r2=%d m3=%d m4=%d\n", r1, r2, m3, m4);
     BFPINST_CHECK(regs);
     BFPRM_CHECK(m3,regs);
 
@@ -1780,7 +1783,7 @@ DEF_INST(convert_bfp_short_to_fix64_reg)
     set_rounding_mode(regs->fpc, m3);
 
     op1 = float32_to_int64(op2);
-    pgm_check = float_exception(regs);
+    pgm_check = float_exception_masked(regs, m4);
 
     set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
 
