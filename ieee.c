@@ -1125,17 +1125,19 @@ DEF_INST(compare_and_signal_bfp_short)
 
 /*-------------------------------------------------------------------*/
 /* B396 CXFBR - CONVERT FROM FIXED (32 to extended BFP)        [RRE] */
+/* B396 CXFBRA - CONVERT FROM FIXED (32 to extended BFP)       [RRF] */
 /*-------------------------------------------------------------------*/
 DEF_INST(convert_fix32_to_bfp_ext_reg)
 {
-    int r1, r2;
+    int r1, r2, m3, m4;
     float128 op1;
     S32 op2;
 
-    RRE(inst, regs, r1, r2);
-    //logmsg("CXFBR r1=%d r2=%d\n", r1, r2);
+    RRE_MMA(inst, regs, r1, r2, m3, m4);
+    //logmsg("CXFBR(A) r1=%d r2=%d m3=%d m4=%d\n", r1, r2, m3, m4);
     BFPINST_CHECK(regs);
     BFPREGPAIR_CHECK(r1, regs);
+    BFPRM_CHECK(m3, regs);
 
     op2 = regs->GR_L(r2);
     op1 = int32_to_float128(op2);
@@ -1145,16 +1147,18 @@ DEF_INST(convert_fix32_to_bfp_ext_reg)
 
 /*-------------------------------------------------------------------*/
 /* B395 CDFBR - CONVERT FROM FIXED (32 to long BFP)            [RRE] */
+/* B395 CDFBRA - CONVERT FROM FIXED (32 to long BFP)           [RRF] */
 /*-------------------------------------------------------------------*/
 DEF_INST(convert_fix32_to_bfp_long_reg)
 {
-    int r1, r2;
+    int r1, r2, m3, m4;
     float64 op1;
     S32 op2;
 
-    RRE(inst, regs, r1, r2);
-    //logmsg("CDFBR r1=%d r2=%d\n", r1, r2);
+    RRE_MMA(inst, regs, r1, r2, m3, m4);
+    //logmsg("CDFBR(A) r1=%d r2=%d m3=%d m4=%d\n", r1, r2, m3, m4);
     BFPINST_CHECK(regs);
+    BFPRM_CHECK(m3, regs);
 
     op2 = regs->GR_L(r2);
     op1 = int32_to_float64(op2);
@@ -1164,24 +1168,27 @@ DEF_INST(convert_fix32_to_bfp_long_reg)
 
 /*-------------------------------------------------------------------*/
 /* B394 CEFBR - CONVERT FROM FIXED (32 to short BFP)           [RRE] */
+/* B394 CEFBRA - CONVERT FROM FIXED (32 to short BFP)          [RRF] */
 /*-------------------------------------------------------------------*/
 DEF_INST(convert_fix32_to_bfp_short_reg)
 {
-    int r1, r2;
+    int r1, r2, m3, m4;
     float32 op1;
     S32 op2;
     int pgm_check;
 
-    RRE(inst, regs, r1, r2);
-    //logmsg("CEFBR r1=%d r2=%d\n", r1, r2);
+    RRE_MMA(inst, regs, r1, r2, m3, m4);
+    //logmsg("CEFBR(A) r1=%d r2=%d m3=%d m4=%d\n", r1, r2, m3, m4);
     BFPINST_CHECK(regs);
+    BFPRM_CHECK(m3, regs);
 
     op2 = regs->GR_L(r2);
 
     float_clear_exception_flags();
-    set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
+    set_rounding_mode(regs->fpc, m3);
     op1 = int32_to_float32(op2);
-    pgm_check = float_exception(regs);
+    pgm_check = float_exception_masked(regs, m4);
+    set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
 
     put_float32(&op1, regs->fpr + FPR2I(r1));
 
