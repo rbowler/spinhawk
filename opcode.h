@@ -1252,6 +1252,30 @@ do { \
             INST_UPDATE_PSW((_regs), (_len), (_ilc)); \
       }
 
+/* RRE_MMA instructions are RRE format instructions which are treated
+   as RRF_MM when the floating-point extension facility is installed */
+#undef RRE_MMA
+
+#if defined(FLOATING_POINT_EXTENSION_FACILITY)
+ #define RRE_MMA(_inst, _regs, _r1, _r2, _m3, _m4) \
+         RRF_MM(_inst, _regs, _r1, _r2, _m3, _m4)
+#else
+ #define RRE_MMA(_inst, _regs, _r1, _r2, _m3, _m4) \
+         { RRE(_inst, _regs, _r1, _r2); m3 = m4 = 0; }
+#endif
+
+/* RRF_MMA instructions are RRF_M format instructions which are treated
+   as RRF_MM when the floating-point extension facility is installed */
+#undef RRF_MMA
+
+#if defined(FLOATING_POINT_EXTENSION_FACILITY)
+ #define RRF_MMA(_inst, _regs, _r1, _r2, _m3, _m4) \
+         RRF_MM(_inst, _regs, _r1, _r2, _m3, _m4)
+#else
+ #define RRF_MMA(_inst, _regs, _r1, _r2, _m3, _m4) \
+         { RRF_M(_inst, _regs, _r1, _r2, _m3); m4 = 0; }
+#endif
+
 /* RRR register to register with register */
 #undef RRR
 #undef RRR0
@@ -1285,6 +1309,54 @@ do { \
             (_r1) = (temp >>  4) & 0xf; \
             INST_UPDATE_PSW((_regs), (_len), (_ilc)); \
         }
+
+/* RRR_M register to register with register with additional M4 field */
+#undef RRR_M
+#undef RRR_M0
+
+#if !defined(DECODER_TEST)&&!defined(DECODER_TEST_RRR_M)
+ #define RRR_M(_inst, _regs, _r1, _r2, _r3, _m4) \
+         RRR_M_DECODER(_inst, _regs, _r1, _r2, _r3, _m4, 4, 4)
+ #define RRR_M0(_inst, _regs, _r1, _r2, _r3, _m4) \
+         RRR_M_DECODER(_inst, _regs, _r1, _r2, _r3, _m4, 4, 0)
+#else
+ #define RRR_M(_inst, _regs, _r1, _r2, _r3, _m4) \
+         RRR_M_DECODER_TEST(_inst, _regs, _r1, _r2, _r3, _m4, 4, 4)
+ #define RRR_M0(_inst, _regs, _r1, _r2, _r3, _m4) \
+         RRR_M_DECODER_TEST(_inst, _regs, _r1, _r2, _r3, _m4, 4, 0)
+#endif
+
+#define RRR_M_DECODER(_inst, _regs, _r1, _r2, _r3, _m4, _len, _ilc) \
+        { \
+            int i = (_inst)[2]; \
+            (_r3) = i >> 4; \
+            (_m4) = i & 0xf; \
+            i = (_inst)[3]; \
+            (_r1) = i >> 4; \
+            (_r2) = i & 0xf; \
+            INST_UPDATE_PSW((_regs), (_len), (_ilc)); \
+        }
+
+#define RRR_M_DECODER_TEST(_inst, _regs, _r1, _r2, _r3, _m4, _len, _ilc) \
+      { U32 temp = fetch_fw(_inst); \
+            (_m4) = (temp >>  8) & 0xf; \
+            (_r3) = (temp >> 12) & 0xf; \
+            (_r2) = (temp      ) & 0xf; \
+            (_r1) = (temp >>  4) & 0xf; \
+            INST_UPDATE_PSW((_regs), (_len), (_ilc)); \
+        }
+
+/* RRR_MA instructions are RRR format instructions which are treated
+   as RRR_M when the floating-point extension facility is installed */
+#undef RRR_MA
+
+#if defined(FLOATING_POINT_EXTENSION_FACILITY)
+ #define RRR_MA(_inst, _regs, _r1, _r2, _r3, _m4) \
+         RRR_M(_inst, _regs, _r1, _r2, _r3, _m4)
+#else
+ #define RRR_MA(_inst, _regs, _r1, _r2, _r3, _m4) \
+         { RRR(_inst, _regs, _r1, _r2, _r3); m4 = 0; }
+#endif
 
 /* RX register and indexed storage */
 #undef RX
