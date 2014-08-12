@@ -1,5 +1,5 @@
 /* IEEE.C       (c) Copyright Willem Konynenberg, 2001-2003          */
-/*              (c) Copyright Roger Bowler and others, 2003-2013     */
+/*              (c) Copyright Roger Bowler and others, 2003-2014     */
 /*              Hercules Binary (IEEE) Floating Point Instructions   */
 
 /*-------------------------------------------------------------------*/
@@ -26,6 +26,10 @@
  * Floating-point extension facility - RB, April 2014:
  *  CELFBR,CDLFBR,CXLFBR,CLFEBR,CLFDBR,CLFXBR,
  *  CELGBR,CDLGBR,CXLGBR,CLGEBR,CLGDBR,CLGXBR.
+ * Floating-point extension facility - RB, August 2014:
+ *  FIEBRA,FIDBRA,FIXBRA,LDXBRA,LEXBRA,LEDBRA,
+ *  CEFBRA,CDFBRA,CXFBRA,CFEBRA,CFDBRA,CFXBRA,
+ *  CEGBRA,CDGBRA,CXGBRA,CGEBRA,CGDBRA,CGXBRA.
  */
 
 #include "hstdinc.h"
@@ -1590,6 +1594,7 @@ DEF_INST(convert_bfp_ext_to_u32_reg)
 
     op1 = float128_to_uint32(op2);
     pgm_check = float_exception_masked(regs, m4);
+
     set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
 
     regs->GR_L(r1) = op1;
