@@ -2211,14 +2211,15 @@ DEF_INST(load_and_test_bfp_short_reg)
 
 /*-------------------------------------------------------------------*/
 /* B357 FIEBR - LOAD FP INTEGER (short BFP)                    [RRF] */
+/* B357 FIEBRA - LOAD FP INTEGER (short BFP)                   [RRF] */
 /*-------------------------------------------------------------------*/
 DEF_INST(load_fp_int_bfp_short_reg)
 {
-    int r1, r2, m3, pgm_check;
+    int r1, r2, m3, m4, pgm_check;
     float32 op1, op2;
 
-    RRF_M(inst, regs, r1, r2, m3);
-    //logmsg("FIEBR r1=%d, r2=%d\n", r1, r2);
+    RRF_MMA(inst, regs, r1, r2, m3, m4);
+    //logmsg("FIEBR(A) r1=%d r2=%d m3=%d m4=%d\n", r1, r2, m3, m4);
     BFPINST_CHECK(regs);
     BFPRM_CHECK(m3,regs);
 
@@ -2229,7 +2230,7 @@ DEF_INST(load_fp_int_bfp_short_reg)
     op1 = float32_round_to_int(op2);
     set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
 
-    pgm_check = float_exception(regs);
+    pgm_check = float_exception_masked(regs, m4);
 
     put_float32(&op1, regs->fpr + FPR2I(r1));
 
@@ -2241,14 +2242,15 @@ DEF_INST(load_fp_int_bfp_short_reg)
 
 /*-------------------------------------------------------------------*/
 /* B35F FIDBR - LOAD FP INTEGER (long BFP)                     [RRF] */
+/* B35F FIDBRA - LOAD FP INTEGER (long BFP)                    [RRF] */
 /*-------------------------------------------------------------------*/
 DEF_INST(load_fp_int_bfp_long_reg)
 {
-    int r1, r2, m3, pgm_check;
+    int r1, r2, m3, m4, pgm_check;
     float64 op1, op2;
 
-    RRF_M(inst, regs, r1, r2, m3);
-    //logmsg("FIDBR r1=%d, r2=%d\n", r1, r2);
+    RRF_MMA(inst, regs, r1, r2, m3, m4);
+    //logmsg("FIDBR(A) r1=%d r2=%d m3=%d m4=%d\n", r1, r2, m3, m4);
     BFPINST_CHECK(regs);
     BFPRM_CHECK(m3,regs);
 
@@ -2259,7 +2261,7 @@ DEF_INST(load_fp_int_bfp_long_reg)
     op1 = float64_round_to_int(op2);
     set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
 
-    pgm_check = float_exception(regs);
+    pgm_check = float_exception_masked(regs, m4);
 
     put_float64(&op1, regs->fpr + FPR2I(r1));
 
@@ -2271,14 +2273,15 @@ DEF_INST(load_fp_int_bfp_long_reg)
 
 /*-------------------------------------------------------------------*/
 /* B347 FIXBR - LOAD FP INTEGER (extended BFP)                 [RRF] */
+/* B347 FIXBRA - LOAD FP INTEGER (extended BFP)                [RRF] */
 /*-------------------------------------------------------------------*/
 DEF_INST(load_fp_int_bfp_ext_reg)
 {
-    int r1, r2, m3, pgm_check;
+    int r1, r2, m3, m4, pgm_check;
     float128 op1, op2;
 
-    RRF_M(inst, regs, r1, r2, m3);
-    //logmsg("FIXBR r1=%d, r2=%d\n", r1, r2);
+    RRF_MMA(inst, regs, r1, r2, m3, m4);
+    //logmsg("FIXBR(A) r1=%d r2=%d m3=%d m4=%d\n", r1, r2, m3, m4);
     BFPINST_CHECK(regs);
     BFPREGPAIR2_CHECK(r1, r2, regs);
     BFPRM_CHECK(m3,regs);
@@ -2290,7 +2293,7 @@ DEF_INST(load_fp_int_bfp_ext_reg)
     op1 = float128_round_to_int(op2);
     set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
 
-    pgm_check = float_exception(regs);
+    pgm_check = float_exception_masked(regs, m4);
 
     put_float128(&op1, regs->fpr + FPR2I(r1));
 
