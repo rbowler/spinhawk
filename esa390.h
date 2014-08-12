@@ -2142,18 +2142,20 @@ typedef struct _PTFFQSI {               /* Query Steering Information*/
 #define SIGA_FC_MAX     SIGA_FC_S
 
 /* Bit definitions for floating-point-control register */
-#define FPC_MASK        0xF8000000
+#define FPC_MASK        0xFC000000                              /*810*/
 #define FPC_MASK_IMI    0x80000000
 #define FPC_MASK_IMZ    0x40000000
 #define FPC_MASK_IMO    0x20000000
 #define FPC_MASK_IMU    0x10000000
 #define FPC_MASK_IMX    0x08000000
-#define FPC_FLAG        0x00F80000
+#define FPC_MASK_IMQ    0x04000000                              /*810*/
+#define FPC_FLAG        0x00FC0000                              /*810*/
 #define FPC_FLAG_SFI    0x00800000
 #define FPC_FLAG_SFZ    0x00400000
 #define FPC_FLAG_SFO    0x00200000
 #define FPC_FLAG_SFU    0x00100000
 #define FPC_FLAG_SFX    0x00080000
+#define FPC_FLAG_SFQ    0x00040000                              /*810*/
 #define FPC_DXC         0x0000FF00
 #define FPC_DXC_I       0x00008000
 #define FPC_DXC_Z       0x00004000
@@ -2169,8 +2171,8 @@ typedef struct _PTFFQSI {               /* Query Steering Information*/
 #define FPC_RESERVED    0x0707008C
 
 /* Shift counts to allow alignment of each field in the FPC register */
-#define FPC_MASK_SHIFT  27
-#define FPC_FLAG_SHIFT  19
+#define FPC_MASK_SHIFT  24                                      /*810*/
+#define FPC_FLAG_SHIFT  16                                      /*810*/
 #define FPC_DXC_SHIFT   8
 #define FPC_DRM_SHIFT   4
 #define FPC_BRM_SHIFT   0
@@ -2180,6 +2182,8 @@ typedef struct _PTFFQSI {               /* Query Steering Information*/
 #define DXC_AFP_REGISTER        0x01    /* AFP register exception    */
 #define DXC_BFP_INSTRUCTION     0x02    /* BFP instruction exception */
 #define DXC_DFP_INSTRUCTION     0x03    /* DFP instruction exception */
+#define DXC_QUANTUM             0x04    /* Quantum exception      810*/
+#define DXC_QUANTUM_IISE        0x07    /* Quantum simulated      810*/
 #define DXC_IEEE_INEXACT_TRUNC  0x08    /* IEEE inexact, truncated   */
 #define DXC_IEEE_INEXACT_IISE   0x0B    /* IEEE inexact (IISE)    DFP*/
 #define DXC_IEEE_INEXACT_INCR   0x0C    /* IEEE inexact, incremented */
