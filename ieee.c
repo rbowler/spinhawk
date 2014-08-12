@@ -2698,24 +2698,27 @@ DEF_INST(load_positive_bfp_short_reg)
 
 /*-------------------------------------------------------------------*/
 /* B344 LEDBR - LOAD ROUNDED (long to short BFP)               [RRE] */
+/* B344 LEDBRA - LOAD ROUNDED (long to short BFP)              [RRF] */
 /*-------------------------------------------------------------------*/
 DEF_INST(load_rounded_bfp_long_to_short_reg)
 {
-    int r1, r2;
+    int r1, r2, m3, m4;
     float32 op1;
     float64 op2;
     int pgm_check;
 
-    RRE(inst, regs, r1, r2);
-    //logmsg("LEDBR r1=%d r2=%d\n", r1, r2);
+    RRE_MMA(inst, regs, r1, r2, m3, m4);
+    //logmsg("LEDBR(A) r1=%d r2=%d m3=%d m4=%d\n", r1, r2, m3, m4);
     BFPINST_CHECK(regs);
+    BFPRM_CHECK(m3, regs);
 
     get_float64(&op2, regs->fpr + FPR2I(r2));
 
     float_clear_exception_flags();
-    set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
+    set_rounding_mode(regs->fpc, m3);
     op1 = float64_to_float32(op2);
-    pgm_check = float_exception(regs);
+    pgm_check = float_exception_masked(regs, m4);
+    set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
 
     put_float32(&op1, regs->fpr + FPR2I(r1));
 
@@ -2732,25 +2735,28 @@ DEF_INST(load_rounded_bfp_long_to_short_reg)
 
 /*-------------------------------------------------------------------*/
 /* B345 LDXBR - LOAD ROUNDED (extended to long BFP)            [RRE] */
+/* B345 LDXBRA - LOAD ROUNDED (extended to long BFP)           [RRF] */
 /*-------------------------------------------------------------------*/
 DEF_INST(load_rounded_bfp_ext_to_long_reg)
 {
-    int r1, r2;
+    int r1, r2, m3, m4;
     float64 op1;
     float128 op2;
     int pgm_check;
 
-    RRE(inst, regs, r1, r2);
-    //logmsg("LDXBR r1=%d r2=%d\n", r1, r2);
+    RRE_MMA(inst, regs, r1, r2, m3, m4);
+    //logmsg("LDXBR(A) r1=%d r2=%d m3=%d m4=%d\n", r1, r2, m3, m4);
     BFPINST_CHECK(regs);
     BFPREGPAIR2_CHECK(r1, r2, regs);
+    BFPRM_CHECK(m3, regs);
 
     get_float128(&op2, regs->fpr + FPR2I(r2));
 
     float_clear_exception_flags();
-    set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
+    set_rounding_mode(regs->fpc, m3);
     op1 = float128_to_float64(op2);
-    pgm_check = float_exception(regs);
+    pgm_check = float_exception_masked(regs, m4);
+    set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
 
     put_float64(&op1, regs->fpr + FPR2I(r1));
 
@@ -2767,25 +2773,28 @@ DEF_INST(load_rounded_bfp_ext_to_long_reg)
 
 /*-------------------------------------------------------------------*/
 /* B346 LEXBR - LOAD ROUNDED (extended to short BFP)           [RRE] */
+/* B346 LEXBRA - LOAD ROUNDED (extended to short BFP)          [RRF] */
 /*-------------------------------------------------------------------*/
 DEF_INST(load_rounded_bfp_ext_to_short_reg)
 {
-    int r1, r2;
+    int r1, r2, m3, m4;
     float32 op1;
     float128 op2;
     int pgm_check;
 
-    RRE(inst, regs, r1, r2);
-    //logmsg("LEXBR r1=%d r2=%d\n", r1, r2);
+    RRE_MMA(inst, regs, r1, r2, m3, m4);
+    //logmsg("LEXBR(A) r1=%d r2=%d m3=%d m4=%d\n", r1, r2, m3, m4);
     BFPINST_CHECK(regs);
     BFPREGPAIR2_CHECK(r1, r2, regs);
+    BFPRM_CHECK(m3, regs);
 
     get_float128(&op2, regs->fpr + FPR2I(r2));
 
     float_clear_exception_flags();
-    set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
+    set_rounding_mode(regs->fpc, m3);
     op1 = float128_to_float32(op2);
-    pgm_check = float_exception(regs);
+    pgm_check = float_exception_masked(regs, m4);
+    set_rounding_mode(regs->fpc, RM_DEFAULT_ROUNDING);
 
     put_float32(&op1, regs->fpr + FPR2I(r1));
 
