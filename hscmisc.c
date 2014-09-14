@@ -702,8 +702,8 @@ static REGS  *copy_regs (REGS *regs)
 /*      if a translation exception occurs), the translation is       */
 /*      performed using a temporary copy of the CPU registers.       */
 /*-------------------------------------------------------------------*/
-static U16 ARCH_DEP(virt_to_abs) (RADR *raptr, int *siptr,
-                        VADR vaddr, int arn, REGS *regs, int acctype)
+static U16 ARCH_DEP(virt_to_abs) (RADR *raptr, int *siptr, VADR vaddr,
+                            volatile int arn, REGS *regs, int acctype)
 {
 int icode;
 
