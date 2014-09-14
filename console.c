@@ -1377,6 +1377,7 @@ static char *build_logo(char **logodata,size_t logosize,size_t *blen)
     bfr=buffer_addchar(bfr,&len,&alen,0x42);
     if(bfr==NULL)
     {
+        *blen=0;
         return NULL;
     }
     align=ALIGN_NONE;
