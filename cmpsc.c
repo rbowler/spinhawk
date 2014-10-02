@@ -314,9 +314,6 @@ DEF_INST(compression_call)
     return;
   }
 
-  /* Set possible Data Exception code */
-  regs->dxc = DXC_DECIMAL;
-
   /* Initialize intermediate registers */
   INITREGS(&iregs, regs, r1, r2);
 
@@ -687,19 +684,28 @@ static BYTE *ARCH_DEP(cmpsc_fetch_cce)(struct cc *cc, unsigned index)
   if(cct < 2)
   {
     if(unlikely(CCE_act(cce) > 4))
+    {
+      cc->regs->dxc = DXC_DECIMAL;
       ARCH_DEP(program_interrupt)(cc->regs, PGM_DATA_EXCEPTION);
+    }
   }
   else
   {
     if(!CCE_d(cce))
     {
       if(unlikely(cct == 7))
+      {
+        cc->regs->dxc = DXC_DECIMAL;
         ARCH_DEP(program_interrupt)(cc->regs, PGM_DATA_EXCEPTION);
+      }
     }
     else
     {
       if(unlikely(cct > 5))
+      {
+        cc->regs->dxc = DXC_DECIMAL;
         ARCH_DEP(program_interrupt)(cc->regs, PGM_DATA_EXCEPTION);
+      }
     }
   }
   return(cce);
@@ -1009,7 +1015,10 @@ static int ARCH_DEP(cmpsc_search_sd)(struct cc *cc, U16 *is)
 
       /* Check for data exception */
       if(unlikely(!SD1_sct(sd1)))
+      {
+        cc->regs->dxc = DXC_DECIMAL;
         ARCH_DEP(program_interrupt)((cc->regs), PGM_DATA_EXCEPTION);
+      }
     }
 
 #ifdef OPTION_CMPSC_DEBUG    
@@ -1068,7 +1077,10 @@ static int ARCH_DEP(cmpsc_search_sd)(struct cc *cc, U16 *is)
     /* test for searching child 261 */
     searched += scs;
     if(unlikely(searched > 260))
+    {
+      cc->regs->dxc = DXC_DECIMAL;
       ARCH_DEP(program_interrupt)((cc->regs), PGM_DATA_EXCEPTION);
+    }
 
     /* We get the next sibling descriptor, no y bits in parent for him */
     y_in_parent = 0;
@@ -1520,7 +1532,10 @@ static void ARCH_DEP(cmpsc_expand_is)(struct ec *ec, U16 is)
     /* Count and check for writing child 261 and check valid psl */
     cw += psl;
     if(unlikely(cw > 260 || psl > 5))
+    {
+      ec->regs->dxc = DXC_DECIMAL;
       ARCH_DEP(program_interrupt)((ec->regs), PGM_DATA_EXCEPTION);
+    }
 
     /* Process extension characters in preceded entry */
     memcpy(&ec->oc[ec->ocl + ECE_ofst(ece)], &ece[2], psl);
@@ -1545,7 +1560,10 @@ static void ARCH_DEP(cmpsc_expand_is)(struct ec *ec, U16 is)
   csl = ECE_csl(ece);
   cw += csl;
   if(unlikely(cw > 260 || !csl || ECE_bit34(ece)))
+  {
+    ec->regs->dxc = DXC_DECIMAL;
     ARCH_DEP(program_interrupt)((ec->regs), PGM_DATA_EXCEPTION);
+  }
 
   /* Process extension characters in unpreceded entry */
   memcpy(&ec->oc[ec->ocl], &ece[1], csl);
