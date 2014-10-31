@@ -1838,7 +1838,6 @@ static void cmpsc_print_ece(BYTE *ece)
 static int ARCH_DEP(cmpsc_vstore)(struct ec *ec, BYTE *buf, unsigned len)
 {
   unsigned len1;                       /* Length in first page                */
-  unsigned len2;                       /* Length in second page               */
   BYTE *main1;                         /* Address first page                  */
   unsigned ofst;                       /* Offset within page                  */
   BYTE *sk;                            /* Storage key                         */
@@ -1934,29 +1933,9 @@ static int ARCH_DEP(cmpsc_vstore)(struct ec *ec, BYTE *buf, unsigned len)
     len1 = 0x800 - ofst;
     ec->dest = MADDR((GR_A(ec->r1, ec->iregs) + len1) & ADDRESS_MAXWRAP(ec->regs), ec->r1, ec->regs, ACCTYPE_WRITE, ec->regs->psw.pkey);
     memcpy(&main1[ofst], buf, len1);
-    len2 = len - len1; /* We always start with a len2 */
-    do
-    {
-      memcpy(ec->dest, &buf[len1], (len2 > 0x800 ? 0x800 : len2));
-      *sk |= (STORKEY_REF | STORKEY_CHANGE);
-      if(unlikely(len2 >= 0x800))
-      {
-        len1 += 0x800;
-        len2 -= 0x800;
-
-        /* Perfect fit? */
-        if(unlikely(!len2))
-          ec->dest = NULL;
-        else
-          ec->dest = MADDR((GR_A(ec->r1, ec->iregs) + len1) & ADDRESS_MAXWRAP(ec->regs), ec->r1, ec->regs, ACCTYPE_WRITE, ec->regs->psw.pkey);
-        sk = ec->regs->dat.storkey;
-      }
-      else
-        len2 = 0;
-    }
-    while(len2);
+    memcpy(ec->dest, &buf[len1], len - len1);
+    *sk |= (STORKEY_REF | STORKEY_CHANGE);
   }
-
   ADJUSTREGS(ec->r1, ec->regs, ec->iregs, len);
   return(0);
 }
