@@ -4204,14 +4204,30 @@ BYTE            c;                      /* Character work area       */
     string_to_upper (precfm);
     if (strcmp(precfm, "F") == 0)
         *recfm = RECFM_FORMAT_F;
+    else if (strcmp(precfm, "FA") == 0)
+        *recfm = RECFM_FORMAT_F | RECFM_CTLCHAR_A;
+    else if (strcmp(precfm, "FM") == 0)
+        *recfm = RECFM_FORMAT_F | RECFM_CTLCHAR_M;
     else if (strcmp(precfm, "FB") == 0)
         *recfm = RECFM_FORMAT_F | RECFM_BLOCKED;
+    else if (strcmp(precfm, "FBA") == 0)
+        *recfm = RECFM_FORMAT_F | RECFM_BLOCKED | RECFM_CTLCHAR_A;
+    else if (strcmp(precfm, "FBM") == 0)
+        *recfm = RECFM_FORMAT_F | RECFM_BLOCKED | RECFM_CTLCHAR_M;
     else if (strcmp(precfm, "FBS") == 0)
         *recfm = RECFM_FORMAT_F | RECFM_BLOCKED | RECFM_SPANNED;
     else if (strcmp(precfm, "V") == 0)
         *recfm = RECFM_FORMAT_V;
+    else if (strcmp(precfm, "VA") == 0)
+        *recfm = RECFM_FORMAT_V | RECFM_CTLCHAR_A;
+    else if (strcmp(precfm, "VM") == 0)
+        *recfm = RECFM_FORMAT_V | RECFM_CTLCHAR_M;
     else if (strcmp(precfm, "VB") == 0)
         *recfm = RECFM_FORMAT_V | RECFM_BLOCKED;
+    else if (strcmp(precfm, "VBA") == 0)
+        *recfm = RECFM_FORMAT_V | RECFM_BLOCKED | RECFM_CTLCHAR_A;
+    else if (strcmp(precfm, "VBM") == 0)
+        *recfm = RECFM_FORMAT_V | RECFM_BLOCKED | RECFM_CTLCHAR_M;
     else if (strcmp(precfm, "VBS") == 0)
         *recfm = RECFM_FORMAT_V | RECFM_BLOCKED | RECFM_SPANNED;
     else if (strcmp(precfm, "U") == 0)
