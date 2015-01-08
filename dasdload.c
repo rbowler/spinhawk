@@ -3588,6 +3588,118 @@ char            pathname[MAX_PATH];     /* sfname in host path format*/
 } /* end function seq_initialize */
 
 /*-------------------------------------------------------------------*/
+/* Subroutine to add a logical record to an output buffer            */
+/*                                                                   */
+/* If there is no room in the buffer for the logical record          */
+/* then the block in the buffer is written to the output device      */
+/* and the logical record is added to the now empty buffer.          */
+/* A call with reclen=0 is a request to flush a partial block        */
+/* without adding a new record.                                      */
+/*                                                                   */
+/* Input:                                                            */
+/*      cif     -> CKD image file descriptor                         */
+/*      ofname  Output file name                                     */
+/*      datablk Pointer to buffer containing data block              */
+/*      keylen  Length of key in data block                          */
+/*      devtype Output device type                                   */
+/*      heads   Number of tracks per cylinder on output device       */
+/*      trklen  Track length of virtual output device                */
+/*      maxtrk  Maximum number of tracks to be written               */
+/*      recptr  Pointer to record to be added (excluding RDW)        */
+/*      reclen  Length of record to be added                         */
+/*      recfm   Output dataset record format                         */
+/*      blksz   Maximum blocksize of output dataset                  */
+/* Input/output:                                                     */
+/*      blklen  Number of data bytes currently in block              */
+/*      usedv   Number of bytes written to track of virtual device   */
+/*      usedr   Number of bytes written to track, calculated         */
+/*              according to the formula for a real device           */
+/*      trkbal  Number of bytes remaining on track, calculated       */
+/*              according to the formula for a real device           */
+/*      reltrk  Relative track number on output device               */
+/*      cyl     Cylinder number on output device                     */
+/*      head    Head number on output device                         */
+/*      rec     Record number on output device                       */
+/* Output:                                                           */
+/*      The return value is 0 if successful, -1 if error occurred.   */
+/*-------------------------------------------------------------------*/
+static int
+add_logical_record (CIFBLK *cif, char *ofname, DATABLK *datablk,
+            int keylen, U16 devtype, int heads, int trklen,
+            int maxtrks, BYTE *recptr, int reclen, BYTE recfm,
+            int blksz, int *blklen, int *usedv, int *usedr,
+            int *trkbal, int *reltrk, int *cyl, int *head, int *rec)
+{
+int             rc;                     /* Return code               */
+int             recsize;                /* Record length with RDW    */
+BYTE           *dataptr;                /* -> byte in data block     */
+
+    /* Calculate the logical record length including RDW */
+    recsize = reclen;
+    if ((recfm & RECFM_FORMAT) == RECFM_FORMAT_V) recsize += 4;
+
+    /* Flush the buffer if the record format is unblocked
+       or there is no room for the record in the buffer
+       or the requested record length is zero */
+    if (*blklen > 0 && (!(recfm & RECFM_BLOCKED)
+        || *blklen + recsize > blksz || reclen == 0))
+    {
+        if ((recfm & RECFM_FORMAT) == RECFM_FORMAT_V)
+        {
+            /* Build BDW for variable length block */
+            dataptr = datablk->kdarea + keylen;
+            dataptr[0] = *blklen >> 8;
+            dataptr[1] = *blklen & 0xFF;
+            dataptr[2] = 0x00;
+            dataptr[3] = 0x00;
+        }
+
+        /* Write the data block to the output file */
+        rc = write_block (cif, ofname, datablk, keylen, *blklen,
+                    devtype, heads, trklen, maxtrks,
+                    usedv, usedr, trkbal, reltrk, cyl, head, rec);
+        if (rc < 0) {
+            return -1;
+        }
+
+        XMINFF (4, "HHCDL135I CCHHR=%4.4X%4.4X%2.2X "
+                    "(TTR=%4.4X%2.2X) KL=%d DL=%d\n",
+                    *cyl, *head, *rec, *reltrk, *rec,
+                    keylen, *blklen);
+
+        /* Indicate that the buffer is now empty */
+        *blklen = 0;
+    }
+
+    /* Nothing more to do if record length is zero */
+    if (reclen == 0) {
+        return 0;
+    }
+
+    /* Account for the BDW and RDW for variable length records */
+    if ((recfm & RECFM_FORMAT) == RECFM_FORMAT_V)
+    {
+        /* Allow space for the BDW if at start of block */
+        if (*blklen == 0) *blklen = 4;
+
+        /* Build RDW for variable length record */
+        dataptr = datablk->kdarea + keylen + *blklen;
+        dataptr[0] = recsize >> 8;
+        dataptr[1] = recsize & 0xFF;
+        dataptr[2] = 0x00;
+        dataptr[3] = 0x00;
+        *blklen += 4;
+    }
+
+    /* Copy the logical record to the data block */
+    dataptr = datablk->kdarea + keylen + *blklen;
+    memcpy(dataptr, recptr, reclen);
+    *blklen += reclen;
+
+    return 0;
+} /* end function add_logical_record */
+
+/*-------------------------------------------------------------------*/
 /* Subroutine to read an INMCOPY file and write to DASD image file   */
 /* Input:                                                            */
 /*      xfname  XMIT input file name                                 */
@@ -3637,7 +3749,7 @@ U16             keyln=0;                /* Dataset key length        */
 U16             dirnm;                  /* Number of directory blocks*/
 DATABLK         datablk;                /* Data block                */
 int             keylen;                 /* Key length of data block  */
-int             datalen;                /* Data length of data block */
+int             blklen;                 /* Data length of data block */
 int             outusedv = 0;           /* Output bytes used on track
                                            of virtual device         */
 int             outusedr = 0;           /* Output bytes used on track
@@ -3667,6 +3779,8 @@ char            pathname[MAX_PATH];     /* xfname in host path format*/
         close (xfd);
         return -1;
     }
+    keylen = 0;
+    blklen = 0;
 
     /* Display the file information message */
     XMINFF (1, "HHCDL139I Processing file %s\n", xfname);
@@ -3731,32 +3845,11 @@ char            pathname[MAX_PATH];     /* xfname in host path format*/
             continue;
         }
 
-        /* Copy the logical record to the data block */
-        if ((recfm & RECFM_FORMAT) == RECFM_FORMAT_V) {
-            /* Insert BDW for variable length block */
-            datablk.kdarea[0] = (xreclen + 8) >> 8;
-            datablk.kdarea[1] = (xreclen + 8) & 0xFF;
-            datablk.kdarea[2] = 0x00;
-            datablk.kdarea[3] = 0x00;
-            /* Insert RDW for variable length record */
-            datablk.kdarea[4] = (xreclen + 4) >> 8;
-            datablk.kdarea[5] = (xreclen + 4) & 0xFF;
-            datablk.kdarea[6] = 0x00;
-            datablk.kdarea[7] = 0x00;
-            /* Copy variable length data after the RDW */
-            memcpy(datablk.kdarea + 8, xbuf, xreclen);
-            keylen = 0;
-            datalen = xreclen + 8;
-        } else {
-            /* Copy data only for record format F or U */
-            memcpy(datablk.kdarea, xbuf, xreclen);
-            keylen = 0;
-            datalen = xreclen;
-        }
-
-        /* Write the data block to the output file */
-        rc = write_block (cif, ofname, &datablk, keylen, datalen,
+        /* Copy the logical record to the data block, and
+           write the block to the output file if necessary */
+        rc = add_logical_record (cif, ofname, &datablk, keylen,
                     devtype, heads, trklen, maxtrks,
+                    xbuf, xreclen, recfm, blksz, &blklen,
                     &outusedv, &outusedr, &outtrkbr,
                     &outtrk, &outcyl, &outhead, &outrec);
         if (rc < 0)
@@ -3765,12 +3858,22 @@ char            pathname[MAX_PATH];     /* xfname in host path format*/
             return -1;
         }
 
-        XMINFF (4, "HHCDL135I CCHHR=%4.4X%4.4X%2.2X "
-                    "(TTR=%4.4X%2.2X) KL=%d DL=%d\n",
-                    outcyl, outhead, outrec,
-                    outtrk, outrec, keylen, datalen);
-
     } /* end while(1) */
+
+    /* Flush the last partial data block to the output file */
+    if (blklen > 0)
+    {
+        rc = add_logical_record (cif, ofname, &datablk, keylen,
+                    devtype, heads, trklen, maxtrks,
+                    NULL, 0, recfm, blksz, &blklen,
+                    &outusedv, &outusedr, &outtrkbr,
+                    &outtrk, &outcyl, &outhead, &outrec);
+        if (rc < 0)
+        {
+            close(xfd);
+            return -1;
+        }
+    }
 
     /* Check for unsupported xmit utility */
     if (copyfiln == 0)
