@@ -184,6 +184,7 @@
 struct cc                              /* Compress context                    */
 {
   BYTE *cce;                           /* Character entry under investigation */
+  int cr;                              /* Characters read to check #261       */
   unsigned dctsz;                      /* Dictionary size                     */
   BYTE deadadm[8192][0x100 / 8];       /* Dead end administration             */
   BYTE deadend;                        /* Dead end indicator                  */
@@ -198,7 +199,6 @@ struct cc                              /* Compress context                    */
   int r1;                              /* Guess what                          */
   int r2;                              /* Yep                                 */
   REGS *regs;                          /* Registers                           */
-  int searched;                        /* # searched character entries        */
   BYTE searchadm[1][0x100 / 8];        /* Search administration               */
   unsigned smbsz;                      /* Symbol size                         */
   BYTE *src;                           /* Source MADDR page address           */
@@ -501,10 +501,10 @@ static void ARCH_DEP(cmpsc_compress)(int r1, int r2, REGS *regs, REGS *iregs)
       logmsg("fetch_ch : %02X at " F_VADR "\n", *cc.src, GR_A(cc.r2, cc.iregs));
 #endif /* #ifdef OPTION_CMPSC_DEBUG */
 
-      /* Set the alphabet entry and adjust registers */
+      /* Set the alphabet entry, adjust registers and initiate charcters read */
       is = *cc.src;
       ADJUSTREGSC(&cc, cc.r2, cc.regs, cc.iregs, 1);
-      cc.searched = 1;
+      cc.cr = 1;
 
       /* Check for alphabet entry ch dead end combination */
       if(unlikely(!(cc.src && BIT_get(cc.deadadm, is, *cc.src))))
@@ -601,10 +601,10 @@ static int ARCH_DEP(cmpsc_compress_single_is)(struct cc *cc)
   logmsg("fetch_ch : %02X at " F_VADR "\n", *cc->src, GR_A(cc->r2, cc->iregs));
 #endif /* #ifdef OPTION_CMPSC_DEBUG */
 
-  /* Set the alphabet entry and adjust registers */
+  /* Set the alphabet entry, adjust registers and initiate characters read */
   is = *cc->src;
   ADJUSTREGSC(cc, cc->r2, cc->regs, cc->iregs, 1);
-  cc->searched = 1;
+  cc->cr = 1;
 
   /* Search for child when no src and no dead end combination */
   if(unlikely(!(cc->src && BIT_get(cc->deadadm, is, *cc->src))))
@@ -896,18 +896,18 @@ static int ARCH_DEP(cmpsc_search_cce)(struct cc *cc, U16 *is)
   {
     if(unlikely(!cc->src && ARCH_DEP(cmpsc_fetch_ch(cc))))
       return(0);
-    
+
 #ifdef OPTION_CMPSC_DEBUG
     logmsg("fetch_ch : %02X at " F_VADR "\n", *cc->src, GR_A(cc->r2, cc->iregs));
 #endif /* #ifdef OPTION_CMPSC_DEBUG */
 
-    /* check for searching character entry 261 */
-    cc->searched++;
-    if(unlikely(cc->searched > 260))
+    /* Check for reading character 261 */
+    cc->cr++;
+    if(unlikely(cc->cr > 260))
     {
 
 #ifdef OPTION_CMPSC_DEBUG
-      logmsg("Trying to read character #%d\n", cc->searched);
+      logmsg("Trying to read character #%d\n", cc->cr);
 #endif /* #ifdef OPTION_CMPSC_DEBUG */
 
       cc->regs->dxc = DXC_DECIMAL;
@@ -1372,13 +1372,13 @@ static int ARCH_DEP(cmpsc_test_ec)(struct cc *cc, BYTE *cce)
   /* Compare additional extension characters */
   if(!memcmp(src, &CCE_ec(cce, 0), CCE_ecs(cce)))
   {
-    /* check for searching character entry 261 */
-    cc->searched += CCE_ecs(cce);
-    if(unlikely(cc->searched > 260))
+    /* Check for reading character 261 */
+    cc->cr += CCE_ecs(cce);
+    if(unlikely(cc->cr > 260))
     {
 
 #ifdef OPTION_CMPSC_DEBUG
-      logmsg("Trying to read character #%d\n", cc->searched);
+      logmsg("Trying to read character #%d\n", cc->cr);
 #endif /* #ifdef OPTION_CMSPC_DEBUG */
 
       cc->regs->dxc = DXC_DECIMAL;
