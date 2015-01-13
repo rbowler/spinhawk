@@ -1558,7 +1558,8 @@ static void ARCH_DEP(cmpsc_expand_is)(struct ec *ec, U16 is)
     {
 
 #ifdef OPTION_CMPSC_DEBUG
-      logmsg("Trying to write character #%d\n", cw);
+      if(cw > 260)
+        logmsg("Trying to write character #%d\n", cw);
 #endif /* #ifdef OPTION_CMPSC_DEBUG */
 
       ec->regs->dxc = DXC_DECIMAL;
@@ -1591,7 +1592,8 @@ static void ARCH_DEP(cmpsc_expand_is)(struct ec *ec, U16 is)
   {
 
 #ifdef OPTION_CMPSC_DEBUG
-    logmsg("Trying to write character #%d\n", cw);
+    if(cw > 260)
+      logmsg("Trying to write character #%d\n", cw);
 #endif /* #ifdef OPTION_CMPSC_DEBUG */
 
     ec->regs->dxc = DXC_DECIMAL;
