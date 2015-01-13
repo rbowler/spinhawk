@@ -1,4 +1,4 @@
-/* CMPSC.C      (c) Bernard van der Helm, 2000-2014                  */
+/* CMPSC.C      (c) Bernard van der Helm, 2000-2015                  */
 /*              S/390 compression call instruction                   */
 
 /*----------------------------------------------------------------------------*/
