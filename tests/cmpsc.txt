@@ -29,7 +29,7 @@ r 1028=C00100005000 # LGFI R0,X'5100' zp=0,st=0,cdss=5,f1=0,e=0
 *r 1028=C00100015000 # LGFI R0,X'15100' same as previous including symbol translation
 r 102E=C01100003100 # LGFI R1,X'3100' dictor=3000,sttoff=1000,cbn=0
 r 1034=C02100008000 # LGFI R2,X'8000' output address
-r 103A=C0310000000F # LGFI R3,X'0924' output length, 9*0x100
+r 103A=C03100000924 # LGFI R3,X'0924' output length, 9*0x100
 r 1040=C04100006FF0 # LGFI R4,X'6FF0' input address
 r 1046=C05100000924 # LGFI R5,X'000F' input length, 9*L260
 r 104C=B2630024     # CMPSC R2,R4     fingers crossed
