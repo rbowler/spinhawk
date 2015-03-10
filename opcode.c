@@ -673,12 +673,12 @@
  UNDEF_INST(convert_fix32_to_bfp_ext_reg)
  UNDEF_INST(convert_fix32_to_bfp_long_reg)
  UNDEF_INST(convert_fix32_to_bfp_short_reg)
- UNDEF_INST(convert_fix64_to_bfp_ext_reg);
- UNDEF_INST(convert_fix64_to_bfp_long_reg);
- UNDEF_INST(convert_fix64_to_bfp_short_reg);
- UNDEF_INST(convert_bfp_ext_to_fix64_reg);
- UNDEF_INST(convert_bfp_long_to_fix64_reg);
- UNDEF_INST(convert_bfp_short_to_fix64_reg);
+ UNDEF_INST(convert_fix64_to_bfp_ext_reg)
+ UNDEF_INST(convert_fix64_to_bfp_long_reg)
+ UNDEF_INST(convert_fix64_to_bfp_short_reg)
+ UNDEF_INST(convert_bfp_ext_to_fix64_reg)
+ UNDEF_INST(convert_bfp_long_to_fix64_reg)
+ UNDEF_INST(convert_bfp_short_to_fix64_reg)
  UNDEF_INST(divide_bfp_ext_reg)
  UNDEF_INST(divide_bfp_long)
  UNDEF_INST(divide_bfp_long_reg)
@@ -1010,7 +1010,7 @@
 
 
 #if !defined(FEATURE_STORE_FACILITY_LIST)
- UNDEF_INST(store_facility_list);
+ UNDEF_INST(store_facility_list)
 #endif /*!defined(FEATURE_STORE_FACILITY_LIST) */
 
 
