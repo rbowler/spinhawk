@@ -1553,10 +1553,11 @@ static int commadpt_init_handler (DEVBLK *dev, int argc, char *argv[])
 /*-------------------------------------------------------------------*/
 /* Query the device definition                                       */
 /*-------------------------------------------------------------------*/
-static void commadpt_query_device (DEVBLK *dev, char **class,
+static void commadpt_query_device (DEVBLK *dev, char **devclass,
                 int buflen, char *buffer)
 {
-    *class = "LINE";
+    BEGIN_DEVICE_CLASS_QUERY( "LINE", dev, devclass, buflen, buffer );
+
     snprintf(buffer,buflen,"Read count=%d, Write count=%d", dev->commadpt->read_ccw_count, dev->commadpt->write_ccw_count);
 }
 
