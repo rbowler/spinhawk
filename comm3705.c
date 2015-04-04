@@ -125,6 +125,8 @@ static PARSER ptab[]={
     {"rmtncpnm","%s"},
     {"idblk","%s"},
     {"idnum","%s"},
+    {"unitsz","%s"},
+    {"ackspeed","%s"},
     {NULL,NULL}
 };
 
@@ -146,7 +148,9 @@ enum {
     COMMADPT_KW_LOCNCPNM,
     COMMADPT_KW_RMTNCPNM,
     COMMADPT_KW_IDBLK,
-    COMMADPT_KW_IDNUM
+    COMMADPT_KW_IDNUM,
+    COMMADPT_KW_UNITSZ,
+    COMMADPT_KW_ACKSPEED
 } comm3705_kw;
 
 //////////////////////////////////////////////////////////////////////
@@ -970,7 +974,7 @@ static void init_bufpool(COMMADPT *ca) {
         BYTE * areap;
         int i1;
         int numbufs = 64;
-        int bufsize = 256+16+4;
+        int bufsize = ca->unitsz+16+4;
         ca->poolarea = (BYTE*)calloc (numbufs, bufsize);
         if (!ca->poolarea) {
                 return;
@@ -1256,9 +1260,9 @@ static void *telnet_thread(void *vca) {
                     break;
         /* read_socket has changed from 3.04 to 3.06 - we need old way */
 #ifdef _MSVC_
-          rc=recv(ca->sfd,bfr,256-BUFPD,0);
+          rc=recv(ca->sfd,bfr,ca->unitsz-BUFPD,0);
 #else
-          rc=read(ca->sfd,bfr,256-BUFPD);
+          rc=read(ca->sfd,bfr,ca->unitsz-BUFPD);
 #endif
 		if (rc < 0) {
                     if(0
@@ -1292,6 +1296,7 @@ static void *commadpt_thread(void *vca)
 {
     COMMADPT    *ca;            /* Work CA Control Block Pointer     */
     int devnum;                 /* device number copy for convenience*/
+    int delay;                  /* unacknowledged attention delay    */
     int rc;                     /* return code from various rtns     */
     int ca_shutdown;            /* Thread shutdown internal flag     */
     int init_signaled;          /* Thread initialisation signaled    */
@@ -1316,13 +1321,15 @@ static void *commadpt_thread(void *vca)
 
     for (;;) {
         release_lock(&ca->lock);
-        usleep(50000 + (ca->unack_attn_count * 100000));
+        if(ca->ackspeed == 0) delay = 50000 + (ca->unack_attn_count * 100000);         /* Max's reliable algorithm      */
+        else delay = (ca->unack_attn_count * ca->unack_attn_count + 1) * ca->ackspeed; /* much faster but TCAM hates it */
+        usleep(min(1000000,delay));                                                    /* go to sleep, max. 1 second    */
         obtain_lock(&ca->lock);
                 make_sna_requests2(ca);
                 make_sna_requests3(ca);
                 if (ca->sendq
 // attempt to fix hot i/o bug
-                     && ca->unack_attn_count < 6
+                     && ca->unack_attn_count < 10
                 ) {
                     ca->unack_attn_count++;
                     rc = device_attention(ca->dev, CSW_ATTN);
@@ -1406,7 +1413,12 @@ static int commadpt_init_handler (DEVBLK *dev, int argc, char *argv[])
         translate_to_ebcdic(dev->commadpt->rmtncpnm); /* convert to EBCDIC                      */
         dev->commadpt->idblk = 0x17;                  /* IDBLK of switched PU (default=0x017)   */
         dev->commadpt->idnum = 0x17;                  /* IDNUM of switched PU (default=0x00017) */
-
+        dev->commadpt->unitsz = 256;                  /* I/O blocksize (must equal RRT KEYLN)   */
+                                                      /* unitsz=256 is invalid for TCAM and     */
+                                                      /* instable for VTAM. Default retained    */
+                                                      /* for compatibility with previous        */
+                                                      /* versions only.                         */
+        dev->commadpt->ackspeed = 0;                  /* choose Max's original attn algorithm   */
         for(i=0;i<argc;i++)
         {
             pc=parser(ptab,argv[i],&res);
@@ -1481,6 +1493,12 @@ static int commadpt_init_handler (DEVBLK *dev, int argc, char *argv[])
                 case COMMADPT_KW_IDNUM:
                         sscanf(res.text,"%5x",&dev->commadpt->idnum);
                     break;
+                case COMMADPT_KW_UNITSZ:
+                        dev->commadpt->unitsz = atoi(res.text);
+                    break;
+                case COMMADPT_KW_ACKSPEED:
+                        dev->commadpt->ackspeed = atoi(res.text);
+                    break;
                 default:
                     break;
             }
@@ -1491,7 +1509,7 @@ static int commadpt_init_handler (DEVBLK *dev, int argc, char *argv[])
             return -1;
         }
         in_temp.s_addr=dev->commadpt->lhost;
-        dev->bufsize=256;
+        dev->bufsize=dev->commadpt->unitsz;
         dev->numsense=2;
         memset(dev->sense,0,sizeof(dev->sense));
 
@@ -1727,7 +1745,9 @@ static void make_sna_requests2 (COMMADPT *ca) {
         // FIXME - max. ru_size should be based on BIND settings
 	// A true fix would also require code changes to READ CCW processing
 	// including possibly (gasp) segmenting long PIUs into multiple BTUs
-        ru_size = min(256-(BUFPD+10+3),ca->inpbufl);
+	// JW: still not fixed but unitsz is now an external parameter
+	//     to allow easier modification
+        ru_size = min(ca->unitsz-(BUFPD+10+3),ca->inpbufl);
         ru_ptr = &respbuf[13];
 
         if (!ca->bindflag) {
