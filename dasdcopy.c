@@ -284,7 +284,7 @@ char            pgmpath[MAX_PATH];      /* prog path in host format  */
             close_image_file (icif);
             return -1;
         }
-        if (out == CCKD) cyls = ckd->cyls;
+     // if (out == CCKD) cyls = ckd->cyls;
         if (cyls <= ckd->cyls && alt) cyls = ckd->cyls + ckd->altcyls;
         n = cyls * idev->ckdheads;
         max = idev->ckdtrks;
