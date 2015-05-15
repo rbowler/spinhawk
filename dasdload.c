@@ -1134,7 +1134,7 @@ int             tolfact;                /* Device tolerance          */
     f4dscb->ds4hcchh[3] = 0;
     f4dscb->ds4noatk[0] = 0;
     f4dscb->ds4noatk[1] = 0;
-    f4dscb->ds4vtoci = DS4VTOCI_DOS;
+    f4dscb->ds4vtoci = DS4VTOCI_DIRF;
     f4dscb->ds4noext = 1;
     f4dscb->ds4devsz[0] = (numcyls >> 8) & 0xFF;
     f4dscb->ds4devsz[1] = numcyls & 0xFF;
@@ -1166,7 +1166,7 @@ int             tolfact;                /* Device tolerance          */
 /* within the structure, and adds the structure to the DSCB array.   */
 /*                                                                   */
 /* Note: The format 5 DSCB is built with no free space extents.      */
-/* The DOS bit which is set in ds4vtoci forces the operating system  */
+/* The DIRF bit is set in ds4vtoci to force the operating system     */
 /* VTOC conversion routine to calculate the free space and update    */
 /* the format 5 DSCB the first time the volume is accessed.          */
 /*-------------------------------------------------------------------*/
