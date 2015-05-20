@@ -98,6 +98,7 @@ typedef struct _TTRCONV {
 #define METHOD_VS       5
 #define METHOD_SEQ      6
 #define METHOD_XMSEQ    7
+#define METHOD_TEXT     8
 
 /*-------------------------------------------------------------------*/
 /* Static data areas                                                 */
@@ -3604,7 +3605,7 @@ char            pathname[MAX_PATH];     /* sfname in host path format*/
 /*      devtype Output device type                                   */
 /*      heads   Number of tracks per cylinder on output device       */
 /*      trklen  Track length of virtual output device                */
-/*      maxtrk  Maximum number of tracks to be written               */
+/*      maxtrks Maximum number of tracks to be written               */
 /*      recptr  Pointer to record to be added (excluding RDW)        */
 /*      reclen  Length of record to be added                         */
 /*      recfm   Output dataset record format                         */
@@ -3918,6 +3919,230 @@ char            pathname[MAX_PATH];     /* xfname in host path format*/
 } /* end function process_inmcopy_file */
 
 /*-------------------------------------------------------------------*/
+/* Subroutine to read ASCII text file and write to DASD image file   */
+/* Input:                                                            */
+/*      tfname  ASCII text input file name                           */
+/*      ofname  DASD image file name                                 */
+/*      cif     -> CKD image file descriptor                         */
+/*      devtype Output device type                                   */
+/*      heads   Output device number of tracks per cylinder          */
+/*      trklen  Output device virtual track length                   */
+/*      outcyl  Output starting cylinder number                      */
+/*      outhead Output starting head number                          */
+/*      maxtrks Maximum extent size in tracks                        */
+/*      dsorg   Dataset organization  (DA or PS)                     */
+/*      recfm   Record Format (F or FB)                              */
+/*      lrecl   Record length                                        */
+/*      blksz   Block size                                           */
+/*      keyln   Key length                                           */
+/* Output:                                                           */
+/*      lastrec Record number of last block written                  */
+/*      trkbal  Number of bytes remaining on last track              */
+/*      numtrks Number of tracks written                             */
+/*      nxtcyl  Starting cylinder number for next dataset            */
+/*      nxthead Starting head number for next dataset                */
+/*-------------------------------------------------------------------*/
+static int
+process_text_file (char *tfname, char *ofname, CIFBLK *cif,
+                U16 devtype, int heads, int trklen,
+                int outcyl, int outhead, int maxtrks,
+                BYTE dsorg, BYTE recfm,
+                int lrecl, int blksz, int keyln,
+                int *lastrec, int *trkbal,
+                int *numtrks, int *nxtcyl, int *nxthead)
+{
+int             rc = 0;                 /* Return code               */
+FILE           *tfp;                    /* Text file pointer         */
+char           *tbuf;                   /* -> Text buffer            */
+int             tbuflen = 65536;        /* Text buffer length        */
+int             txtlen;                 /* Input text line length    */
+int             lineno = 0;             /* Line number in input file */
+BYTE           *rbuf;                   /* -> Logical record buffer  */
+int             reclen;                 /* Output record length      */
+int             maxlen;                 /* Maximum record length     */
+DATABLK         datablk;                /* Data block                */
+int             keylen;                 /* Key length of data block  */
+int             blklen;                 /* Data length of data block */
+int             reccount = 0;           /* Number of records copied  */
+int             outusedv = 0;           /* Output bytes used on track
+                                           of virtual device         */
+int             outusedr = 0;           /* Output bytes used on track
+                                           of real device            */
+int             outtrkbr = 0;           /* Output bytes remaining on
+                                           track of real device      */
+int             outtrk = 0;             /* Output relative track     */
+int             outrec = 0;             /* Output record number      */
+char            format;                 /* Record format: F,V,U      */
+char            pathname[MAX_PATH];     /* tfname in host path format*/
+
+    /* Validate the DCB attributes */
+    if (dsorg != DSORG_PS) {
+        XMERRF ("HHCDL141E TEXT dsorg must be PS: dsorg=0x%2.2x\n", dsorg);
+        return -1;
+    }
+    if ((recfm & RECFM_FORMAT) == RECFM_FORMAT_F) format = 'F';
+    else if ((recfm & RECFM_FORMAT) == RECFM_FORMAT_V) format = 'V';
+    else if ((recfm & RECFM_FORMAT) == RECFM_FORMAT_U) format = 'U';
+    else {
+        XMERRF ("HHCDL142E TEXT recfm must be F, V, or U: recfm=0x%2.2x\n", recfm);
+        return -1;
+    }
+    if (blksz == 0) blksz = (format == 'V') ? lrecl + 4 : lrecl;
+    if ((lrecl == 0 && format != 'U')
+       || (format == 'F' && blksz % lrecl != 0)
+       || (format == 'V' && lrecl < 5)
+       || (format == 'V' && blksz < lrecl + 4)
+       || (recfm == RECFM_FORMAT_F && blksz != lrecl))
+    {
+        XMERRF ("HHCDL143E TEXT invalid lrecl or blksz: lrecl=%d blksz=%d\n",
+                lrecl, blksz);
+        return -1;
+    }
+    if (keyln > 0)
+    {
+        XMERR ("HHCDL144E TEXT key length must be 0\n");
+        return -1;
+    }
+
+    /* Open the input file */
+    hostpath(pathname, tfname, sizeof(pathname));
+    tfp = fopen(pathname, "r");
+    if (tfp == NULL)
+    {
+        XMERRF ("HHCDL145E Cannot open %s: %s\n",
+                tfname, strerror(errno));
+        return -1;
+    }
+
+    /* Obtain the input and output buffers */
+    maxlen = (format == 'F') ? lrecl : (format == 'V') ? lrecl - 4 : blksz;
+    rbuf = malloc(maxlen + tbuflen);
+    if (rbuf == NULL)
+    {
+        XMERRF ("HHCDL146E Cannot obtain input/output buffers: %s\n",
+                strerror(errno));
+        fclose(tfp);
+        return -1;
+    }
+    tbuf = (char*)(rbuf + maxlen);
+
+    /* Copy each logical record to the output file */
+    keylen = 0;
+    blklen = 0;
+    while (1)
+    {
+        /* Read next record from input file */
+        lineno++;
+        if (fgets (tbuf, tbuflen, tfp) == NULL)
+        {
+            /* Exit at end of input file */
+            if (feof(tfp)) break;
+
+            /* Terminate if error reading input file */
+            XMERRF ("HHCDL147E Cannot read %s line %d: %s\n",
+                    tfname, lineno, strerror(errno));
+            fclose(tfp);
+            return -1;
+        }
+
+        /* Check for DOS end of file character */
+        if (tbuf[0] == '\x1A')
+            break;
+
+        /* Check that end of statement has been read */
+        txtlen = strlen(tbuf);
+        if (txtlen == tbuflen - 1 && tbuf[txtlen-1] != '\n')
+        {
+            XMERRF ("HHCDL148E No line feed found in line %d of %s\n",
+                    lineno, tfname);
+            fclose(tfp);
+            return -1;
+        }
+
+        /* Remove trailing carriage return and line feed */
+        txtlen--;
+        if (txtlen > 0 && tbuf[txtlen-1] == '\r') txtlen--;
+
+        /* Remove trailing spaces and tab characters */
+        while (txtlen > 0 && (tbuf[txtlen-1] == SPACE
+                || tbuf[txtlen-1] == '\t')) txtlen--;
+        tbuf[txtlen] = '\0';
+
+        /* Validate the record length */
+        if (txtlen > maxlen) {
+            XMERRF ("HHCDL149E Record length %d exceeds %d at line %d of %s\n",
+                    txtlen, maxlen, lineno, tfname);
+            fclose(tfp);
+            return -1;
+        }
+
+        /* Translate from ASCII to EBCDIC and pad with blanks if fixed */
+        reclen = (format == 'F') ? lrecl : txtlen;
+        convert_to_ebcdic (rbuf, reclen, tbuf);
+
+        /* Copy the logical record to the data block, and
+           write the block to the output file if necessary */
+        rc = add_logical_record (cif, ofname, &datablk, keylen,
+                    devtype, heads, trklen, maxtrks,
+                    rbuf, reclen, recfm, blksz, &blklen,
+                    &outusedv, &outusedr, &outtrkbr,
+                    &outtrk, &outcyl, &outhead, &outrec);
+        if (rc < 0)
+        {
+            fclose(tfp);
+            return -1;
+        }
+        reccount++;
+
+    } /* end while(1) */
+
+    /* Flush the last partial data block to the output file */
+    if (blklen > 0)
+    {
+        rc = add_logical_record (cif, ofname, &datablk, keylen,
+                    devtype, heads, trklen, maxtrks,
+                    NULL, 0, recfm, blksz, &blklen,
+                    &outusedv, &outusedr, &outtrkbr,
+                    &outtrk, &outcyl, &outhead, &outrec);
+        if (rc < 0)
+        {
+            fclose(tfp);
+            return -1;
+        }
+    }
+
+    /* Close input file and release buffers */
+    fclose(tfp);
+    free(rbuf);
+
+    /* Create the end of file record */
+    rc = write_block (cif, ofname, &datablk, 0, 0,
+                devtype, heads, trklen, maxtrks,
+                &outusedv, &outusedr, &outtrkbr,
+                &outtrk, &outcyl, &outhead, &outrec);
+    if (rc < 0) return -1;
+
+    /* Return the last record number and track balance */
+    *lastrec = outrec;
+    *trkbal = outtrkbr;
+
+    /* Write any data remaining in track buffer */
+    rc = write_track (cif, ofname, heads, trklen,
+                    &outusedv, &outtrk, &outcyl, &outhead);
+    if (rc < 0) return -1;
+
+    /* Display number of records written */
+    XMINFF (1, "HHCDL140I %d records copied from %s\n", reccount, tfname);
+
+    /* Return number of tracks and starting address of next dataset */
+    *numtrks = outtrk;
+    *nxtcyl = outcyl;
+    *nxthead = outhead;
+    return 0;
+
+} /* end function process_text_file */
+
+/*-------------------------------------------------------------------*/
 /* Subroutine to initialize an empty dataset                         */
 /* Input:                                                            */
 /*      ofname  DASD image file name                                 */
@@ -4212,6 +4437,8 @@ BYTE            c;                      /* Character work area       */
         *method = METHOD_SEQ;
     else if (strcasecmp(pimeth, "XMSEQ") == 0)
         *method = METHOD_XMSEQ;
+    else if (strcasecmp(pimeth, "TEXT") == 0)
+        *method = METHOD_TEXT;
     else
     {
         XMERRF ("HHCDL022E Invalid initialization method: %s\n", pimeth);
@@ -4220,7 +4447,7 @@ BYTE            c;                      /* Character work area       */
 
     /* Locate the initialization file name */
     if (*method == METHOD_XMIT || *method == METHOD_VS || *method == METHOD_SEQ
-        || *method == METHOD_XMSEQ)
+        || *method == METHOD_XMSEQ || *method == METHOD_TEXT)
     {
         pifile = strtok (NULL, " \t");
         if (pifile == NULL)
@@ -4572,6 +4799,18 @@ int             fsflag = 0;             /* 1=Free space message sent */
                                     outcyl, outhead, maxtrks,
                                     &dsorg, &recfm,
                                     &lrecl, &blksz, &keyln,
+                                    &lastrec, &trkbal,
+                                    &tracks, &outcyl, &outhead);
+            if (rc < 0) return -1;
+            break;
+
+        case METHOD_TEXT:
+            /* Create sequential dataset using an ASCII text file as input */
+            maxtrks = MAX_TRACKS;
+            rc = process_text_file (ifname, ofname, cif,
+                                    devtype, heads, trklen,
+                                    outcyl, outhead, maxtrks,
+                                    dsorg, recfm, lrecl, blksz, keyln,
                                     &lastrec, &trkbal,
                                     &tracks, &outcyl, &outhead);
             if (rc < 0) return -1;

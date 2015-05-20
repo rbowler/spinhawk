@@ -406,6 +406,11 @@ lrecl blksize keylen</em></code>
         created by the TSO XMIT command.
         The input is a binary file containing fixed length 80 byte
         records with no record delimiters.
+    <dt><code>TEXT <em>filename</em></code>
+    <dd>a sequential dataset is loaded from an ASCII text file
+        and translated to EBCDIC using the default codepage.
+        Each line of text is treated as a logical record;
+        LF and CRLF are recognized as end of line delimiters.
     <dt><code>EMPTY</code>
     <dd>the dataset is initialized with an end of file record
         (if DSORG is PS) or an empty PDS directory (if DSORG is PO)
