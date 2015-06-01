@@ -73,6 +73,7 @@
  #undef add_ef
  #undef add_lf
  #undef add_sf
+ #undef cmp_ef
  #undef cmp_lf
  #undef cmp_sf
  #undef div_U128
@@ -115,6 +116,7 @@
  #define add_ef s370_add_ef
  #define add_lf s370_add_lf
  #define add_sf s370_add_sf
+ #define cmp_ef s370_cmp_ef
  #define cmp_lf s370_cmp_lf
  #define cmp_sf s370_cmp_sf
  #define div_U128       s370_div_U128
@@ -157,6 +159,7 @@
  #define add_ef s390_add_ef
  #define add_lf s390_add_lf
  #define add_sf s390_add_sf
+ #define cmp_ef s390_cmp_ef
  #define cmp_lf s390_cmp_lf
  #define cmp_sf s390_cmp_sf
  #define div_U128       s390_div_U128
@@ -199,6 +202,7 @@
  #define add_ef z900_add_ef
  #define add_lf z900_add_lf
  #define add_sf z900_add_sf
+ #define cmp_ef z900_cmp_ef
  #define cmp_lf z900_cmp_lf
  #define cmp_sf z900_cmp_sf
  #define div_U128       z900_div_U128
@@ -1871,6 +1875,169 @@ BYTE    shift;
     }
 
 } /* end function cmp_lf */
+
+
+#if defined (FEATURE_HFP_EXTENSIONS)
+/*-------------------------------------------------------------------*/
+/* Compare extended float                                            */
+/*                                                                   */
+/* Input:                                                            */
+/*      fl      Float                                                */
+/*      cmp_fl  Float to be compared                                 */
+/*      regs    CPU register context                                 */
+/*-------------------------------------------------------------------*/
+static void cmp_ef( EXTENDED_FLOAT *fl, EXTENDED_FLOAT *cmp_fl,
+    REGS *regs )
+{
+BYTE    shift;
+
+    if (cmp_fl->ms_fract || cmp_fl->ls_fract || cmp_fl->expo) { /* cmp_fl not 0 */
+        if (fl->ms_fract || fl->ls_fract || fl->expo) {      /* fl not 0 */
+            /* both not 0 */
+
+            if (fl->expo == cmp_fl->expo) {
+                /* expo equal */
+
+                /* both guard digits */
+                fl->ms_fract = (fl->ms_fract << 4)
+                             | (fl->ls_fract >> 60);
+                fl->ls_fract <<= 4;
+                cmp_fl->ms_fract = (cmp_fl->ms_fract << 4)
+                                 | (cmp_fl->ls_fract >> 60);
+                cmp_fl->ls_fract <<= 4;
+            } else {
+                /* expo not equal, denormalize */
+
+                if (fl->expo < cmp_fl->expo) {
+                    /* shift minus guard digit */
+                    shift = cmp_fl->expo - fl->expo - 1;
+
+                    if (shift) {
+                        if (shift >= 28) {
+                            /* Set condition code */
+                            if (cmp_fl->ms_fract || cmp_fl->ls_fract) {
+                                regs->psw.cc = cmp_fl->sign ? 2 : 1;
+                            } else {
+                                regs->psw.cc = 0;
+                            }
+                            return;
+                        } else if (shift >= 16) {
+                            fl->ls_fract = fl->ms_fract;
+                            if (shift > 16) {
+                                fl->ls_fract >>= (shift - 16) * 4;
+                            }
+                            fl->ms_fract = 0;
+                        } else {
+                            shift *= 4;
+                            fl->ls_fract = fl->ms_fract << (64 - shift)
+                                         | fl->ls_fract >> shift;
+                            fl->ms_fract >>= shift;
+                        }
+                        if ((fl->ms_fract == 0)
+                        && (fl->ls_fract == 0)) {
+                            /* Set condition code */
+                            if (cmp_fl->ms_fract || cmp_fl->ls_fract) {
+                                regs->psw.cc = cmp_fl->sign ? 2 : 1;
+                            } else {
+                                regs->psw.cc = 0;
+                            }
+                            return;
+                        }
+                    }
+                    /* guard digit */
+                    cmp_fl->ms_fract = (cmp_fl->ms_fract << 4)
+                                     | (cmp_fl->ls_fract >> 60);
+                    cmp_fl->ls_fract <<= 4;
+                } else {
+                    /* shift minus guard digit */
+                    shift = fl->expo - cmp_fl->expo - 1;
+
+                    if (shift) {
+                        if (shift >= 28) {
+                            /* Set condition code */
+                            if (fl->ms_fract || fl->ls_fract) {
+                                regs->psw.cc = fl->sign ? 1 : 2;
+                            } else {
+                                regs->psw.cc = 0;
+                            }
+                            return;
+                        } else if (shift >= 16) {
+                            cmp_fl->ls_fract = cmp_fl->ms_fract;
+                            if (shift > 16) {
+                                cmp_fl->ls_fract >>= (shift - 16) * 4;
+                            }
+                            cmp_fl->ms_fract = 0;
+                        } else {
+                            shift *= 4;
+                            cmp_fl->ls_fract = cmp_fl->ms_fract << (64 - shift)
+                                             | cmp_fl->ls_fract >> shift;
+                            cmp_fl->ms_fract >>= shift;
+                        }
+                        if ((cmp_fl->ms_fract == 0)
+                        && (cmp_fl->ls_fract == 0)) {
+                            /* Set condition code */
+                            if (fl->ms_fract || fl->ls_fract) {
+                                regs->psw.cc = fl->sign ? 1 : 2;
+                            } else {
+                                regs->psw.cc = 0;
+                            }
+                            return;
+                        }
+                    }
+                    /* guard digit */
+                    fl->ms_fract = (fl->ms_fract << 4)
+                                 | (fl->ls_fract >> 60);
+                    fl->ls_fract <<= 4;
+                }
+            }
+
+            /* compute with guard digit */
+            if (fl->sign != cmp_fl->sign) {
+                add_U128(fl->ms_fract, fl->ls_fract, cmp_fl->ms_fract, cmp_fl->ls_fract);
+            } else if ((fl->ms_fract > cmp_fl->ms_fract)
+                   || ((fl->ms_fract == cmp_fl->ms_fract)
+                       && (fl->ls_fract >= cmp_fl->ls_fract))) {
+                sub_U128(fl->ms_fract, fl->ls_fract, cmp_fl->ms_fract, cmp_fl->ls_fract);
+            } else {
+                sub_reverse_U128(fl->ms_fract, fl->ls_fract, cmp_fl->ms_fract, cmp_fl->ls_fract);
+                fl->sign = ! (cmp_fl->sign);
+            }
+
+            /* handle overflow with guard digit */
+            if (fl->ms_fract & 0x00F0000000000000ULL) {
+                fl->ls_fract = (fl->ms_fract << 60)
+                             | (fl->ls_fract >> 4);
+                fl->ms_fract >>= 4;
+            }
+
+            /* Set condition code */
+            if (fl->ms_fract || fl->ls_fract) {
+                regs->psw.cc = fl->sign ? 1 : 2;
+            } else {
+                regs->psw.cc = 0;
+            }
+            return;
+        } else { /* fl 0, cmp_fl not 0 */
+            /* Set condition code */
+            if (cmp_fl->ms_fract || cmp_fl->ls_fract) {
+                regs->psw.cc = cmp_fl->sign ? 2 : 1;
+            } else {
+                regs->psw.cc = 0;
+            }
+            return;
+        }
+    } else {                        /* cmp_fl 0 */
+        /* Set condition code */
+        if (fl->ms_fract || fl->ls_fract) {
+            regs->psw.cc = fl->sign ? 1 : 2;
+        } else {
+            regs->psw.cc = 0;
+        }
+        return;
+    }
+
+} /* end function cmp_ef */
+#endif /*defined (FEATURE_HFP_EXTENSIONS)*/
 
 
 /*-------------------------------------------------------------------*/
@@ -5525,7 +5692,6 @@ int     r1, r2;                         /* Values of R fields        */
 int     i1, i2;                         /* Indexes into fpr array    */
 EXTENDED_FLOAT fl;
 EXTENDED_FLOAT cmp_fl;
-BYTE    shift;
 
     RRE(inst, regs, r1, r2);
     HFPODD2_CHECK(r1, r2, regs);
@@ -5536,150 +5702,8 @@ BYTE    shift;
     get_ef(&fl, regs->fpr + i1);
     get_ef(&cmp_fl, regs->fpr + i2);;
 
-    if (cmp_fl.ms_fract || cmp_fl.ls_fract || cmp_fl.expo) { /* cmp_fl not 0 */
-        if (fl.ms_fract || fl.ls_fract || fl.expo) {         /* fl not 0 */
-            /* both not 0 */
-
-            if (fl.expo == cmp_fl.expo) {
-                /* expo equal */
-
-                /* both guard digits */
-                fl.ms_fract = (fl.ms_fract << 4)
-                            | (fl.ls_fract >> 60);
-                fl.ls_fract <<= 4;
-                cmp_fl.ms_fract = (cmp_fl.ms_fract << 4)
-                                | (cmp_fl.ls_fract >> 60);
-                cmp_fl.ls_fract <<= 4;
-            } else {
-                /* expo not equal, denormalize */
-
-                if (fl.expo < cmp_fl.expo) {
-                    /* shift minus guard digit */
-                    shift = cmp_fl.expo - fl.expo - 1;
-
-                    if (shift) {
-                        if (shift >= 28) {
-                            /* Set condition code */
-                            if (cmp_fl.ms_fract || cmp_fl.ls_fract) {
-                                regs->psw.cc = cmp_fl.sign ? 2 : 1;
-                            } else {
-                                regs->psw.cc = 0;
-                            }
-                            return;
-                        } else if (shift >= 16) {
-                            fl.ls_fract = fl.ms_fract;
-                            if (shift > 16) {
-                                fl.ls_fract >>= (shift - 16) * 4;
-                            }
-                            fl.ms_fract = 0;
-                        } else {
-                            shift *= 4;
-                            fl.ls_fract = fl.ms_fract << (64 - shift)
-                                        | fl.ls_fract >> shift;
-                            fl.ms_fract >>= shift;
-                        }
-                        if ((fl.ms_fract == 0)
-                        && (fl.ls_fract == 0)) {
-                            /* Set condition code */
-                            if (cmp_fl.ms_fract || cmp_fl.ls_fract) {
-                                regs->psw.cc = cmp_fl.sign ? 2 : 1;
-                            } else {
-                                regs->psw.cc = 0;
-                            }
-                            return;
-                        }
-                    }
-                    /* guard digit */
-                    cmp_fl.ms_fract = (cmp_fl.ms_fract << 4)
-                                    | (cmp_fl.ls_fract >> 60);
-                    cmp_fl.ls_fract <<= 4;
-                } else {
-                    /* shift minus guard digit */
-                    shift = fl.expo - cmp_fl.expo - 1;
-
-                    if (shift) {
-                        if (shift >= 28) {
-                            /* Set condition code */
-                            if (fl.ms_fract || fl.ls_fract) {
-                                regs->psw.cc = fl.sign ? 1 : 2;
-                            } else {
-                                regs->psw.cc = 0;
-                            }
-                            return;
-                        } else if (shift >= 16) {
-                            cmp_fl.ls_fract = cmp_fl.ms_fract;
-                            if (shift > 16) {
-                                cmp_fl.ls_fract >>= (shift - 16) * 4;
-                            }
-                            cmp_fl.ms_fract = 0;
-                        } else {
-                            shift *= 4;
-                            cmp_fl.ls_fract = cmp_fl.ms_fract << (64 - shift)
-                                            | cmp_fl.ls_fract >> shift;
-                            cmp_fl.ms_fract >>= shift;
-                        }
-                        if ((cmp_fl.ms_fract == 0)
-                        && (cmp_fl.ls_fract == 0)) {
-                            /* Set condition code */
-                            if (fl.ms_fract || fl.ls_fract) {
-                                regs->psw.cc = fl.sign ? 1 : 2;
-                            } else {
-                                regs->psw.cc = 0;
-                            }
-                            return;
-                        }
-                    }
-                    /* guard digit */
-                    fl.ms_fract = (fl.ms_fract << 4)
-                                | (fl.ls_fract >> 60);
-                    fl.ls_fract <<= 4;
-                }
-            }
-
-            /* compute with guard digit */
-            if (fl.sign != cmp_fl.sign) {
-                add_U128(fl.ms_fract, fl.ls_fract, cmp_fl.ms_fract, cmp_fl.ls_fract);
-            } else if ((fl.ms_fract > cmp_fl.ms_fract)
-                   || ((fl.ms_fract == cmp_fl.ms_fract)
-                       && (fl.ls_fract >= cmp_fl.ls_fract))) {
-                sub_U128(fl.ms_fract, fl.ls_fract, cmp_fl.ms_fract, cmp_fl.ls_fract);
-            } else {
-                sub_reverse_U128(fl.ms_fract, fl.ls_fract, cmp_fl.ms_fract, cmp_fl.ls_fract);
-                fl.sign = ! (cmp_fl.sign);
-            }
-
-            /* handle overflow with guard digit */
-            if (fl.ms_fract & 0x00F0000000000000ULL) {
-                fl.ls_fract = (fl.ms_fract << 60)
-                            | (fl.ls_fract >> 4);
-                fl.ms_fract >>= 4;
-            }
-
-            /* Set condition code */
-            if (fl.ms_fract || fl.ls_fract) {
-                regs->psw.cc = fl.sign ? 1 : 2;
-            } else {
-                regs->psw.cc = 0;
-            }
-            return;
-        } else { /* fl 0, cmp_fl not 0 */
-            /* Set condition code */
-            if (cmp_fl.ms_fract || cmp_fl.ls_fract) {
-                regs->psw.cc = cmp_fl.sign ? 2 : 1;
-            } else {
-                regs->psw.cc = 0;
-            }
-            return;
-        }
-    } else {                        /* cmp_fl 0 */
-        /* Set condition code */
-        if (fl.ms_fract || fl.ls_fract) {
-            regs->psw.cc = fl.sign ? 1 : 2;
-        } else {
-            regs->psw.cc = 0;
-        }
-        return;
-    }
+    /* Compare extended */
+    cmp_ef(&fl, &cmp_fl, regs);
 
 } /* end DEF_INST(compare_float_ext_reg) */
 
