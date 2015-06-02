@@ -129,10 +129,9 @@ S32     n;                              /* 32-bit operand values     */
 DEF_INST(add_halfword_immediate)
 {
 int     r1;                             /* Register number           */
-int     opcd;                           /* Opcode                    */
 U16     i2;                             /* 16-bit immediate op       */
 
-    RI(inst, regs, r1, opcd, i2);
+    RI(inst, regs, r1, i2);
 
     /* Add signed operands and set condition code */
     regs->psw.cc =
@@ -676,13 +675,13 @@ DEF_INST(branch_on_condition_register)
             PERFORM_CHKPT_SYNC (regs);
         }
 #if defined(FEATURE_FAST_BCR_SERIALIZATION_FACILITY)            /*810*/
-        /* Perform serialization without checkpoint synchronization 
+        /* Perform serialization without checkpoint synchronization
            the mask is B'1110' and R2 is register 0 */
         else if (inst[1] == 0xE0)
         {
             PERFORM_SERIALIZATION (regs);
         }
-#endif /*defined(FEATURE_FAST_BCR_SERIALIZATION_FACILITY)*/     
+#endif /*defined(FEATURE_FAST_BCR_SERIALIZATION_FACILITY)*/
     }
 
 } /* end DEF_INST(branch_on_condition_register) */
@@ -818,10 +817,9 @@ S32     i, j;                           /* Integer work areas        */
 DEF_INST(branch_relative_on_condition)
 {
 //int   r1;                             /* Register number           */
-//int   opcd;                           /* Opcode                    */
 U16   i2;                               /* 16-bit operand values     */
 
-//  RI(inst, regs, r1, opcd, i2);
+//  RI(inst, regs, r1, i2);
 
     /* Branch if R1 mask bit is set */
     if (inst[1] & (0x80 >> regs->psw.cc))
@@ -843,10 +841,9 @@ U16   i2;                               /* 16-bit operand values     */
 DEF_INST(branch_relative_and_save)
 {
 int     r1;                             /* Register number           */
-int     opcd;                           /* Opcode                    */
 U16     i2;                             /* 16-bit operand values     */
 
-    RI_B(inst, regs, r1, opcd, i2);
+    RI_B(inst, regs, r1, i2);
 
     /* Save the link information in the R1 operand */
 #if defined(FEATURE_ESAME)
@@ -872,10 +869,9 @@ U16     i2;                             /* 16-bit operand values     */
 DEF_INST(branch_relative_on_count)
 {
 int     r1;                             /* Register number           */
-int     opcd;                           /* Opcode                    */
 U16     i2;                             /* 16-bit operand values     */
 
-    RI_B(inst, regs, r1, opcd, i2);
+    RI_B(inst, regs, r1, i2);
 
     /* Subtract 1 from the R1 operand and branch if non-zero */
     if ( --(regs->GR_L(r1)) )
@@ -897,7 +893,7 @@ int     r1, r3;                         /* Register numbers          */
 U16     i2;                             /* 16-bit operand            */
 S32     i,j;                            /* Integer workareas         */
 
-    RI_B(inst, regs, r1, r3, i2);
+    RSI_B(inst, regs, r1, r3, i2);
 
     /* Load the increment value from the R3 register */
     i = (S32)regs->GR_L(r3);
@@ -928,7 +924,7 @@ int     r1, r3;                         /* Register numbers          */
 U16     i2;                             /* 16-bit operand            */
 S32     i,j;                            /* Integer workareas         */
 
-    RI_B(inst, regs, r1, r3, i2);
+    RSI_B(inst, regs, r1, r3, i2);
 
     /* Load the increment value from the R3 register */
     i = (S32)regs->GR_L(r3);
@@ -1613,10 +1609,9 @@ S32     n;                              /* 32-bit operand values     */
 DEF_INST(compare_halfword_immediate)
 {
 int     r1;                             /* Register number           */
-int     opcd;                           /* Opcode                    */
 U16     i2;                             /* 16-bit operand            */
 
-    RI0(inst, regs, r1, opcd, i2);
+    RI0(inst, regs, r1, i2);
 
     /* Compare signed operands and set condition code */
     regs->psw.cc =
@@ -3552,10 +3547,9 @@ VADR    effective_addr2;                /* Effective address         */
 DEF_INST(load_halfword_immediate)
 {
 int     r1;                             /* Register number           */
-int     opcd;                           /* Opcode                    */
 U16     i2;                             /* 16-bit operand values     */
 
-    RI0(inst, regs, r1, opcd, i2);
+    RI0(inst, regs, r1, i2);
 
     /* Load operand into register */
     regs->GR_L(r1) = (S16)i2;
@@ -3731,10 +3725,10 @@ CREG    n;                              /* Work                      */
 
         px = regs->PX;
         SIE_TRANSLATE(&px, ACCTYPE_WRITE, regs);
-        
+
         /* Point to PSA in main storage */
         psa = (void*)(regs->mainstor + px);
- 
+
         /* Set the main storage reference bit */
         STORAGE_KEY(px, regs) |= STORKEY_REF;
 
@@ -3775,12 +3769,12 @@ CREG    n;                              /* Work                      */
                         {
                             /* Convert real address to absolute address */
                             cew = APPLY_PREFIXING (regs->dat.raddr, regs->PX);
-    
+
                             /* Ensure absolute address is available */
                             if (!(unavailable = (cew >= regs->mainlim )))
                             {
                                 SIE_TRANSLATE(&cew, ACCTYPE_WRITE, regs);
-    
+
                                 /* Update both counters */
                                 FETCH_W(fwc, cew + regs->mainstor);
                                 fwc++;
@@ -3796,7 +3790,7 @@ CREG    n;                              /* Work                      */
                 }
             }
         }
-    
+
         /* Update the Enhance Monitor Exception Counter if the array could not be updated */
         if(unavailable)
         {
@@ -3806,7 +3800,7 @@ CREG    n;                              /* Work                      */
             STORAGE_KEY(px, regs) |= (STORKEY_REF | STORKEY_CHANGE);
             STORE_W(psa->ec,ec);
         }
-              
+
         return;
 
     }
@@ -4634,10 +4628,9 @@ S32     n;                              /* 32-bit operand values     */
 DEF_INST(multiply_halfword_immediate)
 {
 int     r1;                             /* Register number           */
-int     opcd;                           /* Opcode                    */
 U16     i2;                             /* 16-bit operand            */
 
-    RI0(inst, regs, r1, opcd, i2);
+    RI0(inst, regs, r1, i2);
 
     /* Multiply register by operand ignoring overflow  */
     regs->GR_L(r1) = (S32)regs->GR_L(r1) * (S16)i2;

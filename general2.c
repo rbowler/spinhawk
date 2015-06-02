@@ -1475,12 +1475,11 @@ BYTE    tbyte;                          /* Work byte                 */
 DEF_INST(test_under_mask_high)
 {
 int     r1;                             /* Register number           */
-int     opcd;                           /* Opcode                    */
 U16     i2;                             /* 16-bit operand values     */
 U16     h1;                             /* 16-bit operand values     */
 U16     h2;                             /* 16-bit operand values     */
 
-    RI0(inst, regs, r1, opcd, i2);
+    RI0(inst, regs, r1, i2);
 
     /* AND register bits 0-15 with immediate operand */
     h1 = i2 & regs->GR_LHH(r1);
@@ -1505,12 +1504,11 @@ U16     h2;                             /* 16-bit operand values     */
 DEF_INST(test_under_mask_low)
 {
 int     r1;                             /* Register number           */
-int     opcd;                           /* Opcode                    */
 U16     i2;                             /* 16-bit operand values     */
 U16     h1;                             /* 16-bit operand values     */
 U16     h2;                             /* 16-bit operand values     */
 
-    RI0(inst, regs, r1, opcd, i2);
+    RI0(inst, regs, r1, i2);
 
     /* AND register bits 16-31 with immediate operand */
     h1 = i2 & regs->GR_LHL(r1);

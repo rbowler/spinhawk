@@ -1816,10 +1816,9 @@ U32     i2;                             /* 32-bit operand values     */
 DEF_INST(insert_immediate_high_high)
 {
 int     r1;                             /* Register number           */
-int     opcd;                           /* Opcode                    */
 U16     i2;                             /* 16-bit operand values     */
 
-    RI0(inst, regs, r1, opcd, i2);
+    RI0(inst, regs, r1, i2);
 
     regs->GR_HHH(r1) = i2;
 
@@ -1834,10 +1833,9 @@ U16     i2;                             /* 16-bit operand values     */
 DEF_INST(insert_immediate_high_low)
 {
 int     r1;                             /* Register number           */
-int     opcd;                           /* Opcode                    */
 U16     i2;                             /* 16-bit operand values     */
 
-    RI0(inst, regs, r1, opcd, i2);
+    RI0(inst, regs, r1, i2);
 
     regs->GR_HHL(r1) = i2;
 
@@ -1852,10 +1850,9 @@ U16     i2;                             /* 16-bit operand values     */
 DEF_INST(insert_immediate_low_high)
 {
 int     r1;                             /* Register number           */
-int     opcd;                           /* Opcode                    */
 U16     i2;                             /* 16-bit operand values     */
 
-    RI0(inst, regs, r1, opcd, i2);
+    RI0(inst, regs, r1, i2);
 
     regs->GR_LHH(r1) = i2;
 
@@ -1870,10 +1867,9 @@ U16     i2;                             /* 16-bit operand values     */
 DEF_INST(insert_immediate_low_low)
 {
 int     r1;                             /* Register number           */
-int     opcd;                           /* Opcode                    */
 U16     i2;                             /* 16-bit operand values     */
 
-    RI0(inst, regs, r1, opcd, i2);
+    RI0(inst, regs, r1, i2);
 
     regs->GR_LHL(r1) = i2;
 
@@ -1888,10 +1884,9 @@ U16     i2;                             /* 16-bit operand values     */
 DEF_INST(and_immediate_high_high)
 {
 int     r1;                             /* Register number           */
-int     opcd;                           /* Opcode                    */
 U16     i2;                             /* 16-bit operand values     */
 
-    RI0(inst, regs, r1, opcd, i2);
+    RI0(inst, regs, r1, i2);
 
     regs->GR_HHH(r1) &= i2;
 
@@ -1909,10 +1904,9 @@ U16     i2;                             /* 16-bit operand values     */
 DEF_INST(and_immediate_high_low)
 {
 int     r1;                             /* Register number           */
-int     opcd;                           /* Opcode                    */
 U16     i2;                             /* 16-bit operand values     */
 
-    RI0(inst, regs, r1, opcd, i2);
+    RI0(inst, regs, r1, i2);
 
     regs->GR_HHL(r1) &= i2;
 
@@ -1930,10 +1924,9 @@ U16     i2;                             /* 16-bit operand values     */
 DEF_INST(and_immediate_low_high)
 {
 int     r1;                             /* Register number           */
-int     opcd;                           /* Opcode                    */
 U16     i2;                             /* 16-bit operand values     */
 
-    RI0(inst, regs, r1, opcd, i2);
+    RI0(inst, regs, r1, i2);
 
     regs->GR_LHH(r1) &= i2;
 
@@ -1951,10 +1944,9 @@ U16     i2;                             /* 16-bit operand values     */
 DEF_INST(and_immediate_low_low)
 {
 int     r1;                             /* Register number           */
-int     opcd;                           /* Opcode                    */
 U16     i2;                             /* 16-bit operand values     */
 
-    RI0(inst, regs, r1, opcd, i2);
+    RI0(inst, regs, r1, i2);
 
     regs->GR_LHL(r1) &= i2;
 
@@ -1972,10 +1964,9 @@ U16     i2;                             /* 16-bit operand values     */
 DEF_INST(or_immediate_high_high)
 {
 int     r1;                             /* Register number           */
-int     opcd;                           /* Opcode                    */
 U16     i2;                             /* 16-bit operand values     */
 
-    RI0(inst, regs, r1, opcd, i2);
+    RI0(inst, regs, r1, i2);
 
     regs->GR_HHH(r1) |= i2;
 
@@ -1993,10 +1984,9 @@ U16     i2;                             /* 16-bit operand values     */
 DEF_INST(or_immediate_high_low)
 {
 int     r1;                             /* Register number           */
-int     opcd;                           /* Opcode                    */
 U16     i2;                             /* 16-bit operand values     */
 
-    RI0(inst, regs, r1, opcd, i2);
+    RI0(inst, regs, r1, i2);
 
     regs->GR_HHL(r1) |= i2;
 
@@ -2014,10 +2004,9 @@ U16     i2;                             /* 16-bit operand values     */
 DEF_INST(or_immediate_low_high)
 {
 int     r1;                             /* Register number           */
-int     opcd;                           /* Opcode                    */
 U16     i2;                             /* 16-bit operand values     */
 
-    RI0(inst, regs, r1, opcd, i2);
+    RI0(inst, regs, r1, i2);
 
     regs->GR_LHH(r1) |= i2;
 
@@ -2035,10 +2024,9 @@ U16     i2;                             /* 16-bit operand values     */
 DEF_INST(or_immediate_low_low)
 {
 int     r1;                             /* Register number           */
-int     opcd;                           /* Opcode                    */
 U16     i2;                             /* 16-bit operand values     */
 
-    RI0(inst, regs, r1, opcd, i2);
+    RI0(inst, regs, r1, i2);
 
     regs->GR_LHL(r1) |= i2;
 
@@ -2056,10 +2044,9 @@ U16     i2;                             /* 16-bit operand values     */
 DEF_INST(load_logical_immediate_high_high)
 {
 int     r1;                             /* Register number           */
-int     opcd;                           /* Opcode                    */
 U16     i2;                             /* 16-bit operand values     */
 
-    RI0(inst, regs, r1, opcd, i2);
+    RI0(inst, regs, r1, i2);
 
     regs->GR_G(r1) = (U64)i2 << 48;
 
@@ -2074,10 +2061,9 @@ U16     i2;                             /* 16-bit operand values     */
 DEF_INST(load_logical_immediate_high_low)
 {
 int     r1;                             /* Register number           */
-int     opcd;                           /* Opcode                    */
 U16     i2;                             /* 16-bit operand values     */
 
-    RI0(inst, regs, r1, opcd, i2);
+    RI0(inst, regs, r1, i2);
 
     regs->GR_G(r1) = (U64)i2 << 32;
 
@@ -2092,10 +2078,9 @@ U16     i2;                             /* 16-bit operand values     */
 DEF_INST(load_logical_immediate_low_high)
 {
 int     r1;                             /* Register number           */
-int     opcd;                           /* Opcode                    */
 U16     i2;                             /* 16-bit operand values     */
 
-    RI0(inst, regs, r1, opcd, i2);
+    RI0(inst, regs, r1, i2);
 
     regs->GR_G(r1) = (U64)i2 << 16;
 
@@ -2110,10 +2095,9 @@ U16     i2;                             /* 16-bit operand values     */
 DEF_INST(load_logical_immediate_low_low)
 {
 int     r1;                             /* Register number           */
-int     opcd;                           /* Opcode                    */
 U16     i2;                             /* 16-bit operand values     */
 
-    RI0(inst, regs, r1, opcd, i2);
+    RI0(inst, regs, r1, i2);
 
     regs->GR_G(r1) = (U64)i2;
 
@@ -3272,12 +3256,11 @@ S64     gpr2l;
 DEF_INST(test_under_mask_high_high)
 {
 int     r1;                             /* Register number           */
-int     opcd;                           /* Opcode                    */
 U16     i2;                             /* 16-bit operand values     */
 U16     h1;                             /* 16-bit operand values     */
 U16     h2;                             /* 16-bit operand values     */
 
-    RI0(inst, regs, r1, opcd, i2);
+    RI0(inst, regs, r1, i2);
 
     /* AND register bits 0-15 with immediate operand */
     h1 = i2 & regs->GR_HHH(r1);
@@ -3303,12 +3286,11 @@ U16     h2;                             /* 16-bit operand values     */
 DEF_INST(test_under_mask_high_low)
 {
 int     r1;                             /* Register number           */
-int     opcd;                           /* Opcode                    */
 U16     i2;                             /* 16-bit operand values     */
 U16     h1;                             /* 16-bit operand values     */
 U16     h2;                             /* 16-bit operand values     */
 
-    RI0(inst, regs, r1, opcd, i2);
+    RI0(inst, regs, r1, i2);
 
     /* AND register bits 16-31 with immediate operand */
     h1 = i2 & regs->GR_HHL(r1);
@@ -3334,10 +3316,9 @@ U16     h2;                             /* 16-bit operand values     */
 DEF_INST(branch_relative_on_count_long)
 {
 int     r1;                             /* Register number           */
-int     opcd;                           /* Opcode                    */
 U16     i2;                             /* 16-bit operand values     */
 
-    RI_B(inst, regs, r1, opcd, i2);
+    RI_B(inst, regs, r1, i2);
 
     /* Subtract 1 from the R1 operand and branch if non-zero */
     if ( --(regs->GR_G(r1)) )
@@ -3710,10 +3691,9 @@ int     r1, r2;                         /* Values of R fields        */
 DEF_INST(load_long_halfword_immediate)
 {
 int     r1;                             /* Register number           */
-int     opcd;                           /* Opcode                    */
 U16     i2;                             /* 16-bit operand values     */
 
-    RI0(inst, regs, r1, opcd, i2);
+    RI0(inst, regs, r1, i2);
 
     /* Load operand into register */
     regs->GR_G(r1) = (S16)i2;
@@ -3729,10 +3709,9 @@ U16     i2;                             /* 16-bit operand values     */
 DEF_INST(add_long_halfword_immediate)
 {
 int     r1;                             /* Register number           */
-int     opcd;                           /* Opcode                    */
 U16     i2;                             /* 16-bit immediate op       */
 
-    RI(inst, regs, r1, opcd, i2);
+    RI(inst, regs, r1, i2);
 
     /* Add signed operands and set condition code */
     regs->psw.cc = add_signed_long(&(regs->GR_G(r1)),
@@ -3754,10 +3733,9 @@ U16     i2;                             /* 16-bit immediate op       */
 DEF_INST(multiply_long_halfword_immediate)
 {
 int     r1;                             /* Register number           */
-int     opcd;                           /* Opcode                    */
 U16     i2;                             /* 16-bit operand            */
 
-    RI0(inst, regs, r1, opcd, i2);
+    RI0(inst, regs, r1, i2);
 
     /* Multiply register by operand ignoring overflow  */
     regs->GR_G(r1) = (S64)regs->GR_G(r1) * (S16)i2;
@@ -3773,10 +3751,9 @@ U16     i2;                             /* 16-bit operand            */
 DEF_INST(compare_long_halfword_immediate)
 {
 int     r1;                             /* Register number           */
-int     opcd;                           /* Opcode                    */
 U16     i2;                             /* 16-bit operand            */
 
-    RI0(inst, regs, r1, opcd, i2);
+    RI0(inst, regs, r1, i2);
 
     /* Compare signed operands and set condition code */
     regs->psw.cc =

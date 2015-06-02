@@ -1862,7 +1862,7 @@ int r1,l2,b2,d2,m3;
     DISASM_LOGMSG;
 }
 
-int disasm_RSI (BYTE inst[], char mnemonic[], char *p)
+int disasm_RSI_B (BYTE inst[], char mnemonic[], char *p)
 {
 DISASM_COMMON_VARS;
 int r1,r3,i2;
@@ -2703,8 +2703,8 @@ DLL_EXPORT zz_func opcode_table[256][GEN_MAXARCH] = {
  /*81*/   GENx___x___x___ ,
  /*82*/   GENx370x390x900 (load_program_status_word,S,"LPSW"),
  /*83*/   GENx370x390x900 (diagnose,RS,"DIAG"),
- /*84*/   GENx37Xx390x900 (branch_relative_on_index_high,RSI,"BRXH"),
- /*85*/   GENx37Xx390x900 (branch_relative_on_index_low_or_equal,RSI,"BRXLE"),
+ /*84*/   GENx37Xx390x900 (branch_relative_on_index_high,RSI_B,"BRXH"),
+ /*85*/   GENx37Xx390x900 (branch_relative_on_index_low_or_equal,RSI_B,"BRXLE"),
  /*86*/   GENx370x390x900 (branch_on_index_high,RS,"BXH"),
  /*87*/   GENx370x390x900 (branch_on_index_low_or_equal,RS,"BXLE"),
  /*88*/   GENx370x390x900 (shift_right_single_logical,RS_R1D2B2,"SRL"),

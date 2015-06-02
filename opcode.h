@@ -1869,17 +1869,22 @@ do { \
 /* RSI register and immediate with additional R3 field */
 #undef RSI
 #undef RSI0
+#undef RSI_B
 
 #if !defined(DECODER_TEST)&&!defined(DECODER_TEST_RSI)
  #define RSI(_inst, _regs, _r1, _r3, _i2) \
          RSI_DECODER(_inst, _regs, _r1, _r3, _i2, 4, 4)
  #define RSI0(_inst, _regs, _r1, _r3, _i2) \
          RSI_DECODER(_inst, _regs, _r1, _r3, _i2, 4, 0)
+ #define RSI_B(_inst, _regs, _r1, _r3, _i2) \
+         RSI_DECODER(_inst, _regs, _r1, _r3, _i2, 0, 0)
 #else
  #define RSI(_inst, _regs, _r1, _r3, _i2) \
          RSI_DECODER_TEST(_inst, _regs, _r1, _r3, _i2, 4, 4)
  #define RSI0(_inst, _regs, _r1, _r3, _i2) \
          RSI_DECODER_TEST(_inst, _regs, _r1, _r3, _i2, 4, 0)
+ #define RSI_B(_inst, _regs, _r1, _r3, _i2) \
+         RSI_DECODER_TEST(_inst, _regs, _r1, _r3, _i2, 0, 0)
 #endif
 
 #define RSI_DECODER(_inst, _regs, _r1, _r3, _i2, _len, _ilc) \
@@ -1904,32 +1909,30 @@ do { \
 #undef RI_B
 
 #if !defined(DECODER_TEST)&&!defined(DECODER_TEST_RI)
- #define RI(_inst, _regs, _r1, _op, _i2) \
-         RI_DECODER(_inst, _regs, _r1, _op, _i2, 4, 4)
- #define RI0(_inst, _regs, _r1, _op, _i2) \
-         RI_DECODER(_inst, _regs, _r1, _op, _i2, 4, 0)
- #define RI_B(_inst, _regs, _r1, _op, _i2) \
-         RI_DECODER(_inst, _regs, _r1, _op, _i2, 0, 0)
+ #define RI(_inst, _regs, _r1, _i2) \
+         RI_DECODER(_inst, _regs, _r1, _i2, 4, 4)
+ #define RI0(_inst, _regs, _r1, _i2) \
+         RI_DECODER(_inst, _regs, _r1, _i2, 4, 0)
+ #define RI_B(_inst, _regs, _r1, _i2) \
+         RI_DECODER(_inst, _regs, _r1, _i2, 0, 0)
 #else
- #define RI(_inst, _regs, _r1, _op, _i2) \
-         RI_DECODER_TEST(_inst, _regs, _r1, _op, _i2, 4, 4)
- #define RI0(_inst, _regs, _r1, _op, _i2) \
-         RI_DECODER_TEST(_inst, _regs, _r1, _op, _i2, 4, 0)
- #define RI_B(_inst, _regs, _r1, _op, _i2) \
-         RI_DECODER_TEST(_inst, _regs, _r1, _op, _i2, 0, 0)
+ #define RI(_inst, _regs, _r1, _i2) \
+         RI_DECODER_TEST(_inst, _regs, _r1, _i2, 4, 4)
+ #define RI0(_inst, _regs, _r1, _i2) \
+         RI_DECODER_TEST(_inst, _regs, _r1, _i2, 4, 0)
+ #define RI_B(_inst, _regs, _r1, _i2) \
+         RI_DECODER_TEST(_inst, _regs, _r1, _i2, 0, 0)
 #endif
 
-#define RI_DECODER(_inst, _regs, _r1, _op, _i2, _len, _ilc) \
+#define RI_DECODER(_inst, _regs, _r1, _i2, _len, _ilc) \
     {   U32 temp = fetch_fw(_inst); \
             (_r1) = (temp >> 20) & 0xf; \
-            (_op) = (temp >> 16) & 0xf; \
             (_i2) = temp & 0xffff; \
             INST_UPDATE_PSW((_regs), (_len), (_ilc)); \
     }
 
-#define RI_DECODER_TEST(_inst, _regs, _r1, _op, _i2) \
+#define RI_DECODER_TEST(_inst, _regs, _r1, _i2, _len, _ilc) \
     {   U32 temp = fetch_fw(_inst); \
-            (_op) = (temp >> 16) & 0xf; \
             (_i2) = temp & 0xffff; \
             (_r1) = (temp >> 20) & 0xf; \
             INST_UPDATE_PSW((_regs), (_len), (_ilc)); \
