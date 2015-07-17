@@ -358,7 +358,10 @@ int      pending = 0;                   /* New interrupt pending     */
         if(dev->halt_device!=NULL)              /* @ISW */
         {                                       /* @ISW */
             dev->halt_device(dev);              /* @ISW */
-            cc=0;                               /* @ISW */
+            psa = (PSA_3XX*)( regs->mainstor + regs->PX );
+            psa->csw[4] = 0;    /*  Store partial CSW       */
+            psa->csw[5] = 0;
+            cc = 1;             /*  Set CC for CSW stored   */
         }                                       /* @ISW */
         else
         {
