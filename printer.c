@@ -1147,6 +1147,7 @@ char            wbuf[150];
 
             dev->lpi = 6;
             dev->index = 0;
+            i = 0;
             if (iobuf[0] & 0xc0)
             {
                 /* First byte is a print position index */
