@@ -1051,7 +1051,8 @@ U32             r1, r2;                 /* Values of R fields        */
 U32             sclp_command;           /* SCLP command code         */
 U32             sccb_real_addr;         /* SCCB real address         */
 int             i;                      /* Array subscripts          */
-U32             realmb;                 /* Real storage size in MB   */
+U32             realinc;                /* Storage size in increments*/
+U32             incsizemb;              /* Increment size in MB      */
 U32             sccb_absolute_addr;     /* Absolute address of SCCB  */
 U32             sccblen;                /* Length of SCCB            */
 SCCB_HEADER    *sccb;                   /* -> SCCB header            */
@@ -1213,9 +1214,10 @@ BYTE            *xstmap;                /* Xstore bitmap, zero means
         memset (sccbscp, 0, sizeof(SCCB_SCP_INFO));
 
         /* Set main storage size in SCCB */
-        realmb = sysblk.mainsize >> 20;
-        STORE_HW(sccbscp->realinum, realmb);
-        sccbscp->realiszm = 1;
+        incsizemb = (sysblk.mainsize + (0xFFFF00000ULL - 1)) / 0xFFFF00000ULL;
+        realinc = sysblk.mainsize / (incsizemb << 20);
+        STORE_HW(sccbscp->realinum, realinc);
+        sccbscp->realiszm = (incsizemb & 0xFF);
         sccbscp->realbszk = 4;
         STORE_HW(sccbscp->realiint, 1);
 
@@ -1225,7 +1227,7 @@ BYTE            *xstmap;                /* Xstore bitmap, zero means
         /* realiszm is valid */
         STORE_FW(sccbscp->grzm, 0);
         /* Number of storage increments installed in esame mode */
-        STORE_DW(sccbscp->grnmx, realmb);
+        STORE_DW(sccbscp->grnmx, realinc);
 #endif /*defined(_900) || defined(FEATURE_ESAME)*/
 
 #ifdef FEATURE_EXPANDED_STORAGE
