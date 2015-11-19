@@ -1,0 +1,28 @@
+* SERVC tests $Id$
+sysclear
+archmode esame
+r 1a0=00000001800000000000000000000200 # z/Arch restart PSW
+r 1d0=00020001800000000000000000BADBAD # z/Arch pgm new PSW
+r 1e0=000200018000000000000000DEADBEEF # z/Arch mck new PSW
+r 200=58300310     # L R3,ASCPINF      R3 => SCCB area
+r 204=58400314     # L R4,CSCPINF      R4 = SCLP command word
+r 208=58500318     # L R5,=F'4096'     R5 = Length of SCCB area    
+r 20C=1803         # LR R0,R3          R0 => SCCB area 
+r 20E=1815         # LR R1,R5          R1 = Length of SCCB area 
+r 210=5870031C     # L R7,=X'EE000000' R7=Padding byte, zero length
+r 214=0E06         # MVCL R0,R6        Fill SCCB with padding byte
+r 216=D70730003000 # XC 0(8,R3),0(R3)  Zeroize SCCB header
+r 21C=40503000     # STH R5,0(,R3)     Store length into SCCB header
+r 220=92803002     # MVI 2(R3),X'80'   Set synchronous flag in header
+r 224=B2200043     # SERVC R4,R3       Store SCP information      
+r 228=82000300     # LPSW WAITPSW      Load enabled wait PSW
+r 300=070A00008000AAAA                 # WAITPSW Enabled wait state PSW
+r 310=00004000     #ASCPINF DC A(SCCB) Address of SCCB area for SCP info
+r 314=00020001     #CSCPINF DC X'00020001' SCLP_READ_SCP_INFO
+r 318=00001000     #SCCBLEN DC F'4096' Length of SCCB area
+r 31C=EE000000     #PADDING DC X'EE000000' Padding byte, zero length
+ostailor null
+restart
+pause 1
+* Display results
+r 4000.100
