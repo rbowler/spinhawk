@@ -30,13 +30,13 @@ C:\Program Files\Microsoft SDKs\Windows\v7.0\Redist\VC
    http://downloads.hercules-390.eu/vc2010-redist.zip
 
 4. Download the compression and regular expression packages from:
-   http://downloads.hercules-390.eu/zlib-1.2.7.zip
+   http://downloads.hercules-390.eu/zlib-1.2.5.zip
    http://downloads.hercules-390.eu/bzip2-1.0.6.zip
    http://downloads.hercules-390.eu/pcre-8.20.zip
 
    Unzip these packages to any suitable location (such as C:\Packages) and
    set environment variables in Computer-Properties-Advanced System Settings:
-   SET ZLIB_DIR=C:\Packages\zlib-1.2.7
+   SET ZLIB_DIR=C:\Packages\zlib-1.2.5
    SET BZIP2_DIR=C:\Packages\bzip2-1.0.6
    SET PCRE_DIR=C:\Packages\pcre-8.20
 
