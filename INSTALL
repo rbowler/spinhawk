@@ -29,7 +29,7 @@ The simplest way to compile this package is:
   1. `cd' to the directory containing the package's source code.
 
   2. Check that you have all of the necessary packages installed:
-        utils/bldlvlck
+        util/bldlvlck
      then create the configure script by running:
         ./autogen.sh
 
