@@ -155,10 +155,12 @@ struct FORMAT4_DSCB {                   /* DSCB4: VTOC descriptor    */
 
 /* Bit definitions for ds4vtoci */
 #define DS4VTOCI_DOS            0x80    /* Format 5 DSCBs not valid  */
+#define DS4VTOCI_IXDISAB        0x40    /* VTOC index disabled       */
 #define DS4VTOCI_DOSSTCK        0x10    /* DOS stacked pack          */
 #define DS4VTOCI_DOSCNVT        0x08    /* DOS converted pack        */
-#define DS4VTOCI_DIRF           0x40    /* VTOC contains errors      */
-#define DS4VTOCI_DIRFCVT        0x20    /* DIRF reclaimed            */
+#define DS4VTOCI_DIRF           0x04    /* VTOC contains errors      */
+#define DS4VTOCI_DIRFCVT        0x02    /* DIRF reclaimed            */
+#define DS4VTOCI_IXVTOC         0x01    /* Indexed VTOC              */
 
 /* Bit definitions for ds4devfg */
 #define DS4DEVFG_TOL            0x01    /* Tolerance factor applies to
