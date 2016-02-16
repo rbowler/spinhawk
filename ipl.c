@@ -215,7 +215,7 @@ BYTE    chanstat;                       /* IPL device channel status */
         logmsg (_("HHCCP027E Device %4.4X not in configuration%s\n"),
                 devnum,
                 (sysblk.arch_mode == ARCH_370 ?
-                  " or not conneceted to channelset" : ""));
+                  " or not connected to channelset" : ""));
         HDC1(debug_cpu_state, regs);
         return -1;
     }
@@ -436,8 +436,8 @@ int ARCH_DEP(initial_cpu_reset) (REGS *regs)
     regs->PX     = 0;
     regs->psw.AMASK_G = AMASK24;
 
-    /* 
-     * ISW20060125 : Since we reset the prefix, we must also adjust 
+    /*
+     * ISW20060125 : Since we reset the prefix, we must also adjust
      * the PSA ptr
      */
     regs->psa = (PSA_3XX *)regs->mainstor;
@@ -463,7 +463,7 @@ int ARCH_DEP(initial_cpu_reset) (REGS *regs)
     regs->CR(2) = 0xFFFFFFFF;
 #endif /*FEATURE_S370_CHANNEL*/
 
-    regs->chanset = 
+    regs->chanset =
 #if defined(FEATURE_CHANNEL_SWITCHING)
                     regs->cpuad < FEATURE_LCSS_MAX ? regs->cpuad :
 #endif /*defined(FEATURE_CHANNEL_SWITCHING)*/
