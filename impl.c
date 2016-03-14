@@ -143,7 +143,7 @@ BOOL WINAPI console_ctrl_handler (DWORD signo)
                         sleep(1);
                         break;
                     }
-                    else 
+                    else
                     {
 //                        logmsg("%s(%d): %d waiting for shutdown to complete\n",   /* debug */
 //                                __FILE__, __LINE__, i );                          /* debug */
@@ -158,7 +158,7 @@ BOOL WINAPI console_ctrl_handler (DWORD signo)
                 logmsg(_("HHCIN023W CLOSE Event received, SHUTDOWN previously requested...\n"));
             }
             usleep(10000);
-            return FALSE;           
+            return FALSE;
             break;
         default:
             return FALSE;
@@ -542,6 +542,9 @@ TID     logcbtid;                       /* RC file thread identifier */
 #else
         sa.sa_flags = 0;
 #endif
+
+        /* Explictily initialize sa_mask to its default.        @PJJ */
+        sigemptyset(&sa.sa_mask);
 
         if( sigaction(SIGILL, &sa, NULL)
          || sigaction(SIGFPE, &sa, NULL)
