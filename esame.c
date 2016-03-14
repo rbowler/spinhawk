@@ -5783,9 +5783,9 @@ BYTE ARCH_DEP(stfl_data)[] = {
                  0
                  ,
                  0
-#if defined(FEATURE_FAST_BCR_SERIALIZATION_FACILITY)            /*810*/
-                 | STFL_5_FAST_BCR_SERIAL                       /*810*/
-#endif /*defined(FEATURE_FAST_BCR_SERIALIZATION_FACILITY)*/     /*810*/
+#if defined(FEATURE_RESET_REFERENCE_BITS_MULTIPLE_FACILITY)     /*810*/
+                 | STFL_8_RES_REF_BITS_MUL                      /*810*/
+#endif /*defined(FEATURE_RESET_REFERENCE_BITS_MULTIPLE_FACILITY)  810*/
 #if defined(FEATURE_CPU_MEASUREMENT_COUNTER_FACILITY)
                  | STFL_8_CPU_MEAS_COUNTER
 #endif /*defined(FEATURE_CPU_MEASUREMENT_COUNTER_FACILITY)*/
