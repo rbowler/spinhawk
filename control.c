@@ -6686,13 +6686,29 @@ static BYTE hexebcdic[16] = { 0xF0,0xF1,0xF2,0xF3,0xF4,0xF5,0xF6,0xF7,
         return;
     }
 
-    /* Obtain absolute address of main storage block,
-       check protection, and set reference and change bits */
-    m = MADDR (effective_addr2, b2, regs, ACCTYPE_WRITE, regs->psw.pkey);
-
     switch(regs->GR_L(0) & STSI_GPR0_FC_MASK) {
 
     case STSI_GPR0_FC_BASIC:
+
+        /* The statement below was relocated from immediately   @PJJ */
+        /* prior to the switch statement above, and copied to   @PJJ */
+        /* become the 1st statement in each of the 3 cases in   @PJJ */
+        /* this switch, in order to avoid a possible access     @PJJ */
+        /* exception on the system information block addres     @PJJ */
+        /* (e.g. non-page boundary) in case CC=3 results from   @PJJ */
+        /* the switch default statement.  The IBM Principles    @PJJ */
+        /* of Operation explicitly state CC=3 has the higher    @PJJ */
+        /* priority than such exception.                        @PJJ */
+        /* (Such access exception actually did occur for SUSE   @PJJ */
+        /* SLES 12 under z/VM, causing a disabled wait very     @PJJ */
+        /* early on in its IPL process.)                        @PJJ */
+        /* (Hercules 4.00 was subsequently discovered to have   @PJJ */
+        /* this fix already implemented.)                       @PJJ */
+        /*                          (P.J.Jansen, October 2015)  @PJJ */
+
+        /* Obtain absolute address of main storage block,
+        check protection, and set reference and change bits */
+        m = MADDR(effective_addr2, b2, regs, ACCTYPE_WRITE, regs->psw.pkey);
 
         switch(regs->GR_L(0) & STSI_GPR0_SEL1_MASK) {
 
@@ -6785,6 +6801,10 @@ static BYTE hexebcdic[16] = { 0xF0,0xF1,0xF2,0xF3,0xF4,0xF5,0xF6,0xF7,
 
     case STSI_GPR0_FC_LPAR:
 
+        /* Obtain absolute address of main storage block,
+        check protection, and set reference and change bits */
+        m = MADDR(effective_addr2, b2, regs, ACCTYPE_WRITE, regs->psw.pkey);
+
         switch(regs->GR_L(0) & STSI_GPR0_SEL1_MASK) {
 
         case 2:
@@ -6836,6 +6856,10 @@ static BYTE hexebcdic[16] = { 0xF0,0xF1,0xF2,0xF3,0xF4,0xF5,0xF6,0xF7,
 
 #if defined(FEATURE_CONFIGURATION_TOPOLOGY_FACILITY)
     case STSI_GPR0_FC_CURRINFO:
+
+        /* Obtain absolute address of main storage block,
+        check protection, and set reference and change bits */
+        m = MADDR(effective_addr2, b2, regs, ACCTYPE_WRITE, regs->psw.pkey);
 
         switch(regs->GR_L(0) & STSI_GPR0_SEL1_MASK) {
 
