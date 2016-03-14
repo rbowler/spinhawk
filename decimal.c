@@ -1147,6 +1147,10 @@ int     carry;                          /* Carry indicator           */
 } /* end DEF_INST(multiply_decimal) */
 
 
+#if defined(_MSVC_) && (_MSC_VER == 1900)
+#pragma optimize( "g", off )
+#endif
+
 /*-------------------------------------------------------------------*/
 /* F0   SRP   - Shift and Round Decimal                         [SS] */
 /*-------------------------------------------------------------------*/
@@ -1237,6 +1241,10 @@ int     carry;                          /* Carry indicator           */
         ARCH_DEP(program_interrupt) (regs, PGM_DECIMAL_OVERFLOW_EXCEPTION);
 
 } /* end DEF_INST(shift_and_round_decimal) */
+
+#if defined(_MSVC_) && (_MSC_VER >= 1600)
+#pragma optimize( "", on )
+#endif
 
 
 /*-------------------------------------------------------------------*/
