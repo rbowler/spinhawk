@@ -2259,6 +2259,15 @@ static int  BuildOAT( char* pszOATName, PLCSBLK pLCSBLK )
 
     for(;;)
     {
+        /* This IF statement block was relocated from below     @PJJ */
+        /* the next IF statement block as otherwise the last    @PJJ */
+        /* FREE will never take place.                          @PJJ */
+        if (pszStatement)
+        {
+            free(pszStatement);
+            pszStatement = NULL;
+        }
+
         // Read next record from the OAT file
         if( !ReadOAT( pszOATName, fp, szBuff ) )
         {
@@ -2266,11 +2275,11 @@ static int  BuildOAT( char* pszOATName, PLCSBLK pLCSBLK )
             return 0;
         }
 
-        if( pszStatement )
-        {
-            free( pszStatement );
-            pszStatement = NULL;
-        }
+//      if( pszStatement )                                   /* @PJJ */
+//      {                                                    /* @PJJ */
+//          free( pszStatement );                            /* @PJJ */
+//          pszStatement = NULL;                             /* @PJJ */
+//      }                                                    /* @PJJ */
 
 #if defined(OPTION_CONFIG_SYMBOLS)
         // Make a copy of the OAT statement with symbols resolved
