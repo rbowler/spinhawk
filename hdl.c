@@ -308,7 +308,8 @@ static char * hdl_bdnm (const char *ltype)
 char *dtname;
 unsigned int n;
 
-    dtname = malloc(strlen(ltype) + sizeof(HDL_HDTP_Q));
+    /* Don't forget the extra +1 for the \0 ending.             @PJJ */
+    dtname = malloc(strlen(ltype) + sizeof(HDL_HDTP_Q) + 1);
     strcpy(dtname,HDL_HDTP_Q);
     strcat(dtname,ltype);
 
@@ -1119,15 +1120,15 @@ static void hdl_modify_optab(int insert,zz_func *tabent, HDLINS *instr)
     {
 #if defined(_370)
         if(instr->archflags & HDL_INSTARCH_370)
-            tabent[ARCH_370] = instr->original; 
+            tabent[ARCH_370] = instr->original;
 #endif
 #if defined(_900)
         if(instr->archflags & HDL_INSTARCH_390)
-            tabent[ARCH_390] = instr->original; 
+            tabent[ARCH_390] = instr->original;
 #endif
 #if defined(_900)
         if(instr->archflags & HDL_INSTARCH_900)
-            tabent[ARCH_900] = instr->original; 
+            tabent[ARCH_900] = instr->original;
 #endif
     }
 }

@@ -508,9 +508,17 @@ DLL_EXPORT void kill_all_symbols(void)
             continue;
         }
         free(tok->val);
+
+        /* Show FREE has been carried out.                      @PJJ */
+        tok->val = NULL;
+
         if(tok->var!=NULL)
         {
             free(tok->var);
+
+            /* Show FREE has been carried out.                  @PJJ */
+            tok->var = NULL;
+
         }
         free(tok);
         symbols[i]=NULL;
@@ -763,7 +771,9 @@ DLL_EXPORT char * hgets(char *b,size_t c,int s)
     while(ix<c)
     {
         b[ix]=hgetc(s);
-        if(b[ix]==EOF)
+//      if(b[ix]==EOF)         /* GCC Warning: always false     @PJJ */
+//                             /* due to -Wtype-limits;         @PJJ */
+        if ((int)b[ix] == EOF) /* Corrected.                    @PJJ */
         {
             return NULL;
         }

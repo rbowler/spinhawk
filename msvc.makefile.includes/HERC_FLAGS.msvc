@@ -54,6 +54,13 @@ cflags = $(cflags) /D HDL_BUILD_SHARED /D OPTION_DYNAMIC_LOAD
 # Suppress some deprecation warnings that aren't really deprecation warnings
 cflags = $(cflags) -D _CRT_SECURE_NO_DEPRECATE
 cflags = $(cflags) -D _CRT_NONSTDC_NO_DEPRECATE
+
+# ... or that would unduly become promoted into errors due to option /WX
+!IF $(vsversion) >= 14
+cflags = $(cflags) /wd4996
+cflags = $(cflags) -D _WINSOCK_DEPRECATED_NO_WARNINGS
+!ENDIF
+
 ldebug = $(ldebug) /MANIFEST
 
 # Override win32.mak options for WIN64 to eliminate the following warnings
@@ -87,7 +94,12 @@ ldebug = $(ldebug) /base:0x400000
 
 # Optimize for AMD64 CPU architecture
 !IF "$(CPU)" == "AMD64"
+!IF $(vsversion) < 14
 cflags = $(cflags) /favor:AMD64
+# ... unless we are under visual studio 2015 in whcih case we prefer INTEL64
+!ELSE
+cflags = $(cflags) /favor:INTEL64
+!ENDIF
 !ENDIF
 
 # Increase the sockets set size limit/default to be the

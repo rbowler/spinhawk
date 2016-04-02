@@ -150,13 +150,13 @@ void delayed_exit (int exit_code)
 {
     /* Delay exiting is to give the system
      * time to display the error message. */
-    fflush(stderr);  
-    fflush(stdout);  
+    fflush(stderr);
+    fflush(stdout);
     usleep(100000);
 //  hdl_shut();
     do_shutdown();
-    fflush(stderr);  
-    fflush(stdout);  
+    fflush(stderr);
+    fflush(stdout);
     usleep(100000);
     exit(exit_code);
 }
@@ -567,6 +567,11 @@ char   *buf1;                           /* Pointer to resolved buffer*/
         set_symbol("CCUU","$(CCUU)");
         set_symbol("ccuu","$(ccuu)");
 
+        /* VERISION will be set here, earlier than in           @PJJ */
+        /* console.c in order to make it usable in the          @PJJ */
+        /* hercules configuration file.                         @PJJ */
+        set_symbol("VERSION", VERSION);
+
         buf1=resolve_symbol_string(buf);
 
         if(buf1!=NULL)
@@ -579,6 +584,11 @@ char   *buf1;                           /* Pointer to resolved buffer*/
                 delayed_exit(1);
             }
             strcpy(buf,buf1);
+
+            /* Free buf1 as explicitly stated to be needed in   @PJJ */
+            /* resolve_symbol_string.                           @PJJ */
+            free(buf1);
+
         }
 #endif /*defined(OPTION_CONFIG_SYMBOLS)*/
 
@@ -794,7 +804,7 @@ char    pathname[MAX_PATH];             /* file path in host format  */
 #if defined(_FEATURE_ASN_AND_LX_REUSE)
     sysblk.asnandlxreuse = 0;  /* ASN And LX Reuse is defaulted to DISABLE */
 #endif
-  
+
 #ifdef PANEL_REFRESH_RATE
     sysblk.panrate = PANEL_REFRESH_RATE_SLOW;
 #endif
@@ -889,8 +899,8 @@ char    pathname[MAX_PATH];             /* file path in host format  */
 #if defined( OPTION_ENHANCED_CONFIG_INCLUDE )
         if  (strcasecmp (keyword, "ignore") == 0)
         {
-            if  (strcasecmp (operand, "include_errors") == 0) 
-            {              
+            if  (strcasecmp (operand, "include_errors") == 0)
+            {
                 logmsg( _("HHCCF081I %s Will ignore include errors .\n"),
                         fname);
                 inc_ignore_errors = 1 ;
@@ -901,7 +911,7 @@ char    pathname[MAX_PATH];             /* file path in host format  */
 
         /* Check for include statement */
         if (strcasecmp (keyword, "include") == 0)
-        {              
+        {
             if (++inc_level >= MAX_INC_LEVEL)
             {
                 logmsg(_( "HHCCF082S Error in %s line %d: "
@@ -917,13 +927,13 @@ char    pathname[MAX_PATH];             /* file path in host format  */
             if (inc_fp[inc_level] == NULL)
             {
                 inc_level--;
-                if ( inc_ignore_errors == 1 ) 
+                if ( inc_ignore_errors == 1 )
                 {
                     logmsg(_("HHCCF084W %s Open error ignored file %s: %s\n"),
                                     fname, operand, strerror(errno));
                     continue ;
                 }
-                else 
+                else
                 {
                     logmsg(_("HHCCF085S %s Open error file %s: %s\n"),
                                     fname, operand, strerror(errno));
@@ -1706,13 +1716,13 @@ char    pathname[MAX_PATH];             /* file path in host format  */
             if (inc_fp[inc_level] == NULL)
             {
                 inc_level--;
-                if ( inc_ignore_errors == 1 ) 
+                if ( inc_ignore_errors == 1 )
                 {
                     logmsg(_("HHCCF084W %s Open error ignored file %s: %s\n"),
                                     fname, operand, strerror(errno));
                     continue ;
                 }
-                else 
+                else
                 {
                     logmsg(_("HHCCF085E %s Open error file %s: %s\n"),
                                     fname, operand, strerror(errno));
