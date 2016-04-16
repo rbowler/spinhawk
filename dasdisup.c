@@ -338,7 +338,9 @@ char            memnama[9];             /* Member name (ASCIIZ)      */
                     _("HHCDS006W Member %s is not single text record\n"),
                     memnama);
             memtab[n].multitxt = 1;
-        }
+        } else {
+			memtab[n].multitxt = 0;
+		}
 
         /* Check that the total module length does not exceed X'7F8' */
         if (totlen > 255*8)
