@@ -89,13 +89,15 @@ HDL_REGISTER_SECTION;
 #if defined(_390_FEATURE_MESSAGE_SECURITY_ASSIST)
     HDL_REGISTER( s390_cipher_message,                      UNRESOLVED );
     HDL_REGISTER( s390_cipher_message_with_chaining,        UNRESOLVED );
-    HDL_REGISTER( s390_compute_message_digest,              UNRESOLVED );
+    HDL_REGISTER( s390_compute_intermediate_message_digest, UNRESOLVED );
+    HDL_REGISTER( s390_compute_last_message_digest,         UNRESOLVED );
     HDL_REGISTER( s390_compute_message_authentication_code, UNRESOLVED );
 #endif /*defined(_390_FEATURE_MESSAGE_SECURITY_ASSIST)*/
 #if defined(_900_FEATURE_MESSAGE_SECURITY_ASSIST)
     HDL_REGISTER( z900_cipher_message,                      UNRESOLVED );
     HDL_REGISTER( z900_cipher_message_with_chaining,        UNRESOLVED );
-    HDL_REGISTER( z900_compute_message_digest,              UNRESOLVED );
+    HDL_REGISTER( z900_compute_intermediate_message_digest, UNRESOLVED );
+    HDL_REGISTER( z900_compute_last_message_digest,         UNRESOLVED );
     HDL_REGISTER( z900_compute_message_authentication_code, UNRESOLVED );
 #endif /*defined(_900_FEATURE_MESSAGE_SECURITY_ASSIST)*/
 #if defined(_390) && defined(FEATURE_MESSAGE_SECURITY_ASSIST_EXTENSION_3)
