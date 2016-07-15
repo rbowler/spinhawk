@@ -572,14 +572,10 @@ U32  *ptr4, val4, old4, new4;
 #endif
 
 /*-------------------------------------------------------------------
- * Decide if strict alignment is required
+ * Activate OPTION_STRICT_ALIGNMENT to generate different paths
+ * for non-aligned and aligned accesses in certain instructions
  *-------------------------------------------------------------------*/
-#if !defined(OPTION_STRICT_ALIGNMENT) && !defined(OPTION_NO_STRICT_ALIGNMENT)
- #if !defined(_MSVC_) && !defined(_ext_ia32) && !defined(_ext_amd64) \
-  && !defined(_ext_ppc)
-    #define OPTION_STRICT_ALIGNMENT
- #endif
-#endif
+#define OPTION_STRICT_ALIGNMENT
 
 /*-------------------------------------------------------------------
  * fetch_hw_noswap and fetch_hw
