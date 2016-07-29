@@ -560,11 +560,12 @@ U64     dreg;
 
         /* Update Last Host CPU address */
         STORE_HW(STATEBK->lhcpu, regs->cpuad);
-
-        /* Purge guest TLB entries */
-        ARCH_DEP(purge_tlb) (GUESTREGS);
-        ARCH_DEP(purge_alb) (GUESTREGS);
     }
+
+    /* Purge guest TLB entries */
+    /* Note ISW 20160729 : Forcibly purge TLB and ALB */
+    ARCH_DEP(purge_tlb) (GUESTREGS);
+    ARCH_DEP(purge_alb) (GUESTREGS);
 
     /* Initialize interrupt mask and state */
     SET_IC_MASK(GUESTREGS);
