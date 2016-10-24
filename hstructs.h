@@ -1011,7 +1011,7 @@ struct DEVBLK {                         /* Device configuration block*/
         int     ctcrem;                 /* bytes remaining in buffer */
         int     ctclastpos;             /* last packet read          */
         int     ctclastrem;             /* last packet read          */
-        u_int   ctcxmode:1;             /* 0=Basic mode, 1=Extended  */
+        u_int   ctcxmode:1;             /* 1=Extended, 0=Basic mode  */
         BYTE    ctctype;                /* CTC_xxx device type       */
         BYTE    netdevname[IFNAMSIZ];   /* network device name       */
 
@@ -1033,6 +1033,8 @@ struct DEVBLK {                         /* Device configuration block*/
         int     ctce_lport;             /* CTCE Local  port #   @PJJ */
         int     ctce_rport;             /* CTCE Remote port #   @PJJ */
         struct in_addr ctce_ipaddr;     /* CTCE Dest IP addr    @PJJ */
+        u_int   ctce_contention_loser:1;/* CTCE cmd collision   @PJJ */
+        u_int   ctce_ccw_flags_cc:1;    /* CTCE ccw in progres  @PJJ */
 
         /*  Device dependent fields for printer                      */
 
