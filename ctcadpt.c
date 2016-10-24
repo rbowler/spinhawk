@@ -55,7 +55,6 @@ typedef struct _CTCE_INFO
     int                working_attn_rc;    /* device_attention RC    */
                                        /* from transition to         */
                                        /* "Working(D)" state         */
-    int                working_attn_retry; /* retry count for this   */
     int                sok_buf_len;    /* socket buffer length       */
 }
 CTCE_INFO;
@@ -114,6 +113,12 @@ static void     CTCE_Trace( const DEVBLK*             pDEVBLK,
                             const CTCE_INFO*          pCTCE_Info,
                             const BYTE*               pCTCE_Buf,
                             const BYTE*               pUnitStat );
+
+static int      CTCE_Connect_Timeout( int                    sockfd,
+                                      const struct sockaddr* saptr,
+                                      const socklen_t        salen,
+  DEVBLK* pDEVBLK,
+                                      const int              nsec );
 
 static int      VMNET_Init( DEVBLK *dev, int argc, char *argv[] );
 
@@ -1962,15 +1967,33 @@ void  CTCE_ExecuteCCW( DEVBLK* pDEVBLK, BYTE  bCode,
         // at the other side and vice-versa
         parm.addr.sin_port = htons(pDEVBLK->ctce_rport + 1 );
         parm.addr.sin_addr = pDEVBLK->ctce_ipaddr;
+/* PJJ *
         rc = connect( parm.listenfd[0],
             ( struct sockaddr * )&parm.addr,
             sizeof( parm.addr) );
+ * PJJ */
+        rc = CTCE_Connect_Timeout( parm.listenfd[0],
+            ( struct sockaddr * )&parm.addr,
+            sizeof( parm.addr), pDEVBLK, 1000000 );
+//          sizeof( parm.addr), pDEVBLK, 2000000 );
+/* PJJ */
 
         // if connection was not successful, then we may retry later on when the other side becomes ready.
         if( rc < 0 )
         {
+/* PJJ *
             logmsg( _("HHCCT053I %04X CTCE: Connect error :%d -> %s:%d, %s\n"),
                 CTCX_DEVNUM( pDEVBLK ), pDEVBLK->ctce_lport, remaddr, pDEVBLK->ctce_rport + 1, strerror( HSO_errno ) );
+ * PJJ *
+            logmsg( _("HHCCT053I %04X CTCE: Connect error :%d -> %s:%d, errno=%d= %s, sense=%04X\n"),
+                CTCX_DEVNUM( pDEVBLK ), pDEVBLK->ctce_lport, remaddr, pDEVBLK->ctce_rport + 1,
+                HSO_errno, strerror( HSO_errno ), pDEVBLK->sense[0]) ;
+ * PJJ */
+            logmsg( _("HHCCT053I %04X CTCE: Connect timeout :%d -> %s:%d, retry possible, sense=%04X\n"),
+                CTCX_DEVNUM( pDEVBLK ), pDEVBLK->ctce_lport, remaddr, pDEVBLK->ctce_rport + 1,
+                pDEVBLK->sense[0]) ;
+                pDEVBLK->sense[0] |= SENSE_IR;
+/* PJJ */
         }
         else  // successfully connected to the other end
         {
@@ -3542,3 +3565,116 @@ Action
     return;
 }
 
+// ---------------------------------------------------------------------
+// CTCE_connect_timeout
+// ---------------------------------------------------------------------
+//
+// connect but with a timeout parameter.
+//
+
+int CTCE_Connect_Timeout(int                    sockfd,
+                         const struct sockaddr* saptr,
+                         const socklen_t        salen,
+       DEVBLK* pDEVBLK,
+                         const int              usec)
+{
+    int                   rc;                    // connect return code
+    fd_set                read_set, write_set;   // socket sets for select
+    static struct timeval connect_timeout;       // max connect wait time
+    int                   getsockopt_rc;         // getsockopt return code
+    int                   getsockopt_error = 0;  // getsockopt error
+    socklen_t             getsockopt_error_len;  // getsockopt error length
+
+    // Switch to non-blocking mode during the next connect.
+    socket_set_blocking_mode( sockfd, 0 ) ;
+    rc = connect( sockfd, saptr, salen );
+
+    logmsg( _("HHCCT753I %04X CTCE: Connect RC=%d, errno=(%d,%d)%d %s\n"),
+        CTCX_DEVNUM( pDEVBLK ), rc, HSO_EWOULDBLOCK, HSO_EINPROGRESS, HSO_errno, strerror( HSO_errno ) );
+
+    // In case connect() did not complete immediately then we prepare
+    // the select() to wait for the specified amount of time.
+    if( rc < 0 )
+    {
+        FD_ZERO ( &read_set );
+        FD_SET( sockfd, &read_set );
+        write_set = read_set ;
+        connect_timeout.tv_sec = 0;
+        connect_timeout.tv_usec = usec;
+
+        // Then we issue select() until it returns a real error.
+        // A zero return code means the select() timed out,
+        // positive one signifies the connect() took place.
+        do
+        {
+            rc = select( sockfd + 1, &read_set, &write_set, NULL,
+          		   usec ? &connect_timeout : NULL );
+        } while( (rc < 0) && ( HSO_errno == HSO_EINTR ) );
+
+        getsockopt_error_len = sizeof( getsockopt_error );
+        getsockopt_rc = getsockopt( sockfd, SOL_SOCKET, SO_ERROR,
+           (GETSET_SOCKOPT_T*)&getsockopt_error, &getsockopt_error_len );
+
+        logmsg( _("HHCCT853I %04X CTCE: Select RC=%d, gRC=%d, gerrno=%d= %s, connected=%d, errno=%d= %s\n"),
+            CTCX_DEVNUM( pDEVBLK ), rc, getsockopt_rc, getsockopt_error, strerror( getsockopt_error ),
+            FD_ISSET( sockfd, &read_set) | FD_ISSET( sockfd, &write_set ),
+            HSO_errno, strerror( HSO_errno ) );
+
+        if( rc == 0 )
+        {
+            rc = -1;
+        }
+    }
+
+	   // Switch back to original non-blocking mode and return
+    socket_set_blocking_mode( sockfd, 1 ) ;
+    return rc;
+}
+/*===================================================================
+	int				flags, n, error;
+	socklen_t		len;
+	fd_set			rset, wset;
+	struct timeval	tval;
+
+	flags = Fcntl(sockfd, F_GETFL, 0);
+	Fcntl(sockfd, F_SETFL, flags | O_NONBLOCK);
+
+	error = 0;
+	if ( (n = connect(sockfd, saptr, salen)) < 0)
+		if (errno != EINPROGRESS)
+			return(-1);
+
+	// Do whatever we want while the connect is taking place.
+
+	if (n == 0)
+		goto done;	// connect completed immediately
+
+	FD_ZERO(&rset);
+	FD_SET(sockfd, &rset);
+	wset = rset;
+	tval.tv_sec = nsec;
+	tval.tv_usec = 0;
+
+	if ( (n = Select(sockfd+1, &rset, &wset, NULL,
+					 nsec ? &tval : NULL)) == 0) {
+		close(sockfd);		// timeout
+		errno = ETIMEDOUT;
+		return(-1);
+	}
+
+	if (FD_ISSET(sockfd, &rset) || FD_ISSET(sockfd, &wset)) {
+		len = sizeof(error);
+		if (getsockopt(sockfd, SOL_SOCKET, SO_ERROR, &error, &len) < 0)
+			return(-1);			// Solaris pending error
+	} else
+		err_quit("select error: sockfd not set");
+
+done:
+	Fcntl(sockfd, F_SETFL, flags);	// restore file status flags
+	if (error) {
+		close(sockfd);		// just in case
+		errno = error;
+		return(-1);
+	}
+	return(0);
+  ===================================================================*/
