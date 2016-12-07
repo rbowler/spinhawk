@@ -2823,7 +2823,7 @@ static void ARCH_DEP(kmctr_aes)(int r1, int r2, int r3, REGS *regs)
   int i;
   int keylen;
   BYTE message_block[16];
-  BYTE parameter_block[48];
+  BYTE parameter_block[64];
   int parameter_blocklen;
   int r1_is_not_r2;
   int r1_is_not_r3;
