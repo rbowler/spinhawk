@@ -1436,7 +1436,6 @@ static void ARCH_DEP(cmpsc_expand)(int r1, int r2, REGS *regs, REGS *iregs)
     ec.ecl[i] = 1;
   }
   ec.ecwm = 256;                       /* Set watermark after alphabet part   */
-
   ec.iregs = iregs;
   ec.r1 = r1;
   ec.r2 = r2;
