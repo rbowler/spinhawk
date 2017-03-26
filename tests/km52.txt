@@ -7,7 +7,7 @@ r 1A0=00000001800000000000000000000200 # z/Arch restart PSW
 r 1D0=0002000180000000000000000000DEAD # z/Arch pgm new PSW
 r 200=41000034     # LA R0,X'34'       R0->function code 52 encrypt
 r 204=41100500     # LA R1,PB          R1->parameter block address
-r 208=41200600     # LA R2,FO          R2->first operand 
+r 208=41200600     # LA R2,FO          R2->first operand
 r 20C=41400700     # LA R4,SO          R4->second operand
 r 210=41500010     # LA R5,SOL         R5->second operand length
 r 214=B92E0024     # KM R2,R4          Cipher message
@@ -19,8 +19,14 @@ r 22A=41200800     # LA R2,SO          R2->second operand from encrypt operation
 r 22E=41400600     # LA R4,FO          R4->first operand from encrypt operation
 r 232=41500010     # LA R5,FOL         R5->first operand length
 r 236=B92E0024     # KM R2,R4          Cipher message
-r 23A=B2B20300     # LPSWE WAITPSW     Load enabled wait PSW
-r 300=07020001800000000123456789ABCDEF # WAITPSW Enabled wait state PSW
+r 23A=D20F06000680 # CLC FO(16),FE     First operand = expected result?
+r 240=477002FC     # BNE DIE           Error if not equal
+r 244=D20F07000800 # CLC SO(16),SE     Second operand = expected result?
+r 24A=477002FC     # BNE DIE           Error if not equal
+r 24E=B2B20300     # LPSWE WAITPSW     Load enabled wait PSW
+r 2FC=B2B20310     # LPSWE DISWAIT     Load disabled wait PSW
+r 300=07020001800000000000000000AAAAAA # WAITPSW Enabled wait state PSW
+r 310=00020001800000000000000000BADBAD # DISWAIT Disabled wait state PSW
 *
 r 500=000102030405060708090A0B0C0D0E0F # Parameter block
 r 510=101112131415161718191A1B1C1D1E1F # Parameter block
@@ -28,20 +34,18 @@ r 520=202122232425262728292A2B2C2D2E2F # Parameter block
 *
 r 530=202122232425262728292A2B2C2D2E2F # XTS
 *
-r 600=000102030405060708090A0B0C0D0E0F # First operand
+r 600=000102030405060708090A0B0C0D0E0F # FO First operand
+r 680=8F2A6717867A9DC4762802F21FB9D355 # FE Expected result
 *
-r 680=8F2A6717867A9DC4762802F21FB9D355 # Expected result
-*
-r 700=000102030405060708090A0B0C0D0E0F # Second operand
-*
-r 800=8F2A6717867A9DC4762802F21FB9D355 # Expected result
+r 700=000102030405060708090A0B0C0D0E0F # SO Second operand
+r 800=8F2A6717867A9DC4762802F21FB9D355 # SE Expected result
 *
 ostailor null
 restart
 pause 1
-* Display parameter blocks
+* Actual results
 r 600.8
-r 800.8
+r 700.8
 * Expected results
 r 680.8
-r 700.8
+r 800.8
