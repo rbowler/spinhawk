@@ -1,0 +1,93 @@
+* CVBG test $Id$
+sysclear
+archmode esame
+r 1a0=00000001800000000000000000000200 # z/Arch restart PSW
+r 1d0=00020001800000000000000000BADBAD # z/Arch pgm new PSW
+r 200=B7000310     # LCTL R0,R0,CTLR0  Set CR0 bit 45
+* Test 1: numbers which should produce fixed point divide exception
+* and the result register should be unchanged
+r 204=1B99         # SR R9,R9          Clear number of successful tests
+r 206=47F00212     # B A0              Br to start of TEST1
+r 212=41100500     #A0 LA R1,TABLE1    R1=>table 1
+r 216=58001000     # L R0,0(,R1)       R0=number of ranges in table 1
+r 21A=E35003180004 # LG R5,PATT        Load R5 with a test pattern
+r 220=41101010     #A1 LA R1,16(,R1)   R1=>start of next range
+r 224=D20F04001000 # MVC P,0(R1)       Set P to start of range
+r 22A=E36003180004 # LG R6,PATT        R6=expected result
+r 230=41101010     # LA R1,16(,R1)     R1=>end of range
+r 234=D20F01D00370 #A2 MVC PSAPNEW,PSWA3 Set pgm new PSW
+r 23A=E3500400000E # CVBG R5,P         Convert P to binary in R5
+r 240=47F002FC     # B DIE             Error if no pgm check
+r 244=D20F01D00360 #A3 MVC PSAPNEW,ERRPSW Restore pgm new PSW
+r 24A=E555008E0009 # CLHHSI PGMINT,9   Fixed point divide exception?
+r 250=477002FC     # BNE DIE           Error if not
+r 254=E35003180021 # CLG R5,PATT       Check that R5 is unchanged
+r 25A=477002FC     # BNE DIE           Error if R5 changed
+r 25E=41909001     # LA R9,1(,R9)      Increment number of tests
+r 262=F9FF04001000 # CP P,0(R1)        Reached end of range?
+r 268=47B00276     # BNL A4            Br if yes
+r 26C=FAF004000314 # AP P,P1           Increment P
+r 272=47F00234     # B A2              Repeat until end of range
+r 276=46000220     #A4 BCT R0,A1       Repeat until end of table 1
+r 27A=47F00290     # B B0              Br to start of TEST2
+* Test 2: numbers which should produce the corresponding binary number
+* in the result register
+r 290=41100600     #B0 LA R1,TABLE2    R1=>table 2
+r 294=58001000     # L R0,0(,R1)       R0=number of ranges in table 2
+r 298=41101010     #B1 LA R1,16(,R1)   R1=>start of next range
+r 29C=D20F04001000 # MVC P,0(R1)       Set P to start of range
+r 2A2=E36010100004 # LG R6,16(,R1)     R6=binary equivalent of start
+r 2A8=41101020     # LA R1,32(,R1)     R1=>end of range
+r 2AC=E3500400000E #B2 CVBG R5,P       Convert P to binary in R5
+r 2B2=B9200056     # CGR R5,R6         Compare result
+r 2B6=477002FC     # BNE DIE           Error if wrong result
+r 2BA=41909001     # LA R9,1(,R9)      Increment number of tests
+r 2BE=F9FF04001000 # CP P,0(R1)        Reached end of range?
+r 2C4=47B002D6     # BNL B4            Br if yes
+r 2C8=A76B0001     # AGHI R6,1         Increment expected result
+r 2CC=FAF004000314 # AP P,P1           Increment P
+r 2D2=47F002AC     # B B2              Repeat until end of range
+r 2D6=46000298     #B4 BCT R0,B1       Repeat until end of table 2
+r 2DA=47F002F0     # B GDD             Br to end
+r 2F0=B2B20300     #GDD LPSWE WAITPSW  Load enabled wait PSW
+r 2FC=B2B201D0     #DIE LPSWE PGMNPSW  Load disabled wait PSW
+r 300=07020001800000000000000000AAAAAA # WAITPSW Enabled wait state PSW
+r 310=00040000     # CTLR0             Control register 0 (bit45 AFP control)
+r 314=1C           # P1                Packed decimal increment
+r 318=A5A5A5A5A5A5A5A5                 # PATT Test pattern
+r 360=00020001800000000000000000BADBAD # ERRPSW Disabled wait PSW
+r 370=00000001800000000000000000000244 # PSWA3 Loop continuation PSW
+r 400=00000000000000000000000000000000 # P
+* Table 1: ranges of numbers which should produce fixed point divide
+* exception and the result register should be unchanged
+r 500=00000005                         # Number of ranges in table 1
+r 510=9999999999999999999999999999999D # Start of range
+r 520=9999999999999999999999999999000D # End of range
+r 530=0000000000009223372036854776000D # Start of range
+r 540=0000000000009223372036854775809D # End of range
+r 550=0000000000009223372036854775808C # Start of range
+r 560=0000000000009223372036854776000C # End of range
+r 570=0000000000018446744073709551600C # Start of range
+r 580=0000000000018446744073709551700C # End of range
+r 590=9999999999999999999999999999000C # Start of range
+r 5A0=9999999999999999999999999999999C # End of range
+* Table 2: ranges of numbers which should produce the corresponding
+* binary number in the result register
+r 600=00000003                         # Number of ranges in table 2
+r 610=0000000000009223372036854775808D # Start of range
+r 620=8000000000000000                 # Binary equivalent
+r 630=0000000000009223372036854775000D # End of range
+r 640=0000000000000000000000000000999D # Start of range
+r 650=FFFFFFFFFFFFFC19                 # Binary equivalent
+r 660=0000000000000000000000000000999C # End of range
+r 670=0000000000009223372036854775000C # Start of range
+r 680=7FFFFFFFFFFFFCD8                 # Binary equivalent
+r 690=0000000000009223372036854775807C # End of range
+ostailor null
+pgmtrace -9
+restart
+pause 3
+* Display P
+r 400.10
+* Display R9 = counter, R5 = result, R6 = expected result
+gpr
