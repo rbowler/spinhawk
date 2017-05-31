@@ -3242,7 +3242,7 @@ BYTE   *ip;                             /* -> executed instruction   */
     if (!OPEN_IC_PER(regs))
         regs->execflag = 0;
 }
-#endif /* defined(FEATURE_EXECUTE_EXTENSION_FACILITY) */
+#endif /*defined(FEATURE_EXECUTE_EXTENSIONS_FACILITY)*/
 
 
 #if defined(FEATURE_ACCESS_REGISTERS)
