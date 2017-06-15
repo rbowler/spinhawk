@@ -26,9 +26,13 @@
 /* +-----+-------+----------------------------------------+*/
 /* |E602 | LCKPG | Lock Page in core table                |*/
 /* |E603 | ULKPG | Unlock page in core table              |*/
+/* |E606 | SCNVU | Scan Virtual Unit control blocks       |*/
+/* |E607 | DISP1 | Dispatcher assist                      |*/
 /* |E608 | TRBRG | LRA + Basic checks on VPAGE            |*/
 /* |E609 | TRLOK | Same as TRBRG + Lock page in core      |*/
+/* |E60D | DISP0 | Dispatcher assist                      |*/
 /* |E60E | SCNRU | Scan Real Unit control blocks          |*/
+/* |E611 | DISP2 | Dispatcher assist                      |*/
 /* |E612 | STLVL | Store ECPS:VM Level                    |*/
 /* |E614 | FREEX | Allocate CP FREE Storage from subpool  |*/
 /* |E615 | FRETX | Release CP FREE Storage to subpool     |*/
@@ -41,11 +45,17 @@
 /* |0A   | SVC   | Virtual SVC Assist                     |*/
 /* |80   | SSM   | Virtual SSM Assist                     |*/
 /* |82   | LPSW  | Virtual LPSW Assist                    |*/
+/* |B7   | LCTL  | Virtual LCTL Assist                    |*/
 /* +-----+-------+----------------------------------------+*/
 /*                                                         */
 /***********************************************************/
 
 // $Log$
+//
+// Revision 1.69  2017/01/12 12:00:00  bobpolmanter
+// LCTL assist should not load DAS control regs 3-7;
+// Update comments at beginning to reflect what is and is not supported
+//
 // Revision 1.68  2007/06/23 00:04:09  ivan
 // Update copyright notices to include current year (2007)
 //
@@ -2474,9 +2484,21 @@ int ecpsvm_dolctl(REGS *regs,int r1,int r3,int b2,VADR effective_addr2)
             case 4:
             case 5:
             case 7:
-                ocrs[j]=crs[j];
-                rcrs[j]=crs[j];
-                break;
+/*  2017-01-12 
+    LCTL assist should not update real CR3-CR7 with values from a virtual machine execution of LCTL.
+    CR3-CR7 are for the DAS feature.  If any of these four control registers are specified then
+    the assist should kick it back to CP and let CP handle it, because different versions of VM do
+    different things with these CRs depending on whether DAS is available or not.                    */
+
+// original code:
+//                ocrs[j]=crs[j];
+//                rcrs[j]=crs[j]
+//                break;
+
+// replacement code:
+                DEBUG_SASSISTX(LCTL,logmsg("HHCEV300D : SASSIST LCTL Reject : DAS CR%d Update\n",j));
+                return(1);
+/* end of 2017-01-12 */
             case 6: /* VCR6 Ignored on real machine */
                 ocrs[j]=crs[j];
                 break;
