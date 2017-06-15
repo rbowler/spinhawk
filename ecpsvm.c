@@ -52,6 +52,15 @@
 
 // $Log$
 //
+// Revision 1.72  2017/01/24 12:53:00  bobpolmanter
+// Instruction assists must go back to CP if virtual PSW in problem state
+//
+// Revision 1.71  2017/01/18 19:33:00  bobpolmanter
+// Offset in PSA for APSTAT2 is incorrect in ecpsvm.h
+//
+// Revision 1.70  2017/01/15 12:00:00  bobpolmanter
+// Virtual interval timer issue fixed in clock.c
+//
 // Revision 1.69  2017/01/12 12:00:00  bobpolmanter
 // LCTL assist should not load DAS control regs 3-7;
 // Update comments at beginning to reflect what is and is not supported
@@ -274,6 +283,15 @@ struct _ECPSVM_SASTATS
         DEBUG_SASSISTX(_instname,logmsg(_("HHCEV300D : EVMA Disabled by guest\n"))); \
         return(1); \
     } \
+    /* 2017-01-24  Reject if Virtual PSW is in problem state */ \
+    /* All instruction assists should be rejected if VPSW is in problem state and be reflected back    */  \
+    /* to CP for handling.  This affects 2nd level VM hosting 3rd level guests.                        */  \
+    if(CR6 & ECPSVM_CR6_VIRTPROB) \
+    { \
+        DEBUG_SASSISTX(_instname,logmsg(_("HHCEV300D : SASSIST "#_instname" reject : Virtual problem state\n"))); \
+        return(1); \
+    } \
+    /* End of 2017-01-24   */  \
     /* Increment call now (don't count early misses) */ \
     ecpsvm_sastats._instname.call++; \
     amicblok=CR6 & ECPSVM_CR6_MICBLOK; \
