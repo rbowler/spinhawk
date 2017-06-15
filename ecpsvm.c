@@ -52,6 +52,13 @@
 
 // $Log$
 //
+// Revision 1.74  2017/01/27 15:20:00  bobpolmanter
+// Fix the reversed order of the EVM_ST operands in the CPEXBLOK FRET exit 
+//  of assist DISP2; was causing CP storage overlays and PRG001 failures.
+//
+// Revision 1.73  2017/01/27 15:20:00  bobpolmanter
+// Enhancement revision; not implemented
+//
 // Revision 1.72  2017/01/24 12:53:00  bobpolmanter
 // Instruction assists must go back to CP if virtual PSW in problem state
 //
@@ -768,12 +775,14 @@ int ecpsvm_do_disp2(REGS *regs,VADR dl,VADR el)
             }
         /* Save GPRS 12-1 (wraping) in DSPSAVE (datalist +40) */
         /* So that LM 12,1,DSPSAVE in DMKDSP works after call to DMKFRET */
-        EVM_ST(dl+40,CPEXBKUP[12]);
-        EVM_ST(dl+44,CPEXBKUP[13]);
-        EVM_ST(dl+48,CPEXBKUP[14]);
-        EVM_ST(dl+52,EVM_L(F_CPEXB+12)); /* DSPSAVE + 12 = CPEXADD */
-        EVM_ST(dl+56,CPEXBKUP[0]);
-        EVM_ST(dl+60,CPEXBKUP[1]);  /* Note : DMKDSP Is wrong -  SCHMASK is at +64 (not +60) */
+        /* 2017-01-27 Fix order of EVM_ST operands to prevent stg overlays */
+            EVM_ST(CPEXBKUP[12],dl+40);
+            EVM_ST(CPEXBKUP[13],dl+44);
+            EVM_ST(CPEXBKUP[14],dl+48);
+            EVM_ST(EVM_L(F_CPEXB+12),dl+52); /* DSPSAVE + 12 = CPEXADD */
+            EVM_ST(CPEXBKUP[0],dl+56);
+            EVM_ST(CPEXBKUP[1],dl+60);  /* Note : DMKDSP Is wrong -  SCHMASK is at +64 (not +60) */
+        /* End of 2017-01-27 */
         /* Upon taking this exit, GPRS 12-15 are same as entry */
             UPD_PSW_IA(regs, EVM_L(el+12));
             return(0);
