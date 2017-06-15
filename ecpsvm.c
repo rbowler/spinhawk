@@ -52,6 +52,19 @@
 
 // $Log$
 //
+// Revision 1.81  2017/03/27 14:10:00  bobpolmanter
+// Fix two minor issues in DISP0 that did not match DMKDSPCH.
+// Fix DISP0 to set VMPSWAIT on in exit #28.
+//
+// Revision 1.80  2017/02/18 14:05:00  bobpolmanter
+// Enhancement revision; not implemented
+//
+// Revision 1.79  2017/02/10 07:25:00  bobpolmanter
+// Enhancement revision; not implemented
+//
+// Revision 1.78  2017/02/05 08:15:00  bobpolmanter
+// Enhancement revision; not implemented
+//
 // Revision 1.77  2017/02/04 15:45:00  bobpolmanter
 // DISP2 dispatching user that is in virtual wait state;
 //  add check for this condition and let CP handle it.
@@ -1392,7 +1405,8 @@ static int ecpsvm_disp_runtime(REGS *regs,VADR *vmb_p,VADR dlist,VADR exitlist)
     DW_VMTTIME=EVM_LD(vmb+VMTTIME);
     DW_VMTMINQ=EVM_LD(vmb+VMTMINQ);
     /* Check 1st 5 bytes */
-    if((DW_VMTTIME & 0xffffffffff000000ULL) < (DW_VMTMINQ & 0xffffffffff000000ULL))
+    /*2017-03-27 added equality check*/
+    if((DW_VMTTIME & 0xffffffffff000000ULL) <= (DW_VMTMINQ & 0xffffffffff000000ULL))
     {
         B_VMDSTAT=EVM_IC(vmb+VMDSTAT);
         B_VMDSTAT&=~VMDSP;
@@ -1450,6 +1464,11 @@ static int ecpsvm_disp_runtime(REGS *regs,VADR *vmb_p,VADR dlist,VADR exitlist)
         regs->GR_L(4)=0x00800080;
         regs->GR_L(9)=EVM_L(dlist+4);
         regs->GR_L(11)=vmb;
+        /*2017-03-27,ensure VMDSP is off*/
+        B_VMDSTAT=EVM_IC(vmb+VMDSTAT);
+        B_VMDSTAT&=~VMDSP;
+        EVM_STC(B_VMDSTAT,vmb+VMDSTAT);
+        /* end of 2017-03-27 */
         UPD_PSW_IA(regs, EVM_L(exitlist+8));
         DEBUG_CPASSISTX(DISP0,logmsg("RUNTIME : Complete - Taking exit #8\n"));
         return(0);
@@ -1686,6 +1705,10 @@ DEF_INST(ecpsvm_dispatch_main)
     {
         DEBUG_CPASSISTX(DISP0,logmsg("DISP0 : VWAIT - Taking exit #28\n"));
         /* Take exit 28  */
+        /* 2017-03-27 Set VMPSWAIT */
+        B_VMRSTAT |= VMPSWAIT;
+        EVM_STC(B_VMRSTAT,vmb+VMRSTAT);
+        /* end of 2017-03-27 */
         regs->GR_L(11)=vmb;
         UPD_PSW_IA(regs, EVM_L(elist+28));   /* Exit +28 */
         CPASSIST_HIT(DISP0);
