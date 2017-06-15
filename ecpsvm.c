@@ -52,6 +52,13 @@
 
 // $Log$
 //
+// Revision 1.76  2017/01/29 09:55:00  bobpolmanter
+// DISP2 assist not completing for DAT-on guests due to incorrect
+//  checking of shadow table and invalidate page table flags.
+//
+// Revision 1.75  2017/01/28 15:15:00  bobpolmanter
+// Enhancement revision; not implemented
+//
 // Revision 1.74  2017/01/27 15:20:00  bobpolmanter
 // Fix the reversed order of the EVM_ST operands in the CPEXBLOK FRET exit 
 //  of assist DISP2; was causing CP storage overlays and PRG001 failures.
@@ -951,7 +958,8 @@ int ecpsvm_do_disp2(REGS *regs,VADR dl,VADR el)
 
         }
         /* Invalidate Shadow Tables if necessary */
-        if(B_VMESTAT & (VMINVPAG | VMSHADT))
+        /* 2017-01-29 if statement corrected */
+        if((B_VMESTAT & (VMINVPAG | VMSHADT)) == (VMINVPAG|VMSHADT))
         {
             DEBUG_CPASSISTX(DISP2,logmsg("DISP2 : VMB @ %6.6X Refusing to simulate DMKVATAB\n",vmb));
             /* Really looks like DMKVATAB is a huge thing to simulate */
