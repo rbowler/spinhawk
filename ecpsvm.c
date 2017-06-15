@@ -52,6 +52,13 @@
 
 // $Log$
 //
+// Revision 1.83  2017/05/25 19:12:00  bobpolmanter/petercoghlan
+// Fix DISP2 incorrect check of VMV370R and mis-loaded control registers;
+// Remove DISP2 debug message causing page faults in CP.
+//
+// Revision 1.82  2017/04/30 13:54:00  bobpolmanter
+// Enhancement revision; not implemented
+//
 // Revision 1.81  2017/03/27 14:10:00  bobpolmanter
 // Fix two minor issues in DISP0 that did not match DMKDSPCH.
 // Fix DISP0 to set VMPSWAIT on in exit #28.
@@ -1066,13 +1073,13 @@ int ecpsvm_do_disp2(REGS *regs,VADR dl,VADR el)
             } /* if(Not tracing) */
             EVM_STC(B_MICVIP,F_MICBLOK+8);      /* Save new MICVIP */
         } /* if(F_MICBLOCK!=0) */
-        /* If an Extended VM, Load CRs 3-13 */
+        /* If an Extended VM, Load CRs 4-13 */
         /* CR6 Will be overwritten in a second */
-        if(B_VMESTAT & VMV370R)
+        if(B_VMPSTAT & VMV370R)
         {
             for(i=4;i<14;i++)
             {
-                regs->CR_L(i)=EVM_L(F_ECBLOK+(3*4)+(i*4));
+                regs->CR_L(i)=EVM_L(F_ECBLOK+(i*4));
             }
         }
         /* Update VMMICRO */
@@ -1159,7 +1166,6 @@ int ecpsvm_do_disp2(REGS *regs,VADR dl,VADR el)
         SET_AEA_COMMON(regs);
         SET_PSW_IA(regs);
         /* Dispatch..... */
-        DEBUG_CPASSISTX(DISP2,logmsg(_("HHCPEV300D : DISP2 - Next Instruction : %2.2X\n"),ARCH_DEP(vfetchb)(regs->psw.IA,USE_PRIMARY_SPACE,regs)));
         DEBUG_CPASSISTX(DISP2,display_regs(regs));
         DEBUG_CPASSISTX(DISP2,display_cregs(regs));
         return(2);      /* OK - Perform INTCHECK */
