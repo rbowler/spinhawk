@@ -52,6 +52,10 @@
 
 // $Log$
 //
+// Revision 1.77  2017/02/04 15:45:00  bobpolmanter
+// DISP2 dispatching user that is in virtual wait state;
+//  add check for this condition and let CP handle it.
+//
 // Revision 1.76  2017/01/29 09:55:00  bobpolmanter
 // DISP2 assist not completing for DAT-on guests due to incorrect
 //  checking of shadow table and invalidate page table flags.
@@ -816,6 +820,13 @@ int ecpsvm_do_disp2(REGS *regs,VADR dl,VADR el)
     FW1=EVM_L(dl+24);
     for(vmb=EVM_L(FW1);vmb!=FW1;vmb=EVM_L(vmb))
     {
+        /* 2017-02-04 Check for V PSW wait */
+        if(EVM_LH(vmb+VMPSW) & 0x0002)
+        {
+            DEBUG_CPASSISTX(DISP2,logmsg("DISP2 : VMB @ %6.6X Not eligible : User in virtual PSW wait\n",vmb));
+            continue;
+        }
+        /* end of 2017-02-04 */
         if(!(EVM_IC(vmb+VMDSTAT) & VMRUN))
         {
             DEBUG_CPASSISTX(DISP2,logmsg("DISP2 : VMB @ %6.6X Not eligible : VMRUN not set\n",vmb));
