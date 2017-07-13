@@ -26,9 +26,13 @@
 /* +-----+-------+----------------------------------------+*/
 /* |E602 | LCKPG | Lock Page in core table                |*/
 /* |E603 | ULKPG | Unlock page in core table              |*/
+/* |E606 | SCNVU | Scan Virtual Unit control blocks       |*/
+/* |E607 | DISP1 | Dispatcher assist                      |*/
 /* |E608 | TRBRG | LRA + Basic checks on VPAGE            |*/
 /* |E609 | TRLOK | Same as TRBRG + Lock page in core      |*/
+/* |E60D | DISP0 | Dispatcher assist                      |*/
 /* |E60E | SCNRU | Scan Real Unit control blocks          |*/
+/* |E611 | DISP2 | Dispatcher assist                      |*/
 /* |E612 | STLVL | Store ECPS:VM Level                    |*/
 /* |E614 | FREEX | Allocate CP FREE Storage from subpool  |*/
 /* |E615 | FRETX | Release CP FREE Storage to subpool     |*/
@@ -41,11 +45,64 @@
 /* |0A   | SVC   | Virtual SVC Assist                     |*/
 /* |80   | SSM   | Virtual SSM Assist                     |*/
 /* |82   | LPSW  | Virtual LPSW Assist                    |*/
+/* |B7   | LCTL  | Virtual LCTL Assist                    |*/
 /* +-----+-------+----------------------------------------+*/
 /*                                                         */
 /***********************************************************/
 
 // $Log$
+//
+// Revision 1.83  2017/05/25 19:12:00  bobpolmanter/petercoghlan
+// Fix DISP2 incorrect check of VMV370R and mis-loaded control registers;
+// Remove DISP2 debug message causing page faults in CP.
+//
+// Revision 1.82  2017/04/30 13:54:00  bobpolmanter
+// Enhancement revision; not implemented
+//
+// Revision 1.81  2017/03/27 14:10:00  bobpolmanter
+// Fix two minor issues in DISP0 that did not match DMKDSPCH.
+// Fix DISP0 to set VMPSWAIT on in exit #28.
+//
+// Revision 1.80  2017/02/18 14:05:00  bobpolmanter
+// Enhancement revision; not implemented
+//
+// Revision 1.79  2017/02/10 07:25:00  bobpolmanter
+// Enhancement revision; not implemented
+//
+// Revision 1.78  2017/02/05 08:15:00  bobpolmanter
+// Enhancement revision; not implemented
+//
+// Revision 1.77  2017/02/04 15:45:00  bobpolmanter
+// DISP2 dispatching user that is in virtual wait state;
+//  add check for this condition and let CP handle it.
+//
+// Revision 1.76  2017/01/29 09:55:00  bobpolmanter
+// DISP2 assist not completing for DAT-on guests due to incorrect
+//  checking of shadow table and invalidate page table flags.
+//
+// Revision 1.75  2017/01/28 15:15:00  bobpolmanter
+// Enhancement revision; not implemented
+//
+// Revision 1.74  2017/01/27 15:20:00  bobpolmanter
+// Fix the reversed order of the EVM_ST operands in the CPEXBLOK FRET exit 
+//  of assist DISP2; was causing CP storage overlays and PRG001 failures.
+//
+// Revision 1.73  2017/01/27 15:20:00  bobpolmanter
+// Enhancement revision; not implemented
+//
+// Revision 1.72  2017/01/24 12:53:00  bobpolmanter
+// Instruction assists must go back to CP if virtual PSW in problem state
+//
+// Revision 1.71  2017/01/18 19:33:00  bobpolmanter
+// Offset in PSA for APSTAT2 is incorrect in ecpsvm.h
+//
+// Revision 1.70  2017/01/15 12:00:00  bobpolmanter
+// Virtual interval timer issue fixed in clock.c
+//
+// Revision 1.69  2017/01/12 12:00:00  bobpolmanter
+// LCTL assist should not load DAS control regs 3-7;
+// Update comments at beginning to reflect what is and is not supported
+//
 // Revision 1.68  2007/06/23 00:04:09  ivan
 // Update copyright notices to include current year (2007)
 //
@@ -264,6 +321,15 @@ struct _ECPSVM_SASTATS
         DEBUG_SASSISTX(_instname,logmsg(_("HHCEV300D : EVMA Disabled by guest\n"))); \
         return(1); \
     } \
+    /* 2017-01-24  Reject if Virtual PSW is in problem state */ \
+    /* All instruction assists should be rejected if VPSW is in problem state and be reflected back    */  \
+    /* to CP for handling.  This affects 2nd level VM hosting 3rd level guests.                        */  \
+    if(CR6 & ECPSVM_CR6_VIRTPROB) \
+    { \
+        DEBUG_SASSISTX(_instname,logmsg(_("HHCEV300D : SASSIST "#_instname" reject : Virtual problem state\n"))); \
+        return(1); \
+    } \
+    /* End of 2017-01-24   */  \
     /* Increment call now (don't count early misses) */ \
     ecpsvm_sastats._instname.call++; \
     amicblok=CR6 & ECPSVM_CR6_MICBLOK; \
@@ -740,12 +806,14 @@ int ecpsvm_do_disp2(REGS *regs,VADR dl,VADR el)
             }
         /* Save GPRS 12-1 (wraping) in DSPSAVE (datalist +40) */
         /* So that LM 12,1,DSPSAVE in DMKDSP works after call to DMKFRET */
-        EVM_ST(dl+40,CPEXBKUP[12]);
-        EVM_ST(dl+44,CPEXBKUP[13]);
-        EVM_ST(dl+48,CPEXBKUP[14]);
-        EVM_ST(dl+52,EVM_L(F_CPEXB+12)); /* DSPSAVE + 12 = CPEXADD */
-        EVM_ST(dl+56,CPEXBKUP[0]);
-        EVM_ST(dl+60,CPEXBKUP[1]);  /* Note : DMKDSP Is wrong -  SCHMASK is at +64 (not +60) */
+        /* 2017-01-27 Fix order of EVM_ST operands to prevent stg overlays */
+            EVM_ST(CPEXBKUP[12],dl+40);
+            EVM_ST(CPEXBKUP[13],dl+44);
+            EVM_ST(CPEXBKUP[14],dl+48);
+            EVM_ST(EVM_L(F_CPEXB+12),dl+52); /* DSPSAVE + 12 = CPEXADD */
+            EVM_ST(CPEXBKUP[0],dl+56);
+            EVM_ST(CPEXBKUP[1],dl+60);  /* Note : DMKDSP Is wrong -  SCHMASK is at +64 (not +60) */
+        /* End of 2017-01-27 */
         /* Upon taking this exit, GPRS 12-15 are same as entry */
             UPD_PSW_IA(regs, EVM_L(el+12));
             return(0);
@@ -772,6 +840,13 @@ int ecpsvm_do_disp2(REGS *regs,VADR dl,VADR el)
     FW1=EVM_L(dl+24);
     for(vmb=EVM_L(FW1);vmb!=FW1;vmb=EVM_L(vmb))
     {
+        /* 2017-02-04 Check for V PSW wait */
+        if(EVM_LH(vmb+VMPSW) & 0x0002)
+        {
+            DEBUG_CPASSISTX(DISP2,logmsg("DISP2 : VMB @ %6.6X Not eligible : User in virtual PSW wait\n",vmb));
+            continue;
+        }
+        /* end of 2017-02-04 */
         if(!(EVM_IC(vmb+VMDSTAT) & VMRUN))
         {
             DEBUG_CPASSISTX(DISP2,logmsg("DISP2 : VMB @ %6.6X Not eligible : VMRUN not set\n",vmb));
@@ -914,7 +989,8 @@ int ecpsvm_do_disp2(REGS *regs,VADR dl,VADR el)
 
         }
         /* Invalidate Shadow Tables if necessary */
-        if(B_VMESTAT & (VMINVPAG | VMSHADT))
+        /* 2017-01-29 if statement corrected */
+        if((B_VMESTAT & (VMINVPAG | VMSHADT)) == (VMINVPAG|VMSHADT))
         {
             DEBUG_CPASSISTX(DISP2,logmsg("DISP2 : VMB @ %6.6X Refusing to simulate DMKVATAB\n",vmb));
             /* Really looks like DMKVATAB is a huge thing to simulate */
@@ -997,13 +1073,13 @@ int ecpsvm_do_disp2(REGS *regs,VADR dl,VADR el)
             } /* if(Not tracing) */
             EVM_STC(B_MICVIP,F_MICBLOK+8);      /* Save new MICVIP */
         } /* if(F_MICBLOCK!=0) */
-        /* If an Extended VM, Load CRs 3-13 */
+        /* If an Extended VM, Load CRs 4-13 */
         /* CR6 Will be overwritten in a second */
-        if(B_VMESTAT & VMV370R)
+        if(B_VMPSTAT & VMV370R)
         {
             for(i=4;i<14;i++)
             {
-                regs->CR_L(i)=EVM_L(F_ECBLOK+(3*4)+(i*4));
+                regs->CR_L(i)=EVM_L(F_ECBLOK+(i*4));
             }
         }
         /* Update VMMICRO */
@@ -1090,7 +1166,6 @@ int ecpsvm_do_disp2(REGS *regs,VADR dl,VADR el)
         SET_AEA_COMMON(regs);
         SET_PSW_IA(regs);
         /* Dispatch..... */
-        DEBUG_CPASSISTX(DISP2,logmsg(_("HHCPEV300D : DISP2 - Next Instruction : %2.2X\n"),ARCH_DEP(vfetchb)(regs->psw.IA,USE_PRIMARY_SPACE,regs)));
         DEBUG_CPASSISTX(DISP2,display_regs(regs));
         DEBUG_CPASSISTX(DISP2,display_cregs(regs));
         return(2);      /* OK - Perform INTCHECK */
@@ -1336,7 +1411,8 @@ static int ecpsvm_disp_runtime(REGS *regs,VADR *vmb_p,VADR dlist,VADR exitlist)
     DW_VMTTIME=EVM_LD(vmb+VMTTIME);
     DW_VMTMINQ=EVM_LD(vmb+VMTMINQ);
     /* Check 1st 5 bytes */
-    if((DW_VMTTIME & 0xffffffffff000000ULL) < (DW_VMTMINQ & 0xffffffffff000000ULL))
+    /*2017-03-27 added equality check*/
+    if((DW_VMTTIME & 0xffffffffff000000ULL) <= (DW_VMTMINQ & 0xffffffffff000000ULL))
     {
         B_VMDSTAT=EVM_IC(vmb+VMDSTAT);
         B_VMDSTAT&=~VMDSP;
@@ -1394,6 +1470,11 @@ static int ecpsvm_disp_runtime(REGS *regs,VADR *vmb_p,VADR dlist,VADR exitlist)
         regs->GR_L(4)=0x00800080;
         regs->GR_L(9)=EVM_L(dlist+4);
         regs->GR_L(11)=vmb;
+        /*2017-03-27,ensure VMDSP is off*/
+        B_VMDSTAT=EVM_IC(vmb+VMDSTAT);
+        B_VMDSTAT&=~VMDSP;
+        EVM_STC(B_VMDSTAT,vmb+VMDSTAT);
+        /* end of 2017-03-27 */
         UPD_PSW_IA(regs, EVM_L(exitlist+8));
         DEBUG_CPASSISTX(DISP0,logmsg("RUNTIME : Complete - Taking exit #8\n"));
         return(0);
@@ -1630,6 +1711,10 @@ DEF_INST(ecpsvm_dispatch_main)
     {
         DEBUG_CPASSISTX(DISP0,logmsg("DISP0 : VWAIT - Taking exit #28\n"));
         /* Take exit 28  */
+        /* 2017-03-27 Set VMPSWAIT */
+        B_VMRSTAT |= VMPSWAIT;
+        EVM_STC(B_VMRSTAT,vmb+VMRSTAT);
+        /* end of 2017-03-27 */
         regs->GR_L(11)=vmb;
         UPD_PSW_IA(regs, EVM_L(elist+28));   /* Exit +28 */
         CPASSIST_HIT(DISP0);
@@ -2474,9 +2559,21 @@ int ecpsvm_dolctl(REGS *regs,int r1,int r3,int b2,VADR effective_addr2)
             case 4:
             case 5:
             case 7:
-                ocrs[j]=crs[j];
-                rcrs[j]=crs[j];
-                break;
+/*  2017-01-12 
+    LCTL assist should not update real CR3-CR7 with values from a virtual machine execution of LCTL.
+    CR3-CR7 are for the DAS feature.  If any of these four control registers are specified then
+    the assist should kick it back to CP and let CP handle it, because different versions of VM do
+    different things with these CRs depending on whether DAS is available or not.                    */
+
+// original code:
+//                ocrs[j]=crs[j];
+//                rcrs[j]=crs[j]
+//                break;
+
+// replacement code:
+                DEBUG_SASSISTX(LCTL,logmsg("HHCEV300D : SASSIST LCTL Reject : DAS CR%d Update\n",j));
+                return(1);
+/* end of 2017-01-12 */
             case 6: /* VCR6 Ignored on real machine */
                 ocrs[j]=crs[j];
                 break;

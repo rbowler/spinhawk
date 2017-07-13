@@ -128,8 +128,8 @@ typedef struct _ECPSVM_MICBLOK
 /* Total time spent in problem state (2's complement) */
 #define PROBTIME 0x328
 
-/* PSA + 69D : APSTAT2 - Machine check recov & PTLB Required */
-#define APSTAT2  0x69D
+/* PSA + 69B : APSTAT2 - Machine check recov & PTLB Required */
+#define APSTAT2  0x69B
 #define CPMCHLK  0x10
 #define CPPTLBR  0x02
 
