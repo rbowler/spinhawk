@@ -44,12 +44,12 @@ C:\Program Files\Microsoft SDKs\Windows\v7.0\Redist\VC
    of Hercules in msvc.dllmod.bin:
    copy makefile.msvc makefile
    nmake clean
-   nmake HERCVER=3.12
+   nmake HERCVER=3.13
 
 6. Open a Windows SDK Command Prompt and build the 64-bit version
    of Hercules in msvc.AMD64.bin:
    nmake clean
-   nmake HERCVER=3.12
+   nmake HERCVER=3.13
 
 7. Browse to the Hercules-W32.MM or Hercules-W64.MM file
    and choose "Build MSI - Production"
