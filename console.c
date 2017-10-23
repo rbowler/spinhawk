@@ -2113,6 +2113,11 @@ BYTE                   unitstat;        /* Status after receive data */
                 continue;
             }
 
+            /* The original connect_client thread creation is   @PJJ */
+            /* replaced with a straight function call, thus     @PJJ */
+            /* avoiding the race condition caused by passing    @PJJ */
+            /* &csock set by the above accept to create_thread. @PJJ */
+#if 0                                            /* 23-Oct-2017 @PJJ */
             /* Create a thread to complete the client connection */
             if ( create_thread (&tidneg, DETACHED,
                         connect_client, &csock, "connect_client")
@@ -2122,6 +2127,10 @@ BYTE                   unitstat;        /* Status after receive data */
                         strerror(errno));
                 close_socket (csock);
             }
+#else                                                        /* @PJJ */
+            UNREFERENCED(tidneg);                            /* @PJJ */
+            connect_client( &csock );                        /* @PJJ */
+#endif                                                       /* @PJJ */
 
         } /* end if(FD_ISSET(lsock, &readset)) */
 
