@@ -699,7 +699,11 @@ static int commadpt_connout(COMMADPT *ca)
     rc=connect(ca->sfd,(struct sockaddr *)&sin,sizeof(sin));
     if(rc<0)
     {
+#if defined(_MSVC_)
+        if(HSO_errno==HSO_EWOULDBLOCK)
+#else /* defined(_MSVC_) */
         if(HSO_errno==HSO_EINPROGRESS)
+#endif /* defined(_MSVC_) */
         {
             return(0);
         }
@@ -1483,6 +1487,9 @@ static void *commadpt_thread(void *vca)
                     break;
                 }
                 FD_SET(ca->sfd,&wfd);
+#if defined(_MSVC_)
+                FD_SET(ca->sfd,&xfd);
+#endif /* defined(_MSVC_) */
                 maxfd=maxfd<ca->sfd?ca->sfd:maxfd;
                 break;
             case COMMADPT_PEND_ENABLE:
@@ -1522,6 +1529,10 @@ static void *commadpt_thread(void *vca)
                                 /* getsockopt/SOERROR will tell if   */
                                 /* the call was sucessfull or not    */
                                 FD_SET(ca->sfd,&wfd);
+#if defined(_MSVC_)
+                                FD_SET(ca->sfd,&xfd);
+#endif /* defined(_MSVC_) */
+
                                 maxfd=maxfd<ca->sfd?ca->sfd:maxfd;
                                 ca->callissued=1;
                             }
@@ -1734,7 +1745,11 @@ static void *commadpt_thread(void *vca)
         }
         if(ca->sfd>=0)
         {
+#if defined(_MSVC_)
+            if(FD_ISSET(ca->sfd,&wfd) || FD_ISSET(ca->sfd,&xfd))
+#else /* defined(_MSVC_) */
             if(FD_ISSET(ca->sfd,&wfd))
+#endif /* defined(_MSVC_) */
             {
                 if(ca->dev->ccwtrace)
                 {
@@ -1746,11 +1761,21 @@ static void *commadpt_thread(void *vca)
                     case COMMADPT_PEND_ENABLE:  /* Leased line enable call case */
                     soerrsz=sizeof(soerr);
                     getsockopt(ca->sfd,SOL_SOCKET,SO_ERROR,(GETSET_SOCKOPT_T*)&soerr,&soerrsz);
+#if defined(_MSVC_)
+                    if(FD_ISSET(ca->sfd,&wfd))
+#else /* defined(_MSVC_) */
                     if(soerr==0)
+#endif /* defined(_MSVC_) */
                     {
                         ca->connect=1;
                     }
                     else
+#if defined(_MSVC_)
+                    if(FD_ISSET(ca->sfd,&xfd))
+#else /* defined(_MSVC_) */
+                    if(soerr!=0)
+#endif /* defined(_MSVC_) */
+
                     {
                         logmsg(_("HHCCA007W %4.4X:Outgoing call failed during %s command : %s\n"),devnum,commadpt_pendccw_text[ca->curpending],strerror(soerr));
                         if(ca->curpending==COMMADPT_PEND_ENABLE)
