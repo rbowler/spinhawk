@@ -1965,22 +1965,50 @@ and how they are used.
 <hr width="50%"><p>
 
 <a name="consysc"></a>
-<dt><em>Integrated Console printer-keyboard devices</em>
-<dd><p>
+<dt>
+    <em>Integrated Console printer-keyboard devices</em>
+    <dd>
+        <p>
+            There are two optional arguments, whcih may be specified in any order:
+            <dl>
+                <dt>
+                    <dt>
+                        <em>c</em>&#124;<em>'c'</em>
+                    </dt>
+                    <dd>
+                        A single character (optionally quoted) which specifies the prefix character for commands sent to the host system device.
+                        The default seperator is slash (/).
+                        <em>
+                            <p>
+                                <b>Note:</b>
+                                There is no restriction on the character you can select. If you select a command character that is the first character of
+                                a panel command, you will not be able to use that command.
+                            </p>
+                            <p>
+                                <b>Note:</b>
+                                If you use the hash mark/US pound sign (<code>#</code>), as the seperator character you
+                                <b>must</b> quote it, because otherwise it is parsed as the beginning of a comment extending to end of the line. (The
+                                pound sign is useful because it is natural to type <code>#cp</code> as the prefix to VM commands.
+                            </p>
+                        </em>
+                    </dd>
+                    <dt>
+                        <code>NOPROMPT</code>
+                    </dt>
+                    <dd>
+                        Causes suppression of the "Enter input for console device nnnn" prompt message which is otherwise normally issued to the
+                        device whenever the system is awaiting input on that device.
+                    </dd>
+            </dl>
+            </dt>
 
-    There is one optional argument which is the command prefix
-    for sending input to the device. The default command prefix is '/'.
-    <p><em>
-    <b>Note:</b> There is no restriction on the character you can select.
-    If you select a command character that is the first character of a panel
-    command, you will not be able to use that command.
-    </em>
-    <p>
-
-    To send a logon command to a 1052-C or 3215-C enter /logon on the Hercules console.
-    <p>
-    All integrated devices must use a different command prefix.
-    <p>
+            <p>
+                To send a
+                <code>logon</code> command when using the default prefix to a 1052-C or 3215-C, enter
+                <code>/logon</code> on the Hercules console.
+                <p>
+                    Each integrated device must use a different command prefix.
+                    <p>
 
 <hr width="50%"><p>
 
