@@ -23,11 +23,6 @@ static void* con1052_panel_command  (char *cmd);
 
 #define DEFAULT_COMMAND_PREFIX "/"
 
-/* FIXME: move to header file */
-/* (delayed_exit function defined in config.c) */
-extern void delayed_exit (int exit_code);
-
-
 #define BUFLEN_1052     150             /* 1052 Send/Receive buffer  */
 
 /*-------------------------------------------------------------------*/
@@ -126,10 +121,6 @@ con1052_init_handler ( DEVBLK *dev, int argc, char *argv[] )
     dev->devid[6] = 0x00;
     dev->numdevid = 7;
 
-    if (-1 == return_code) {
-      /* FIXME: calling delaye_exit hangs hercules */
-      /* delayed_exit(1); */
-    }
     return return_code;
 } /* end function con1052_init_handler */
 
