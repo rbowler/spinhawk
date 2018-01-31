@@ -1853,7 +1853,7 @@ and how they are used.
     <p>
 
     If your tn3270 client software allows you to specify a device type suffix
-    (e.g. <code>IBM-3278@001F</code> ), then you can use the suffix to connect
+    (e.g. <code>IBM-3278@001F</code>), then you can use the suffix to connect
     to that specific device number, if eligible. If no suffix is specified,
     then your client will be connected to the first available 3270 device for
     which it is eligible, if any.
@@ -1876,7 +1876,7 @@ and how they are used.
         If a terminal group name is given on the device statement, a device type
         suffix with this group name can be used to indicate that a device in this
         group is to be used. If a group name is specified as a terminal type suffix
-        (e.g. <code>IBM-3278@GROUPNAME</code> ) and there are no devices defined
+        (e.g. <code>IBM-3278@GROUPNAME</code>) and there are no devices defined
         for that group (or there are no more available devices remaining in that
         group), then the connection is rejected. If no group name is specified
         as a terminal type suffix, then the connection will only be eligible for
@@ -1965,22 +1965,60 @@ and how they are used.
 <hr width="50%"><p>
 
 <a name="consysc"></a>
-<dt><em>Integrated Console printer-keyboard devices</em>
-<dd><p>
+<dt>
+    <em>Integrated Console printer-keyboard devices</em>
+    <dd>
+        <p>
+            There are two optional arguments, which may be specified in any order:
+            <dl>
+                <dt>
+                    <dt>
+                        <em>c</em>&#124;<em>'c'</em>
+                    </dt>
+                    <dd>
+                        A single character (optionally quoted) which specifies the prefix character for commands sent to the host system device.
+                        The default seperator is slash (/).
+                        <em>
+                            <p>
+                                <b>Command Prefix Notes</b>
+                            </p>
+                            <ul>
+                                <li>
+                                    There is no restriction on the character you can select. If you select a command character that is the first character of
+                                    a panel command, you will not be able to use that command.
+                                </li>
+                                <li>
+                                    Each integrated device must use a different command prefix. Hercules will
+                                    <b>not</b> detect the use of duplicate command prefixes -- commands will simply be directed to the first integerated
+                                    console it finds using the command prefix.
+                                </li>
+                                <li>
+                                    If you use the hash mark/US pound sign (<code>#</code>), as the seperator character you
+                                    <b>must</b> quote it, because otherwise it is parsed as the
+                                    beginning of a comment extending to end of the line.
+                                    (The pound sign is useful because it is natural to type
+                                    <code>#CP</code> as the prefix to VM commands.
+                                </li>
+                            </ul>
+                        </em>
+                    </dd>
+                    <dt>
+                        <code>NOPROMPT</code>
+                    </dt>
+                    <dd>
+                        Causes suppression of the "Enter input for console device nnnn" prompt message which is otherwise normally issued to the
+                        device whenever the system is awaiting input on that device.
+                    </dd>
+            </dl>
+            </dt>
 
-    There is one optional argument which is the command prefix
-    for sending input to the device. The default command prefix is '/'.
-    <p><em>
-    <b>Note:</b> There is no restriction on the character you can select.
-    If you select a command character that is the first character of a panel
-    command, you will not be able to use that command.
-    </em>
-    <p>
+            <p>
+                To send a
+                <code>logon</code> command when using the default prefix to a <code>1052-C</code> or <code>3215-C</code>, enter
+                <code>/logon</code> on the Hercules console.
+            </p>
 
-    To send a logon command to a 1052-C or 3215-C enter /logon on the Hercules console.
-    <p>
-    All integrated devices must use a different command prefix.
-    <p>
+            <p/>
 
 <hr width="50%"><p>
 
@@ -1997,7 +2035,7 @@ and how they are used.
     <p>
 
     If your telnet client software allows you to specify a device type suffix
-    (for example: <code>ansi@0009</code> ), then you can use that suffix to specify
+    (for example: <code>ansi@0009</code>), then you can use that suffix to specify
     the specific 1052 or 3215 device to which you wish to connect. If you do not
     specify a suffix in your telnet client software (or your software does not
     allow it), then your client will be connected to the first available 1052 or

@@ -4222,6 +4222,7 @@ int qd_cmd(int argc, char *argv[], char *cmdline)
 /*-------------------------------------------------------------------*/
 int attach_cmd(int argc, char *argv[], char *cmdline)
 {
+    int rc;
     UNREFERENCED(cmdline);
 
     if (argc < 3)
@@ -4229,7 +4230,13 @@ int attach_cmd(int argc, char *argv[], char *cmdline)
         logmsg( _("HHCPN057E Missing argument(s)\n") );
         return -1;
     }
-    return parse_and_attach_devices(argv[1],argv[2],argc-3,&argv[3]);
+
+    rc  = parse_and_attach_devices(argv[1],argv[2],argc-3,&argv[3]);
+    if (rc != 0)
+    {
+        logmsg (_("HHCCF044E Initialization failed for device\n"));
+    }
+    return rc;
 
 #if 0
     if((cdev = strchr(argv[1],':')))
