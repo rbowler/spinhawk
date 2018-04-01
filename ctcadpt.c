@@ -3703,7 +3703,7 @@ int CTCE_Connect_Timeout(int                    sockfd,
             // A real select error (rc<0) will be reported.
             else
             {
-                WRMSG( HHC05080, "S",  /* CTCE: Socket select() with %d usec timeout error : %s */
+                logmsg( _("HHCCT080S %04X CTCE: Socket select() with %d usec timeout error : %s\n"),
                     CTCX_DEVNUM( pDEVBLK ), usec, strerror(HSO_errno) ) ;
             }
         }
