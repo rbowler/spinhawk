@@ -117,7 +117,7 @@
 #define FEATURE_PFPO                                            /*407*/
 #define FEATURE_POPULATION_COUNT_FACILITY                       /*810*/
 #define FEATURE_PRIVATE_SPACE
-//#define FEATURE_PROCESSOR_ASSIST_FACILITY                       /*912*/
+#define FEATURE_PROCESSOR_ASSIST_FACILITY                       /*912*/
 //#define FEATURE_PROGRAM_DIRECTED_REIPL /*DIAG308 incomplete*/  /*@Z9*/
 #define FEATURE_PROTECTION_INTERCEPTION_CONTROL
 #define FEATURE_QUEUED_DIRECT_IO
