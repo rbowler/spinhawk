@@ -1842,7 +1842,9 @@ U64     mask, rota, resu;               /* 64-bit work areas         */
 int     n;                              /* Number of bits to shift   */
 int     t_bit = 0;                      /* Test-results indicator    */
 int     z_bit = 0;                      /* Zero-remaining indicator  */
+#if 0
 int     i;                              /* Loop counter              */
+#endif
 BYTE    i3, i4, i5;                     /* Immediate values          */
 BYTE    opcode;                         /* 2nd byte of opcode        */
 
@@ -1873,6 +1875,22 @@ BYTE    opcode;                         /* 2nd byte of opcode        */
             | ((n == 0) ? 0 : (regs->GR_G(r2) >> (64 - n)));
 
     /* Construct mask for selected bits */
+    if(start<=end)
+    {
+        mask = 0xffffffffffffffffll << start;
+        mask >>= start;
+        mask >>= (63-end);
+        mask <<= (63-end);
+    }
+    else
+    {
+        mask = 0xffffffffffffffffll << (end+1);
+        mask >>= (end+1);
+        mask >>= (64-start);
+        mask <<= (64-start);
+        mask ^= 0xffffffffffffffffll;
+    }
+#if 0
     for (i=0, mask=0; i < 64; i++)
     {
         mask <<= 1;
@@ -1882,6 +1900,7 @@ BYTE    opcode;                         /* 2nd byte of opcode        */
             if (i <= end || i >= start) mask |= 1;
         }
     } /* end for(i) */
+#endif
 
     /* Isolate selected bits of rotated second operand */
     rota &= mask;
@@ -1897,6 +1916,7 @@ BYTE    opcode;                         /* 2nd byte of opcode        */
     case 0x51: /* Insert Low */                                 /*810*/
     case 0x55: /* Insert */
     case 0x5D: /* Insert High */                                /*810*/
+    case 0x59: /* Insert - no CC change */                      /*912*/
         resu = rota;
         break;
     case 0x56: /* Or */
@@ -1905,6 +1925,14 @@ BYTE    opcode;                         /* 2nd byte of opcode        */
     case 0x57: /* Exclusive Or */
         resu ^= rota;
         break;
+    default:
+        /* We should never get there - trigger machine check */
+        logmsg(_("HHC90550E Machine check : Instruction Processing Damage - incorrect implemenation of R[x]SBG instruction %2.2x\n"), opcode);
+#if !defined(NO_SIGABEND_HANDLER)
+        signal_thread(sysblk.cputid[regs->cpuad], SIGUSR1);
+#else
+	abort();
+#endif
     } /* end switch(opcode) */
 
     /* And/Or/Xor set condition code according to result bits*/ /*810*/
