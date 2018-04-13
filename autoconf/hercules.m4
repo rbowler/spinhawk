@@ -173,6 +173,60 @@ AC_DEFUN([HC_ARG_ENABLE_GETOPTWRAPPER],
     _HC_CHECK_NEED_GETOPT_WRAPPER($hc_cv_opt_getoptwrapper)
 ])
 
+#------------------------------------------------------------------------------
+#
+# Macro:  HC_GET_C11_LOCK_FREE_VALUE( c11_lock_free_name )
+#
+#  Retrieve ATOMIC_*_LOCK_FREE macro compile-time / run-time value.
+#
+# Input:   nothing
+#
+# Parms:   c11_lock_free_name     the stdatomic.h pre-processor macro name
+#                                 (e.g. ATOMIC_CHAR_LOCK_FREE) whose compile-
+#                                 time or run-time value is to be returned.
+#
+# Output:  $c11_lock_free_value   the compile-time or run-time value of the
+#                                 stdatomic.h ATOMIC_*_LOCK_FREE macro.
+#
+#------------------------------------------------------------------------------
+
+AC_DEFUN( [HC_GET_C11_LOCK_FREE_VALUE],
+[
+    c11_lock_free_name="$1"
+
+    if test "x$c11_lock_free_name" == "x"; then
+        # PROGRAMMING NOTE: note special m4 escape syntax used in the below
+        # message. Without it, our function name is (infinitely and recursively?)
+        # expanded to our actual (as-yet not yet fully defined!) macro VALUE(!),
+        # usually resulting in some type of weird m4 unmatched quoting error.
+        AC_MSG_RESULT([LOGIC ERROR: no parm passed to ['HC_GET_C11_LOCK_FREE_VALUE'] function])
+        hc_error=yes
+        c11_lock_free_value="0"
+    else
+        AC_MSG_CHECKING([what '${c11_lock_free_name}'s value is])
+
+        AC_TRY_RUN(
+        [
+            #if !defined( __STDC_NO_ATOMICS__ )
+              #include <stdatomic.h>
+            #endif
+            int main( int argc, char* argv[] )
+            {
+            #if defined( __STDC_NO_ATOMICS__ ) || !defined( $c11_lock_free_name )
+                return 0;               /* 0 = never atomic */
+            #else
+                return $c11_lock_free_name; /* 0=never, 1=sometimes or 2=always */
+            #endif
+            }
+        ],
+        [c11_lock_free_value="0"],
+        [c11_lock_free_value="$?"],
+        [c11_lock_free_value="0"] )
+
+        AC_MSG_RESULT($c11_lock_free_value)
+    fi
+])
+
 #-----------------------------------------------------------------------------
 #
 # Macro:  _HC_CHECK_NEED_GETOPT_WRAPPER( [opt = "auto"] )
