@@ -97,7 +97,7 @@ void sclp_attn_thread(U16 *type)
 
     OBTAIN_INTLOCK(NULL);
 
-    // The VM boys appear to have made an error in not 
+    // The VM boys appear to have made an error in not
     // allowing for asyncronous attentions to be merged
     // with pending interrupts as such we will wait here
     // until a pending interrupt has been cleared. *JJ
@@ -543,7 +543,7 @@ BYTE            cmdcode;                /* 3270 read/write command   */
         if (unitstat & CSW_UC)
         {
             PTT(PTT_CL_ERR,"*SERVC",(U32)more,(U32)unitstat,residual);
-            
+
             /* Set response code X'0040' in SCCB header */
             sccb->reas = SCCB_REAS_NONE;
             sccb->resp = SCCB_RESP_BACKOUT;
@@ -555,7 +555,7 @@ BYTE            cmdcode;                /* 3270 read/write command   */
         sccb->resp = SCCB_RESP_COMPLETE;
     }
 }
-    
+
 /*-------------------------------------------------------------------*/
 /* Read data from the SYSG console                                   */
 /*                                                                   */
@@ -731,7 +731,7 @@ SCCB_EVD_HDR *evd_hdr = (SCCB_EVD_HDR*)(sccb+1);
 
     UNREFERENCED(sccb);
     UNREFERENCED(evd_hdr);
-    
+
     logmsg(D_("VT220 poll\n"));
 }
 #endif /*defined(_FEATURE_INTEGRATED_ASCII_CONSOLE)*/
@@ -1454,65 +1454,73 @@ BYTE            *xstmap;                /* Xstore bitmap, zero means
         case SCCB_EVD_TYPE_MSG:
         case SCCB_EVD_TYPE_PRIOR:
 
-            /* Point to the Message Control Data Block */
-            mcd_bk = (SCCB_MCD_BK*)(evd_hdr+1);
-            FETCH_HW(mcd_len,mcd_bk->length);
-
-            obj_hdr = (SCCB_OBJ_HDR*)(mcd_bk+1);
-
-            while (mcd_len > sizeof(SCCB_MCD_BK))
+            while (sccblen > sizeof(SCCB_HEADER))
             {
-                FETCH_HW(obj_len,obj_hdr->length);
-                if (obj_len == 0)
+                FETCH_HW(evd_len,evd_hdr->totlen);
+
+                /* Point to the Message Control Data Block */
+                mcd_bk = (SCCB_MCD_BK*)(evd_hdr+1);
+                FETCH_HW(mcd_len,mcd_bk->length);
+
+                obj_hdr = (SCCB_OBJ_HDR*)(mcd_bk+1);
+
+                while (mcd_len > sizeof(SCCB_MCD_BK))
                 {
-                    sccb->reas = SCCB_REAS_BUFF_LEN_ERR;
-                    sccb->resp = SCCB_RESP_BUFF_LEN_ERR;
-                    break;
-                }
-                FETCH_HW(obj_type,obj_hdr->type);
-                if (obj_type == SCCB_OBJ_TYPE_MESSAGE)
-                {
-                    mto_bk = (SCCB_MTO_BK*)(obj_hdr+1);
-                    event_msg = (BYTE*)(mto_bk+1);
-                    event_msglen = obj_len -
-                            (sizeof(SCCB_OBJ_HDR) + sizeof(SCCB_MTO_BK));
-                    if (event_msglen < 0)
+                    FETCH_HW(obj_len,obj_hdr->length);
+                    if (obj_len == 0)
                     {
                         sccb->reas = SCCB_REAS_BUFF_LEN_ERR;
                         sccb->resp = SCCB_RESP_BUFF_LEN_ERR;
                         break;
                     }
-
-                    /* Print line unless it is a response prompt */
-                    if (!(mto_bk->ltflag[0] & SCCB_MTO_LTFLG0_PROMPT))
+                    FETCH_HW(obj_type,obj_hdr->type);
+                    if (obj_type == SCCB_OBJ_TYPE_MESSAGE)
                     {
-                        for (i = 0; i < event_msglen; i++)
+                        mto_bk = (SCCB_MTO_BK*)(obj_hdr+1);
+                        event_msg = (BYTE*)(mto_bk+1);
+                        event_msglen = obj_len -
+                                (sizeof(SCCB_OBJ_HDR) + sizeof(SCCB_MTO_BK));
+                        if (event_msglen < 0)
                         {
-                            message[i] = isprint(guest_to_host(event_msg[i])) ?
-                                guest_to_host(event_msg[i]) : 0x20;
+                            sccb->reas = SCCB_REAS_BUFF_LEN_ERR;
+                            sccb->resp = SCCB_RESP_BUFF_LEN_ERR;
+                            break;
                         }
-                        message[i] = '\0';
-#ifdef OPTION_MSGCLR
-                        if(evd_hdr->type == SCCB_EVD_TYPE_MSG)
-                        {
-                          if(mto_bk->presattr[3] == SCCB_MTO_PRATTR3_HIGH)
-                            logmsg("<pnl,color(lightyellow,black),keep>%s\n", message);
-                          else
-                            logmsg ("<pnl,color(green,black)>%s\n", message);
-                        }
-                        else
-                          logmsg ("<pnl,color(lightred,black),keep>%s\n", message);
-#else
-                        logmsg ("%s\n", message);
-#endif
-                    }
-                }
-                mcd_len -= obj_len;
-                obj_hdr=(SCCB_OBJ_HDR *)((BYTE*)obj_hdr + obj_len);
-            }
 
-            /* Indicate Event Processed */
-            evd_hdr->flag |= SCCB_EVD_FLAG_PROC;
+                        /* Print line unless it is a response prompt */
+                        if (!(mto_bk->ltflag[0] & SCCB_MTO_LTFLG0_PROMPT))
+                        {
+                            for (i = 0; i < event_msglen; i++)
+                            {
+                                message[i] = isprint(guest_to_host(event_msg[i])) ?
+                                    guest_to_host(event_msg[i]) : 0x20;
+                            }
+                            message[i] = '\0';
+#ifdef OPTION_MSGCLR
+                            if(evd_hdr->type == SCCB_EVD_TYPE_MSG)
+                            {
+                              if(mto_bk->presattr[3] == SCCB_MTO_PRATTR3_HIGH)
+                                logmsg("<pnl,color(lightyellow,black),keep>%s\n", message);
+                              else
+                                logmsg ("<pnl,color(green,black)>%s\n", message);
+                            }
+                            else
+                              logmsg ("<pnl,color(lightred,black),keep>%s\n", message);
+#else
+                            logmsg ("%s\n", message);
+#endif
+                        }
+                    }
+                    mcd_len -= obj_len;
+                    obj_hdr=(SCCB_OBJ_HDR *)((BYTE*)obj_hdr + obj_len);
+                }
+
+                /* Indicate Event Processed */
+                evd_hdr->flag |= SCCB_EVD_FLAG_PROC;
+
+                sccblen -= evd_len;
+                evd_hdr = (SCCB_EVD_HDR *)((BYTE*)evd_hdr + evd_len);
+            }
 
             /* Set response code X'0020' in SCCB header */
             sccb->reas = SCCB_REAS_NONE;
