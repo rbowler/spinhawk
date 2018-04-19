@@ -50,6 +50,7 @@ typedef struct _CTCE_INFO
     u_int              attn_can : 1;   /* = 1 : Atttention Cancelled */
     u_int              con_lost : 1;   /* = 1 : contention lost      */
     u_int              con_won  : 1;   /* = 1 : contention won       */
+    u_int              sel_reset : 1;  /* = 1 : selective reset      */
     int                wait_rc;        /* CTCE_Send Wait RC if used  */
     int                de_ready_attn_rc;   /* device_attention RC    */
     int                working_attn_rc;    /* device_attention RC    */
@@ -103,7 +104,7 @@ static void*    CTCE_RecvThread( void* argp );
 
 static void*    CTCE_ListenThread( void* argp );
 
-static void     CTCE_Halt( DEVBLK* pDEVBLK );
+static void     CTCE_Reset( DEVBLK* pDEVBLK );
 
 static U32      CTCE_ChkSum( const BYTE* pBuf, const U16 BufLen );
 
@@ -117,7 +118,8 @@ static void     CTCE_Trace( const DEVBLK*             pDEVBLK,
 static int      CTCE_Connect_Timeout( int                    sockfd,
                                       const struct sockaddr* saptr,
                                       const socklen_t        salen,
-                                      const int              usec );
+                                      const int              usec,
+                                      const DEVBLK*          pDEVBLK );
 
 static int      VMNET_Init( DEVBLK *dev, int argc, char *argv[] );
 
@@ -270,8 +272,6 @@ static BYTE CTCE_command[256] = {
 #define IS_CTCE_YWW(c)          (((c)&0x07)==0x03)
 #define IS_CTCE_YAV(c)          ((CTCE_STATE(c))==0x04)
 #define IS_CTCE_YNR(c)          ((CTCE_STATE(c))==0x05)
-#define IS_CTCE_XWK(c)          (((c)&0x07)==0x06)
-#define IS_CTCE_XIP(c)          (((c)&0x07)==0x07)
 
 /* These two are useful combinations :        */
 /* - The 0 (YWP) or 4 (YAV) states READY      */
@@ -285,17 +285,9 @@ static BYTE CTCE_command[256] = {
 /* includes the not ready state.              */
 #define IS_CTCE_XAV(c)          (((c)<6))
 
-/* And the corresponding SET macros for these */
-/* The first four, i.e. a SET to any YWK,     */
-/* includes the setting of the CTCE_WAIT bit. */
-#define SET_CTCE_YWP(c)         (c=(((c)&0xF8)|0x00))
-#define SET_CTCE_YWC(c)         (c=(((c)&0xF8)|0x01))
-#define SET_CTCE_YWR(c)         (c=(((c)&0xF8)|0x02))
-#define SET_CTCE_YWW(c)         (c=(((c)&0xF8)|0x03))
+/* Useful SET macros for the above.           */
 #define SET_CTCE_YAV(c)         (c=(((c)&0xF8)|0x04))
 #define SET_CTCE_YNR(c)         (c=(((c)&0xF8)|0x05))
-#define SET_CTCE_XWK(c)         (c=(((c)&0xF8)|0x06))
-#define SET_CTCE_XIP(c)         (c=((c)|0x07))
 
 /* One letter CTC state abbreviations         */
 static char *CTCE_StaStr[8] = {"P", "C", "R", "W", "A", "N", "X", "I"};
@@ -347,6 +339,14 @@ static char *CTCE_StaStr[8] = {"P", "C", "R", "W", "A", "N", "X", "I"};
 /* user to specify an increased MTU bufsize   */
 /* in the device configuration statement.     */
 #define CTCE_MTU_MIN ( (int)( 61578 + sizeof(CTCE_SOKPFX) + sizeof(U16 /* sCount */) ) )
+
+#define CTCE_RESET_TYPE                                                                                                   \
+      (     ( pDEVBLK->scsw.flag2 & ( SCSW2_FC_HALT                  ) ) )                ? _("Halt Reset")       : _("") \
+    , (     ( pDEVBLK->scsw.flag2 & (                 SCSW2_FC_CLEAR ) ) )                ? _("Clear Reset")      : _("") \
+    , ( ( ! ( pDEVBLK->scsw.flag2 & ( SCSW2_FC_HALT | SCSW2_FC_CLEAR ) ) ) &&                                             \
+          ! ( IS_CTCE_YWK( pDEVBLK->ctcexState ) | IS_CTCE_YWK( pDEVBLK->ctceyState ) ) ) ? _("System Reset")     : _("") \
+    , ( ( ! ( pDEVBLK->scsw.flag2 & ( SCSW2_FC_HALT | SCSW2_FC_CLEAR ) ) ) &&                                             \
+            ( IS_CTCE_YWK( pDEVBLK->ctcexState ) | IS_CTCE_YWK( pDEVBLK->ctceyState ) ) ) ? _("Selective Reset")  : _("")
 
 /**********************************************************************/
 /* A summary of the Channel-to-Channel command operations this CTCE   */
@@ -408,7 +408,6 @@ static char *CTCE_StaStr[8] = {"P", "C", "R", "W", "A", "N", "X", "I"};
 #define ACDSM   { A, CSW_CE   | CSW_DE  , 0, CTCE_SEND | CTCE_MATCH                         }
 #define ACDS    { A, CSW_CE   | CSW_DE  , 0, CTCE_SEND                                      }
 #define AUCS    { A,       CSW_UC       , 0, CTCE_SEND                                      }
-#define  CDSM   { U, CSW_CE   | CSW_DE  , 0, CTCE_SEND | CTCE_MATCH                         }
 #define  CDS    { U, CSW_CE   | CSW_DE  , 0, CTCE_SEND                                      }
 #define  CD     { U, CSW_CE   | CSW_DE  , 0, 0                                              }
 #define  B      { U, CSW_BUSY           , 0, 0                                              }
@@ -431,12 +430,12 @@ const CTCE_Fsm[16][8] = {
 /* CTL */ {CC_SMW , BA    , BA    , BA    ,C__S_WA, UCS   , B     , B     },
 /* RED */ {R__SMW , BA    , BA    ,ACDSM  ,R__S_WA, UCS   , B     , B     },
 /* WRT */ {W__SMW , BA    ,ACDSM  , BA    ,W__S_WA, UCS   , B     , B     },
-/* SCB */ { CD    ,ACDSM  , CD    , CD    , CD    , UCS   , B     , B     },
+/* SCB */ { CD    ,ACDSM  , CD    , CD    ,ACDS   , UCS   , B     , B     },
 /* nus */ { UC    , UC    , UC    , UC    , UC    , UC    , B     , B     },
 /* RBK */ {R__SMW , BA    , BA    ,ACDSM  ,R__S_WA, UCS   , B     , B     },
 /* WEF */ { CDS   , BA    ,ACDSM  , BA    , CDS   , UCS   , B     , B     },
 /* NOP */ { CD    , BA    , BA    , BA    , CD    , UC    , B     , B     },
-/* SEM */ { CDS   , BA    , BA    , BA    ,ACDS   ,AUCS   , B     , B     },
+/* SEM */ { CDS   , CDS   , CDS   , CDS   ,ACDS   ,AUCS   , B     , B     }, /* C, R, W imply Selective Reset */
 
 /* SAS */ { CD    , CD    , CD    , CD    , CD    , CD    , B     , B     },
 /* SID */ { CD    , CD    , CD    , CD    , CD    , CD    , B     , B     },
@@ -444,7 +443,7 @@ const CTCE_Fsm[16][8] = {
 
 /* inv */ { UC    , UC    , UC    , UC    , UC    , UC    , B     , B     },
 /* CB0 */ { UC    , UC    , UC    , UC    , UC    , UC    , B     , B     },
-/* SBM */ { CDS   , BA    , BA    , BA    ,ACDS   ,AUCS   , B     , B     }
+/* SBM */ { CDS   , CDS   , CDS   , CDS   ,ACDS   ,AUCS   , B     , B     }  /* C, R, W imply Selective Reset */
 };
 
 #undef P
@@ -467,7 +466,6 @@ const CTCE_Fsm[16][8] = {
 #undef ACDSM
 #undef ACDS
 #undef AUCS
-#undef  CDSM
 #undef  CDS
 #undef  CD
 #undef  B
@@ -1891,6 +1889,7 @@ void  CTCE_ExecuteCCW( DEVBLK* pDEVBLK, BYTE  bCode,
     CTCE_Info.sent               = 0;
     CTCE_Info.con_lost           = 0;
     CTCE_Info.con_won            = 0;
+    CTCE_Info.sel_reset          = 0;
     CTCE_Info.sok_buf_len        = 0;
     CTCE_Info.state_x_prev       = pDEVBLK->ctcexState;
     CTCE_Info.state_y_prev       = pDEVBLK->ctceyState;
@@ -1912,7 +1911,6 @@ void  CTCE_ExecuteCCW( DEVBLK* pDEVBLK, BYTE  bCode,
             logmsg( _("HHCCT050E %04X CTCE: Error creating socket: %s\n"),
                 CTCX_DEVNUM( pDEVBLK ), strerror( HSO_errno ) );
             *pUnitStat = CSW_CE | CSW_DE | CSW_UC;
-            release_lock( &pDEVBLK->lock );
             return;
         }
 
@@ -1930,7 +1928,6 @@ void  CTCE_ExecuteCCW( DEVBLK* pDEVBLK, BYTE  bCode,
             logmsg( _("HHCCT051E %04X CTCE: TCP_NODELAY error for socket (port %d): %s\n"),
                 CTCX_DEVNUM( pDEVBLK ), pDEVBLK->ctce_lport, strerror(HSO_errno));
             *pUnitStat = CSW_CE | CSW_DE | CSW_UC;
-            release_lock(&pDEVBLK->lock);
             return;
         }
 #endif
@@ -1952,7 +1949,6 @@ void  CTCE_ExecuteCCW( DEVBLK* pDEVBLK, BYTE  bCode,
             logmsg( _("HHCCT052E %04X CTCE: Error binding to socket (port %d): %s\n"),
                 CTCX_DEVNUM( pDEVBLK ), pDEVBLK->ctce_lport, strerror( HSO_errno ) );
             *pUnitStat = CSW_CE | CSW_DE | CSW_UC;
-            release_lock( &pDEVBLK->lock );
             return;
         }
         strcpy( address, inet_ntoa( pDEVBLK->ctce_ipaddr ) );
@@ -1967,16 +1963,22 @@ void  CTCE_ExecuteCCW( DEVBLK* pDEVBLK, BYTE  bCode,
         parm.addr.sin_port = htons(pDEVBLK->ctce_rport + 1 );
         parm.addr.sin_addr = pDEVBLK->ctce_ipaddr;
 
-        // We connect() but with a timeout value of 1000000 usec = 1 sec
+        // We connect() but with a timeout value of 500000 usec = 0.5 sec
         rc = CTCE_Connect_Timeout( parm.listenfd[0],
             ( struct sockaddr * )&parm.addr,
-            sizeof( parm.addr), 1000000 );
+            sizeof( parm.addr), 500000, pDEVBLK );
 
         // if connection was not successful, then we may retry later on when the other side becomes ready.
         if( rc < 0 )
         {
-            logmsg( _("HHCCT053I %04X CTCE: Connect error :%d -> %s:%d, retry is possible\n"),
-                CTCX_DEVNUM( pDEVBLK ), pDEVBLK->ctce_lport, remaddr, pDEVBLK->ctce_rport + 1 );
+
+            // We issue the "retry is poosible" message only once, which is when
+            // the ctce_contention_loser variable is still in its initial =1 state.
+            if( pDEVBLK->ctce_contention_loser == 1 )
+            {
+                logmsg( _("HHCCT053I %04X CTCE: Connect error :%d -> %s:%d, retry is possible\n"),
+                    CTCX_DEVNUM( pDEVBLK ), pDEVBLK->ctce_lport, remaddr, pDEVBLK->ctce_rport + 1 );
+            }
         }
         else  // successfully connected to the other end
         {
@@ -1988,13 +1990,9 @@ void  CTCE_ExecuteCCW( DEVBLK* pDEVBLK, BYTE  bCode,
         }
     }
 
-    // The contention winning CTCE side initially is the first one to
-    // attempt commands; each matching SCB command sent sets this as well.
+    // Intervention required if the device file is not open
     if( ( pDEVBLK->fd < 0 ) || ( pDEVBLK->ctcefd < 0 ) )
     {
-        pDEVBLK->ctce_contention_loser = 0;
-
-        // Intervention required if the device file is not open
         if( !IS_CCW_SENSE( bCode ) &&
             !IS_CCW_CONTROL( bCode ) )
         {
@@ -2016,27 +2014,27 @@ void  CTCE_ExecuteCCW( DEVBLK* pDEVBLK, BYTE  bCode,
     // Copy control command byte in x command register
     pDEVBLK->ctcexCmd = bCode;
 
-    // A valid Set Extended / Base Mode (SEM / SBM) command will have
-    // an immediate effect so that it can from then on be handled as
-    // a NOP command.  Valid means x-state Available and y-state
-    // not in Working(D) with Control, Read or Write (CRW).
-    // Please note that the Basic to Extended mode switch influences
-    // the CTCS FSM table indexing which is why this is done up front.
-    // So we set Extended mode and enforce Available x-state.
-    if( IS_CTCE_CCW_SEM( pDEVBLK->ctcexCmd ) &&
-        IS_CTCE_YAV( pDEVBLK->ctcexState   ) &&
-       !IS_CTCE_CRW( pDEVBLK->ctceyState   ) )
+    // A valid Set Extended / Base Mode (SEM / SBM) command implies a
+    // Reset took place immediately prior to it, for which currently
+    // no explicit device handler exit capability exists (i.e. in
+    // "channel.c").  Hence that we implement this here, as well
+    // when a SEM / SBM instruction is received at the other (y-)side.
+    // Because the 'extended mode' influences the FSM state, the SEM
+    // command immediately needs to result in the 'available' state.
+    if( IS_CTCE_CCW_SEM( pDEVBLK->ctcexCmd ) ||
+        IS_CTCE_CCW_SBM( pDEVBLK->ctcexCmd ) )
     {
-        pDEVBLK->ctcxmode = 1;
-        SET_CTCE_YAV( pDEVBLK->ctcexState );
-    }
-
-    // Or we just set Base mode.
-    else if( IS_CTCE_CCW_SBM( pDEVBLK->ctcexCmd ) &&
-             IS_CTCE_YAV( pDEVBLK->ctcexState   ) &&
-            !IS_CTCE_CRW( pDEVBLK->ctceyState   ) )
-    {
-        pDEVBLK->ctcxmode = 0;
+        CTCE_Info.sel_reset = ( ( IS_CTCE_YWK( pDEVBLK->ctcexState ) | IS_CTCE_YWK( pDEVBLK->ctceyState ) ) ? 1 : 0 ) ;
+        CTCE_Reset( pDEVBLK );
+        if( IS_CTCE_CCW_SEM( pDEVBLK->ctcexCmd ) )
+        {
+            pDEVBLK->ctcxmode = 1;
+            SET_CTCE_YAV( pDEVBLK->ctcexState );
+        }
+        else
+        {
+            pDEVBLK->ctcxmode = 0;
+        }
     }
 
     // The new X-state and transition actions are derived from the FSM table.
@@ -2046,20 +2044,9 @@ void  CTCE_ExecuteCCW( DEVBLK* pDEVBLK, BYTE  bCode,
 
     *pUnitStat            = CTCE_Fsm[CTCE_CMD( pDEVBLK->ctcexCmd )][CTCE_X_STATE_FSM_IDX].x_unit_stat;
 
-    // We avoid a possible command collision between a SEM command and
-    // a WRITE command already issued by the other side but not received
-    // yet.  The BUSY+ATTN response to that would cause an endless loop,
-    // which we simple avoid by replacing it with CE+DE.
-    if( IS_CTCE_CCW_SEM( pDEVBLK->ctcexCmd ) &&
-        IS_CTCE_YAV( pDEVBLK->ctcexState   ) &&
-        *pUnitStat == ( CSW_BUSY | CSW_ATTN ) )
-    {
-        *pUnitStat = CSW_CE | CSW_DE;
-    }
-
     // If a READ or READ_BACKWARD command is received whilst the WEOF
     // bit is set then the sole case for a Unit Exception applies.
-    else if( IS_CTCE_WEOF( pDEVBLK->ctcexState ) &&
+    if( IS_CTCE_WEOF( pDEVBLK->ctcexState ) &&
         IS_CTCE_CCW_RDA( pDEVBLK->ctcexCmd ) )
     {
         CLR_CTCE_WEOF( pDEVBLK->ctcexState );
@@ -2165,9 +2152,10 @@ void  CTCE_ExecuteCCW( DEVBLK* pDEVBLK, BYTE  bCode,
     } // if( !( CTCE_Info.x_unit_stat & CSW_BUSY ) )
 
     // We merge a Unit Check in case the Y state is Not Ready.
-    // But only when pUnitStat is still 0 or just Busy (no Attn).
+    // But only when pUnitStat is still 0 or Unit Check or Busy (no Attn).
+    // SENSE bit 1 for Intervention Required will be set as well.
     if( IS_CTCE_YNR( pDEVBLK -> ctceyState ) &&
-        ( ( *pUnitStat & (~ CSW_BUSY ) ) == 0 ) )
+        ( ( *pUnitStat & (~ ( CSW_BUSY | CSW_UC ) ) ) == 0 ) )
     {
         *pUnitStat |= CSW_UC;
         pDEVBLK->sense[0] = SENSE_IR;
@@ -2182,6 +2170,13 @@ void  CTCE_ExecuteCCW( DEVBLK* pDEVBLK, BYTE  bCode,
     {
         CTCE_Trace( pDEVBLK, sCount, CTCE_Info.sent ? CTCE_SND : CTCE_LCL,
                     &CTCE_Info, pDEVBLK->buf, pUnitStat );
+    }
+
+    // The contention winning CTCE side initially is the first one to
+    // attempt commands; each matching SCB command sent sets this as well.
+    if( ( pDEVBLK->fd < 0 ) || ( pDEVBLK->ctcefd < 0 ) )
+    {
+        pDEVBLK->ctce_contention_loser = 0;
     }
 
     release_lock( &pDEVBLK->lock );
@@ -2230,7 +2225,7 @@ static int  CTCE_Init( DEVBLK *dev, int argc, char *argv[] )
 //  dev->excps = 0;
 
     // The halt_device exit is established; in version 4 this is in DEVHND in the ctce_device_hndinfo.
-    dev->halt_device = &CTCE_Halt;
+    dev->halt_device = &CTCE_Reset;
 
     // Mark both socket file descriptors as not yet connected.
     dev->fd = -1;
@@ -2552,9 +2547,20 @@ static void   CTCE_Send( DEVBLK* pDEVBLK,   U16        sCount,
     // We only ever Send if the sockets are connected.
     if( ( pDEVBLK->fd < 0 ) || ( pDEVBLK->ctcefd < 0 ) )
     {
-        logmsg( _("HHCCT072S %04X CTCE: Not all sockets connected: send=%d, receive=%d\n"),
-            CTCX_DEVNUM( pDEVBLK ), pDEVBLK->fd, pDEVBLK->ctcefd );
-        *pUnitStat = 0;
+
+        // We issue the "Not all sockets connected" message only when just
+        // one socket is not connected; otherwise just once which is when
+        // the ctce_contention_loser variable is still in its initial =1 state.
+        if( ( pDEVBLK->ctce_contention_loser == 1 ) ||
+            ( pDEVBLK->fd >= 0 ) || ( pDEVBLK->ctcefd >= 0 ) )
+        {
+            logmsg( _("HHCCT072S %04X CTCE: Not all sockets connected: send=%d, receive=%d\n"),
+                CTCX_DEVNUM( pDEVBLK ), pDEVBLK->fd, pDEVBLK->ctcefd );
+        }
+        if( !IS_CTCE_CCW_SCB( pDEVBLK->ctcexCmd ) )
+        {
+            *pUnitStat = 0;
+        }
         return ;
     }
     pCTCE_Info->sent = 1;
@@ -2597,6 +2603,14 @@ static void   CTCE_Send( DEVBLK* pDEVBLK,   U16        sCount,
     // Write all of this to the other (y-)side.
     rc = write_socket( pDEVBLK->fd, pDEVBLK->buf, pSokBuf->SndLen );
 
+    // The sending of IOBuf for WRT commands has been completed so we need to
+    // mark the used device buffer part as free by zeroing the data length field
+    // as CTCE_RecvThread will wait for this when it receives a WRT command.
+    if( IS_CTCE_CCW_WRT( pDEVBLK->ctcexCmd ) )
+    {
+        *(U16*)( pDEVBLK->buf + sizeof(CTCE_SOKPFX) ) = 0;
+    }
+
     if( rc < 0 )
     {
         logmsg( _("HHCCT074E %04X CTCE: Error writing to %s: %s\n"),
@@ -2622,7 +2636,8 @@ static void   CTCE_Send( DEVBLK* pDEVBLK,   U16        sCount,
     // in a Working(D) state, then we will need to wait until a
     // matching command arrives from the other (y-)side.  The WAIT
     // timeout is chosen to be long enough to not timeout over periods
-    // if inactivity; we experienced up to 6 secs, so we set it to 60.
+    // if inactivity; we experienced up to exactly 15 minutes following
+    // (non-matching) PREPARE CCW commands, so we set it to 1000 sec.
     if( IS_CTCE_WAIT( pCTCE_Info->actions ) )
     {
 
@@ -2638,7 +2653,7 @@ static void   CTCE_Send( DEVBLK* pDEVBLK,   U16        sCount,
         pCTCE_Info->wait_rc = timed_wait_condition_relative_usecs(
             &pDEVBLK->ctceEvent,
             &pDEVBLK->ctceEventLock,
-            60000000,
+            1000000000,
             NULL );
 
         obtain_lock( &pDEVBLK->lock );
@@ -2711,14 +2726,15 @@ static void   CTCE_Send( DEVBLK* pDEVBLK,   U16        sCount,
     }
 
     // If the command (by now matched) was a CONTROL command, then this
-    // side become the contention loser.
+    // side becomes the contention loser.
     if( IS_CTCE_CCW_CTL( pDEVBLK->ctcexCmd ) )
     {
         pDEVBLK->ctce_contention_loser = 1;
     }
 
-    // Command collisions never return data.
-    if( pDEVBLK->ctce_UnitStat == (CSW_BUSY | CSW_ATTN) )
+    // Command collisions or resets (CSW_UC) never return data.
+    if( ( pDEVBLK->ctce_UnitStat == (CSW_BUSY | CSW_ATTN) ) ||
+        ( pDEVBLK->ctce_UnitStat & CSW_UC ) )
     {
         *pResidual = sCount;
     }
@@ -2740,6 +2756,9 @@ static void   CTCE_Send( DEVBLK* pDEVBLK,   U16        sCount,
         memcpy( pIOBuf, pDEVBLK->buf + sizeof(CTCE_SOKPFX) + sizeof(pSokBuf->sCount),
             pSokBuf->sCount ) ;
         *pResidual = sCount - pSokBuf->sCount;
+
+        // We show the device buffer as being processed by zeroing the data length field.
+        *(U16*)( pDEVBLK->buf + sizeof(CTCE_SOKPFX) ) = 0;
     }
     else
     {
@@ -2775,7 +2794,6 @@ static void*  CTCE_RecvThread( void* argp )
     obtain_lock( &pDEVBLK->lock );
 
     // Enhanced CTC adapter intiialization for command register and CB
-    pDEVBLK->ctcexCmd = 0x00;
     pDEVBLK->ctceyCmd = 0x00;
     pDEVBLK->ctceyCmdSCB = 0x00;
 
@@ -2819,8 +2837,24 @@ static void*  CTCE_RecvThread( void* argp )
             return NULL;    // make compiler happy
         }
 
-        // Changes to DEVBLK must be lock protected as other threads might update as well.
+        // Commands sent by the other (y-)side most likely cause DEVBLK
+        // changes to our (x-)side and thus need to be lock protected.
+        // The write command data in the socket buffer needs to be copied
+        // into the device buffer, but we can only do this if that buffer
+        // is empty; we may have to wait for that to be the case.
         obtain_lock(&pDEVBLK->lock);
+        if( IS_CTCE_CCW_WRT( pSokBuf->CmdReg ) )
+        {
+            for( CTCE_Info.busy_waits = 0;
+                 ( *(U16*)( pDEVBLK->buf + sizeof(CTCE_SOKPFX) ) != 0 ) &&
+                 ( CTCE_Info.busy_waits <= 20 ) ;
+                 CTCE_Info.busy_waits++ )
+            {
+                release_lock( &pDEVBLK->lock );
+                usleep(  200 );
+                obtain_lock( &pDEVBLK->lock );
+            }
+        }
 
         // Check for other error condition
         if( iLength < 0 )
@@ -2853,10 +2887,19 @@ static void*  CTCE_RecvThread( void* argp )
             CTCE_Info.state_x_prev = pDEVBLK->ctcexState;
             CTCE_Info.state_y_prev = pDEVBLK->ctceyState;
 
-            // Set extended mode from the other side also applies to this side.
-            if( IS_CTCE_CCW_SEM( pDEVBLK->ctceyCmd ) )
+            // SEM / SBM commands imply the other (y-)side performed a
+            // Reset (Selective or otherwise), which the (x-)side needs
+            // to act on as well.  SEM also requires 'extended' mode
+            // to be set on this side as well.
+            if( IS_CTCE_CCW_SEM( pSokBuf->CmdReg ) ||
+                IS_CTCE_CCW_SBM( pSokBuf->CmdReg ) )
             {
-                pDEVBLK->ctcxmode = 1;
+                CTCE_Info.sel_reset = ( ( IS_CTCE_YWK( pDEVBLK->ctcexState ) | IS_CTCE_YWK( pDEVBLK->ctceyState ) ) ? 1 : 0 ) ;
+                CTCE_Reset( pDEVBLK );
+                if( IS_CTCE_CCW_SEM( pSokBuf->CmdReg ) )
+                {
+                    pDEVBLK->ctcxmode = 1;
+                }
             }
 
             // The command received from the other (y-)side may cause a
@@ -2890,7 +2933,7 @@ static void*  CTCE_RecvThread( void* argp )
                     // side as if a matching command was received, but
                     // only after re-instating the original FSM state
                     // and ensuring that the required Busy+Attention
-                    // device status will bereturned.  Effectively,
+                    // device status will be returned.  Effectively,
                     // this is a contention lost situation.
                     CTCE_Info.con_lost = 1;
                     pDEVBLK->ctcexState = CTCE_Info.state_new;
@@ -2968,17 +3011,21 @@ static void*  CTCE_RecvThread( void* argp )
                 // condition so that CTCE_Send no longer needs to wait.
                 if( IS_CTCE_MATCH( CTCE_Info.actions ) )
                 {
-                    obtain_lock( &pDEVBLK->ctceEventLock );
-                    signal_condition( &pDEVBLK->ctceEvent );
-                    release_lock( &pDEVBLK->ctceEventLock );
 
-                    // Both sides return to the available state.
+                    // Our (x-)side returns to the available state, but the
+                    // other (y-)side is decided for via the FSM table entry.
                     SET_CTCE_YAV( pDEVBLK->ctcexState );
-                    SET_CTCE_YAV( pDEVBLK->ctceyState );
+                    pDEVBLK->ctceyState = CTCE_Info.state_new;
 
                     // All matching commands result in a final UnitStat
                     // CE + DE stat at the local device end.
                     ctce_recv_mods_UnitStat = CSW_CE | CSW_DE;
+                    pDEVBLK->ctce_UnitStat = CSW_CE | CSW_DE;
+
+                    // We now signal CTCE_Send that the MATCHing command has been received.
+                    obtain_lock( &pDEVBLK->ctceEventLock );
+                    signal_condition( &pDEVBLK->ctceEvent );
+                    release_lock( &pDEVBLK->ctceEventLock );
                 } // if( IS_CTCE_MATCH( CTCE_Info.actions ) )
 
                 // If the other (y-)side sent us a Device-End status
@@ -2993,6 +3040,8 @@ static void*  CTCE_RecvThread( void* argp )
                     // Reset sense byte 0 bits 1 and 7.
                     pDEVBLK->sense[0] &= ~( SENSE_IR | SENSE_OC );
 
+                    // Another attention would be harmful and is not needed.
+                    CLR_CTCE_ATTN( CTCE_Info.actions );
                 }
 
                 // If the other (y-)side sent us a command that may require
@@ -3112,24 +3161,26 @@ static void*  CTCE_RecvThread( void* argp )
 }
 
 //
-// CTCE_Halt -- Halt device for CTCE adapter
+// CTCE_Reset -- Selective Reset or System Reset a CTCE adapter device
 //
 
-static void   CTCE_Halt( DEVBLK* pDEVBLK )
+static void   CTCE_Reset( DEVBLK* pDEVBLK )
 {
 
-    // obtain_lock( &pDEVBLK->lock ) already carried out by caller in channel.c
-    if( pDEVBLK->ccwtrace || pDEVBLK->ccwstep )
-    {
-        logmsg( _("HHCCT078I %04X CTCE: -| Halt x=%s y=%s\n"),
-            CTCX_DEVNUM( pDEVBLK ),
-            CTCE_StaStr[pDEVBLK->ctcexState & 0x07],
-            CTCE_StaStr[pDEVBLK->ctceyState & 0x07] );
-    }
+    // The call already did an obtain_lock( &pDEVBLK->lock )
+    // which is either in channel.c or earlier in here.
+    // Reset the y-command to 0 and set sense bit 1, and
+    // clear any WEOF state.
+    pDEVBLK->ctceyCmdSCB = 0x00;
+    pDEVBLK->sense[0] |= SENSE_IR;
+    CLR_CTCE_WEOF( pDEVBLK->ctcexState );
 
-    // Halt device for a CTCE device is a selective reset,
-    // requiring our (x-)side to cancel any Working(D) wait state
-    // if needed, and to return to the not ready state.
+    // Initialize the device buffer by zeroing the data length field.
+    *(U16*)( pDEVBLK->buf + sizeof(CTCE_SOKPFX) ) = 0;
+
+    // A selective reset requires cancelling any Working(D) wait state
+    // at our (x-)side, and to return to the not ready state.  Also,
+    // sense bit 7 needs to be set, and unit status set to CE+DE+UC.
     if( IS_CTCE_YWK( pDEVBLK->ctcexState ) )
     {
         obtain_lock( &pDEVBLK->ctceEventLock );
@@ -3137,6 +3188,22 @@ static void   CTCE_Halt( DEVBLK* pDEVBLK )
         release_lock( &pDEVBLK->ctceEventLock );
         CLR_CTCE_ALLF(pDEVBLK->ctcexState);
         SET_CTCE_YNR(pDEVBLK->ctcexState);
+        pDEVBLK->sense[0] |= SENSE_OC;
+        pDEVBLK->ctce_UnitStat = CSW_CE | CSW_DE | CSW_UC;
+    }
+    if( IS_CTCE_YWK( pDEVBLK->ctceyState ) )
+    {
+        SET_CTCE_YAV( pDEVBLK->ctceyState );
+    }
+
+    // Produce a CTCE Trace logging if requested.
+    if( pDEVBLK->ccwtrace || pDEVBLK->ccwstep )
+    {
+        logmsg( _("HHCCT078I %04X CTCE: -| %s%s%s%s x=%s y=%s cmd=%s\n"),
+            CTCX_DEVNUM( pDEVBLK ), CTCE_RESET_TYPE,
+            CTCE_StaStr[CTCE_STATE( pDEVBLK->ctcexState )],
+            CTCE_StaStr[CTCE_STATE( pDEVBLK->ctceyState )],
+            CTCE_CmdStr[CTCE_CMD( pDEVBLK->ctcexCmd )] );
     }
 }
 
@@ -3330,6 +3397,41 @@ void            CTCE_Trace( const DEVBLK*             pDEVBLK,
     }
 
     ctce_trace_xtra[0] = '\0' ;
+
+    // An SEM / SBM command implies a Reset happened immediately prior
+    // to it, which we report on.
+    if( eCTCE_Cmd_Xfr == CTCE_RCV )
+    {
+        ctce_Cmd = pDEVBLK->ctceyCmd;
+    }
+    else
+    {
+        ctce_Cmd = pDEVBLK->ctcexCmd;
+    }
+    if( IS_CTCE_CCW_SEM( ctce_Cmd ) ||
+        IS_CTCE_CCW_SBM( ctce_Cmd ) )
+    {
+        if( pDEVBLK->scsw.flag2 & ( SCSW2_FC_HALT ) )
+        {
+            strlcat( ctce_trace_xtra, " Halt Reset", sizeof( ctce_trace_xtra ) );
+        }
+        else if ( pDEVBLK->scsw.flag2 & ( SCSW2_FC_CLEAR ) )
+        {
+            strlcat( ctce_trace_xtra, " Clear Reset", sizeof( ctce_trace_xtra ) );
+        }
+        else if ( ! pCTCE_Info->sel_reset )
+        {
+            strlcat( ctce_trace_xtra, " System Reset", sizeof( ctce_trace_xtra ) );
+        }
+        else if ( pCTCE_Info->sel_reset )
+        {
+            strlcat( ctce_trace_xtra, " Selective Reset", sizeof( ctce_trace_xtra ) );
+        }
+        else
+        {
+            strlcat( ctce_trace_xtra, "??? ", sizeof( ctce_trace_xtra ) );
+        }
+    }
 
     // The other side's entering a "Working" state may
     // require an Attention or not, which will be shown.
@@ -3555,7 +3657,8 @@ Action
 int CTCE_Connect_Timeout(int                    sockfd,
                          const struct sockaddr* saptr,
                          const socklen_t        salen,
-                         const int              usec)
+                         const int              usec,
+                         const DEVBLK*          pDEVBLK)
 {
     int                   rc;                    // connect return code
     fd_set                read_set, write_set;   // socket sets for select
@@ -3577,21 +3680,40 @@ int CTCE_Connect_Timeout(int                    sockfd,
 
         // Then we issue select() until it returns a real error.
         // A zero return code means the select() timed out,
-        // a positive one signifies the connect() took place.
+        // a positive one signifies the connect() took place,
+        // and a negative one signifies a real select() error occurred.
         do
         {
             rc = select( sockfd + 1, &read_set, &write_set, NULL,
           		   usec ? &connect_timeout : NULL );
         } while( (rc < 0) && ( HSO_errno == HSO_EINTR ) );
 
-        if( rc == 0 )
+        // In case no connection took place, either due to timeout (rc=0),
+        // or due to select() error (rc<0), we will close the socket.
+        if( rc <= 0 )
         {
             close_socket( sockfd ) ;
-            rc = -1;
+
+            // A connect timeout (rc=0) will be signalled as non-success with rc=-1.
+            if( rc == 0 )
+            {
+                rc = -1;
+            }
+
+            // A real select error (rc<0) will be reported.
+            else
+            {
+                logmsg( _("HHCCT080S %04X CTCE: Socket select() with %d usec timeout error : %s\n"),
+                    CTCX_DEVNUM( pDEVBLK ), usec, strerror(HSO_errno) ) ;
+            }
         }
     }
 
-    // Switch back to original non-blocking mode and return
-    socket_set_blocking_mode( sockfd, 1 ) ;
+    // When connected, switch back to original non-blocking mode and return
+    if( rc >= 0 )
+    {
+        socket_set_blocking_mode( sockfd, 1 ) ;
+    }
+
     return rc;
 }
