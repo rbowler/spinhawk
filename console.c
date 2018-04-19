@@ -1905,7 +1905,9 @@ struct sockaddr_in    *server;          /* Server address structure  */
 fd_set                 readset;         /* Read bit map for select   */
 int                    maxfd;           /* Highest fd for select     */
 int                    optval;          /* Argument for setsockopt   */
+#if 0
 TID                    tidneg;          /* Negotiation thread id     */
+#endif
 DEVBLK                *dev;             /* -> Device block           */
 BYTE                   unitstat;        /* Status after receive data */
 
@@ -2128,7 +2130,6 @@ BYTE                   unitstat;        /* Status after receive data */
                 close_socket (csock);
             }
 #else                                                        /* @PJJ */
-            UNREFERENCED(tidneg);                            /* @PJJ */
             connect_client( &csock );                        /* @PJJ */
 #endif                                                       /* @PJJ */
 
