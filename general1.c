@@ -232,15 +232,16 @@ VADR    effective_addr1;                /* Effective address         */
 BYTE   *dest;                           /* Pointer to target byte    */
 
     SI(inst, regs, i2, b1, effective_addr1);
+    ITIMER_SYNC(effective_addr1, 0, regs);
 
     /* Get byte mainstor address */
     dest = MADDR (effective_addr1, b1, regs, ACCTYPE_WRITE, regs->psw.pkey );
 
     /* AND byte with immediate operand, setting condition code */
-    regs->psw.cc = ((*dest &= i2) != 0);
+    regs->psw.cc = (H_ATOMIC_OP(dest, i2, and, And, &) != 0);
 
     /* Update interval timer if necessary */
-    ITIMER_UPDATE(effective_addr1,4-1,regs);
+    ITIMER_UPDATE(effective_addr1, 0, regs);
 }
 
 
@@ -2965,15 +2966,15 @@ BYTE   *dest;                           /* Pointer to target byte    */
 
     SI(inst, regs, i2, b1, effective_addr1);
 
-    ITIMER_SYNC(effective_addr1,1,regs);
+    ITIMER_SYNC(effective_addr1, 0, regs);
 
     /* Get byte mainstor address */
     dest = MADDR (effective_addr1, b1, regs, ACCTYPE_WRITE, regs->psw.pkey );
 
     /* XOR byte with immediate operand, setting condition code */
-    regs->psw.cc = ((*dest ^= i2) != 0);
+    regs->psw.cc = (H_ATOMIC_OP(dest, i2, xor, Xor, ^) != 0);
 
-    ITIMER_UPDATE(effective_addr1,0,regs);
+    ITIMER_UPDATE(effective_addr1, 0, regs);
 }
 
 

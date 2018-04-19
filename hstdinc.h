@@ -226,4 +226,7 @@
 #include "hostopts.h"           // Must come before htypes.h
 #include "htypes.h"             // Hercules-wide data types
 
+/* Defines CAN_IAF2 needed for FEATURE_INTERLOCKED_ACCESS_FACILITY_2 */
+#include "hatomic.h"                  /* Interlocked update          */
+
 #endif // _HSTDINC_H

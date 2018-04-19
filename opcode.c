@@ -897,7 +897,7 @@
 
 
 #if !defined(FEATURE_PROCESSOR_ASSIST_FACILITY)                 /*912*/
- UNDEF_INST(perform_processor_assist)                           /*912*/
+ UNDEF_INST(perform_processor_assist);                          /*912*/
 #endif /*!defined(FEATURE_PROCESSOR_ASSIST_FACILITY)*/          /*912*/
 
 

@@ -663,6 +663,7 @@ noinst_HEADERS = hostinfo.h     \
                  pttrace.h      \
                  history.h      \
                  sr.h           \
+                 hatomic.h      \
                  hchan.h        \
                  fillfnam.h     \
                  hthreads.h     \
