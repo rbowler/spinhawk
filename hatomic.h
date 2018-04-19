@@ -173,7 +173,7 @@
     (sizeof(*(ptr)) == 4) ? (((U32) _Interlocked ## Op       ((U32*) ptr, imm )) fallback imm ) :  \
     (sizeof(*(ptr)) == 2) ? (((U16) _Interlocked ## Op ## 16 ((U16*) ptr, imm )) fallback imm ) :  \
     (sizeof(*(ptr)) == 1) ? (((U8)  _Interlocked ## Op ## 8  ((U8*)  ptr, imm )) fallback imm ) :  \
-    (assert(0) /* returns void */, 0 /* to get integral result */)                                 \
+    0 \
   )
 #else /* (none of the above) */
   #error LOGIC ERROR! in header file hatomic.h!
