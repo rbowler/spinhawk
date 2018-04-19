@@ -24,6 +24,10 @@
 #define bcopy(_src,_dest,_len) memcpy(_dest,_src,_len)
 #endif
 
+#ifndef bzero
+#define bzero(_dest,_len) memset(_dest,'\0',_len)
+#endif
+
 #define rol(value, bits) (((value) << (bits)) | ((value) >> (32 - (bits))))
 
 /* blk0() and blk() perform the initial expand. */

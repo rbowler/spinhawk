@@ -51,6 +51,10 @@
 #define bcopy(_src,_dest,_len) memcpy(_dest,_src,_len)
 #endif
 
+#ifndef bzero
+#define bzero(_dest,_len) memset(_dest,'\0',_len)
+#endif
+
 /*
  * UNROLLED TRANSFORM LOOP NOTE:
  * You can define SHA2_UNROLL_TRANSFORM to use the unrolled transform
