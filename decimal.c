@@ -1147,7 +1147,7 @@ int     carry;                          /* Carry indicator           */
 } /* end DEF_INST(multiply_decimal) */
 
 
-#if defined(_MSVC_) && (_MSC_VER == 1900)
+#if defined(_MSVC_) && (_MSC_VER >= 1900)
 #pragma optimize( "g", off )
 #endif
 
