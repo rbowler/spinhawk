@@ -12,7 +12,10 @@
 
 # Use environment variables to determine the Visual Studio compiler level
 
-!IFDEF VS140COMNTOOLS
+!IFDEF VS150COMNTOOLS
+!MESSAGE Makefile will assume VS15 or VS2017 Community Edition (MSVC version 1910)
+vsversion=15
+!ELSEIFDEF VS140COMNTOOLS
 !MESSAGE Makefile will assume VS14 or VS2015 Express (MSVC version 20)
 vsversion=14
 !ELSEIFDEF VS120COMNTOOLS
