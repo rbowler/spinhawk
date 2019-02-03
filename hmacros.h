@@ -573,6 +573,23 @@ typedef U64  (*z900_trace_br_func) (int amode,  U64 ia, REGS *regs);
  } while (0)
 
 /*-------------------------------------------------------------------*/
+/*      CRASH                       (with hopefully a dump)          */
+/*-------------------------------------------------------------------*/
+
+#ifdef _MSVC_
+  #define CRASH() \
+    do { \
+      BYTE *p = NULL; \
+      *p=0; \
+    } while (0)
+#else
+  #define CRASH() \
+    do { \
+      abort(); \
+    } while (0)
+#endif
+
+/*-------------------------------------------------------------------*/
 /* Perform standard utility initialization                           */
 /*-------------------------------------------------------------------*/
 
