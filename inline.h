@@ -123,7 +123,7 @@ static inline int sub_logical(U32 *result, U32 op1, U32 op2)
 /*-------------------------------------------------------------------*/
 static inline int add_signed(U32 *result, U32 op1, U32 op2)
 {
-    *result = (S32)op1 + (S32)op2;
+    *result = op1 + op2;
 
     return  ((S32)*result >  0) ?
                 ((S32)op1 <  0 && (S32)op2 <  0) ? 3 : 2 :
@@ -144,7 +144,7 @@ static inline int add_signed(U32 *result, U32 op1, U32 op2)
 /*-------------------------------------------------------------------*/
 static inline int sub_signed(U32 *result, U32 op1, U32 op2)
 {
-    *result = (S32)op1 - (S32)op2;
+    *result = op1 - op2;
 
     return  ((S32)*result >  0) ?
                 ((S32)op1 <  0 && (S32)op2 >= 0) ? 3 : 2 :
@@ -226,7 +226,7 @@ static inline int sub_logical_long(U64 *result, U64 op1, U64 op2)
 /*-------------------------------------------------------------------*/
 static inline int add_signed_long(U64 *result, U64 op1, U64 op2)
 {
-    *result = (S64)op1 + (S64)op2;
+    *result = op1 + op2;
 
     return (((S64)op1 < 0 && (S64)op2 < 0 && (S64)*result >= 0)
       || ((S64)op1 >= 0 && (S64)op2 >= 0 && (S64)*result < 0)) ? 3 :
@@ -241,7 +241,7 @@ static inline int add_signed_long(U64 *result, U64 op1, U64 op2)
 /*-------------------------------------------------------------------*/
 static inline int sub_signed_long(U64 *result, U64 op1, U64 op2)
 {
-    *result = (S64)op1 - (S64)op2;
+    *result = op1 - op2;
 
     return (((S64)op1 < 0 && (S64)op2 >= 0 && (S64)*result >= 0)
       || ((S64)op1 >= 0 && (S64)op2 < 0 && (S64)*result < 0)) ? 3 :
