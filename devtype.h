@@ -57,6 +57,7 @@ struct DEVHND {
 extern DEVHND constty_device_hndinfo;
 extern DEVHND loc3270_device_hndinfo;
 extern DEVHND comadpt_device_hndinfo;
+extern DEVHND tcpnje_device_hndinfo;
 extern DEVHND cardrdr_device_hndinfo;
 extern DEVHND cardpch_device_hndinfo;
 extern DEVHND printer_device_hndinfo;

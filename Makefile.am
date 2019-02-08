@@ -56,6 +56,7 @@ dynamic_SRC        = dyngui.c   \
 
 dyndev_SRC         = commadpt.c  \
                      comm3705.c  \
+                     tcpnje.c    \
                      console.c   \
                      cardpch.c   \
                      cardrdr.c   \
@@ -143,6 +144,7 @@ endif
              hdt1403.la  \
              hdt2703.la  \
              hdt3705.la  \
+             hdttcpnje.la \
              hdt3088.la  \
              hdt3270.la  \
              hdt3420.la  \
@@ -211,6 +213,10 @@ if OPTION_DYNAMIC_LOAD
   hdt3705_la_SOURCES = comm3705.c
   hdt3705_la_LDFLAGS = $(DYNMOD_LD_FLAGS)
   hdt3705_la_LIBADD  = $(DYNMOD_LD_ADD)
+
+  hdttcpnje_la_SOURCES = tcpnje.c
+  hdttcpnje_la_LDFLAGS = $(DYNMOD_LD_FLAGS)
+  hdttcpnje_la_LIBADD  = $(DYNMOD_LD_ADD)
 
   hdt3088_la_SOURCES = ctc_lcs.c ctc_ctci.c ctcadpt.c w32ctca.c tuntap.c
   hdt3088_la_LDFLAGS = $(DYNMOD_LD_FLAGS)
@@ -406,6 +412,7 @@ else
              -dlopen hdt3420.la   \
              -dlopen hdt2703.la   \
              -dlopen hdt3705.la   \
+             -dlopen hdttcpnje.la \
              -dlopen hdt3088.la   \
              -dlopen hdt3270.la   \
              -dlopen hdt3505.la   \
@@ -420,6 +427,7 @@ else
              hdt3420.la   \
              hdt2703.la   \
              hdt3705.la   \
+             hdttcpnje.la \
              hdt3088.la   \
              hdt3270.la   \
              hdt3505.la   \
@@ -647,6 +655,7 @@ noinst_HEADERS = hostinfo.h     \
                  logger.h       \
                  commadpt.h     \
                  comm3705.h     \
+                 tcpnje.h       \
                  cache.h        \
                  ecpsvm.h       \
                  memrchr.h      \
