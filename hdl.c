@@ -50,15 +50,16 @@ static HDLDEP *hdl_depend;               /* Version codes in hdlmain */
 
 static char *hdl_modpath = NULL;
 
+#ifdef ZZ_NO_BACKLINK
+static void hdl_modify_opcode(int, HDLINS *);
+#endif
+
 #endif
 
 static LOCK   hdl_sdlock;                /* shutdown lock            */
 static HDLSHD *hdl_shdlist;              /* Shutdown call list       */
 
 static void hdl_didf (int, int, char *, void *);
-#ifdef ZZ_NO_BACKLINK
-static void hdl_modify_opcode(int, HDLINS *);
-#endif
 
 /* Global hdl_device_type_equates */
 
