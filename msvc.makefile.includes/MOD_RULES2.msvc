@@ -69,6 +69,9 @@ $(X)hdt2703.dll: $(O)commadpt.obj $(O)hengine.lib $(O)hutil.lib $(O)hsys.lib $(O
 $(X)hdt3705.dll: $(O)comm3705.obj $(O)hengine.lib $(O)hutil.lib $(O)hsys.lib $(O)hercver.res
     $(linkdll)
 
+$(X)hdttcpnje.dll: $(O)tcpnje.obj $(O)hengine.lib $(O)hutil.lib $(O)hsys.lib $(O)hercver.res
+    $(linkdll)
+
 $(X)hdt3088.dll: $(O)ctc_lcs.obj $(O)ctc_ctci.obj $(O)ctcadpt.obj $(O)w32ctca.obj $(O)tuntap.obj $(O)hengine.lib $(O)hutil.lib $(O)hsys.lib $(O)hercver.res
     $(linkdll)
 

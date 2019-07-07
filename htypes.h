@@ -216,6 +216,7 @@ typedef struct CCKDBLK          CCKDBLK;          // Global cckd dasd block
 typedef struct CCKDDASD_EXT     CCKDDASD_EXT;     // Ext for compressed ckd
 
 typedef struct COMMADPT         COMMADPT;         // Comm Adapter
+typedef struct TCPNJE           TCPNJE;           // RSCS VM/370 communications
 typedef struct bind_struct      bind_struct;      // Socket Device Ctl
 
 typedef struct TAPEMEDIA_HANDLER  TAPEMEDIA_HANDLER;  // (see tapedev.h)
