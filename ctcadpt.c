@@ -607,7 +607,9 @@ static const CTCE_FSM_CELL CTCE_Fsm[16][8] = {
 /* different Hercules versions, whilst adhering to different styles.     */
 #define CTCX_DEVNUM(p)          p->devnum
 #define CTCE_FILENAME           pDEVBLK->filename + 2
-#define PRIu64                  "lld"
+#ifndef PRIu64
+  #define PRIu64                  "lld"
+#endif
 #define SHIFT_MEGABYTE          20
 #define STRLCAT( dst, src )     strlcat( (dst), (src), sizeof(dst) )
 #define UNREACHABLE_CODE(c)     c;
@@ -4432,17 +4434,17 @@ static int      CTCE_Write_Init( DEVBLK*                   dev,
 
 static int      CTCE_Recovery( DEVBLK*                     dev )
 {
-    int            rc;                 // Return Code from devinit_cmd
-    char           argv[2][8];         // to call devinit_cmd with
+    int            rc;                                 // Return Code from devinit_cmd
+    char          *argv[2] = { "DEVINIT", "0:0000" };  // to be passed to  devinit_cmd
 
-    strcpy( argv[0], "DEVINIT" ) ;
-    snprintf( argv[1], sizeof( argv[1] ), "%04X", dev->devnum );
+    snprintf( argv[1], sizeof( *argv[1] ), "%1d:%04X",
+        SSID_TO_LCSS( dev->ssid ),  dev->devnum );
 
     logmsg( _("HHCCT900E %04X CTCE: DEVINIT %s about to be issued.\n"),
         CTCX_DEVNUM( dev ), argv[1] );
 
     release_lock( &dev->lock );
-    rc = devinit_cmd( 2, &(&argv[0][0]), NULL );
+    rc = devinit_cmd( 2, argv, NULL );
     obtain_lock( &dev->lock );
 
     return rc;
@@ -4526,10 +4528,10 @@ static const BYTE cfgdata[] =       // (prototype data)
 0x00,0x00,0x00,0x00,
 };
 
-CASSERT( sizeof(cfgdata) == 132, ctcadpt_c );
-
     int   RCD_len;
     BYTE  work[ sizeof( cfgdata ) ];
+
+    CASSERT( sizeof(cfgdata) == 132, ctcadpt_c );
 
     // Copy prototype Configuration Data to work area.
     memcpy( work, cfgdata, sizeof( work ));
