@@ -531,10 +531,12 @@ COMMAND ( "iodelay",   PANEL+CONFIG, iodelay_cmd,   "display or set I/O delay va
 
 COMMAND ( "ctc",       PANEL,        ctc_cmd,
   "Enable/Disable CTC debugging",
-    "Format:  \"ctc  debug  { on | off }  [ <devnum> | ALL ]\".\n\n"
-    "Enables/disables debug packet tracing for the specified CTCI/LCS\n"
-    "device group(s) identified by <devnum> or for all CTCI/LCS device\n"
-    "groups if <devnum> is not specified or specified as 'ALL'.\n"        )
+    "Format:  \"ctc  debug  { on | off | startup }  [ <devnum> | ALL ]\".\n\n"
+    "Enables/disables debug packet tracing for the specified CTCI/LCS/CTCE\n"
+    "device group(s) identified by <devnum> or for all CTCI/LCS/CTCE device\n"
+    "groups if <devnum> is not specified or specified as 'ALL'.\n" 
+    "Only CTCE devices support 'startup' debugging.\n"
+)
 
 #if defined(OPTION_W32_CTCI)
 COMMAND ( "tt32",      PANEL,        tt32_cmd,

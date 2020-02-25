@@ -314,4 +314,8 @@
 #define CTC_CFC         9               /* Coupling facility channel */
 #define CTC_CTCE       10               /* Enhanced CTC link via TCP */
 
+#define CTCE_TRACE_ON          -1       /* CTCE permanent tracing on */
+#define CTCE_TRACE_OFF         -2       /* CTCE tracing turned off   */
+#define CTCE_TRACE_STARTUP     20       /* CTCE startup tracing max  */
+
 #endif // _HCONSTS_H
