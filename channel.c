@@ -350,7 +350,11 @@ int      pending = 0;                   /* New interrupt pending     */
     obtain_lock (&dev->lock);
 
     /* Test device status and set condition code */
-    if (dev->busy)
+    if (dev->busy
+        /* CTCE devices need dev->halt_device to always be called
+           even when not busy!
+        */
+        || dev->ctctype == CTC_CTCE)            /* @PJJ */
     {
         /* Invoke the provided halt_device routine @ISW */
         /* if it has been provided by the handler  @ISW */
@@ -1181,6 +1185,9 @@ void device_reset (DEVBLK *dev)
     }
 #endif /* defined(FEATURE_VM_BLOCKIO) */
 
+    if (dev->halt_device!=NULL)
+        dev->halt_device(dev);
+ 
     release_lock (&dev->lock);
 } /* end device_reset() */
 
