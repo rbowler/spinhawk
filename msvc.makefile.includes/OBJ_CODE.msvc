@@ -155,6 +155,7 @@ hmodule_OBJ = \
     $(O)cardrdr.obj  \
     $(O)comm3705.obj \
     $(O)commadpt.obj \
+    $(O)tcpnje.obj   \
     $(O)console.obj  \
     $(O)ctc_ctci.obj \
     $(O)ctc_lcs.obj  \

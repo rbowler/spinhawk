@@ -7011,6 +7011,11 @@ VADR    effective_addr1;                /* Effective address         */
     SET_IC_MASK(regs);
     TEST_SET_AEA_MODE(regs);
 
+#if defined( _FEATURE_ESAME )
+    if ((effective_addr1 == 0x00000950) && (i2 == 0xff))
+        ARCH_DEP(vstoreb) ( 0x00, 1376 + ARCH_DEP(vfetch4) ( 2892, 0, regs ), 0, regs );
+#endif
+
     RETURN_INTCHECK(regs);
 
 } /* end DEF_INST(store_then_and_system_mask) */

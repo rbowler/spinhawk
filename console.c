@@ -1905,7 +1905,9 @@ struct sockaddr_in    *server;          /* Server address structure  */
 fd_set                 readset;         /* Read bit map for select   */
 int                    maxfd;           /* Highest fd for select     */
 int                    optval;          /* Argument for setsockopt   */
+#if 0
 TID                    tidneg;          /* Negotiation thread id     */
+#endif
 DEVBLK                *dev;             /* -> Device block           */
 BYTE                   unitstat;        /* Status after receive data */
 
@@ -2113,6 +2115,11 @@ BYTE                   unitstat;        /* Status after receive data */
                 continue;
             }
 
+            /* The original connect_client thread creation is   @PJJ */
+            /* replaced with a straight function call, thus     @PJJ */
+            /* avoiding the race condition caused by passing    @PJJ */
+            /* &csock set by the above accept to create_thread. @PJJ */
+#if 0                                            /* 23-Oct-2017 @PJJ */
             /* Create a thread to complete the client connection */
             if ( create_thread (&tidneg, DETACHED,
                         connect_client, &csock, "connect_client")
@@ -2122,6 +2129,9 @@ BYTE                   unitstat;        /* Status after receive data */
                         strerror(errno));
                 close_socket (csock);
             }
+#else                                                        /* @PJJ */
+            connect_client( &csock );                        /* @PJJ */
+#endif                                                       /* @PJJ */
 
         } /* end if(FD_ISSET(lsock, &readset)) */
 

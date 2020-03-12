@@ -226,6 +226,7 @@ HAO_DLL_IMPORT void hao_message(char *message); /* process message */
 /* Functions in module hsccmd.c (so PTT debugging patches can access them) */
 HCMD_DLL_IMPORT int aia_cmd     (int argc, char *argv[], char *cmdline);
 HCMD_DLL_IMPORT int stopall_cmd (int argc, char *argv[], char *cmdline);
+HCMD_DLL_IMPORT int devinit_cmd (int argc, char *argv[], char *cmdline); /* Used in ctcadpt.c for CTCE recovery   @PJJ */
 
 /* Functions in module cmdtab.c */
 CMDT_DLL_IMPORT int ProcessConfigCommand (int argc, char **argv, char *cmdline);
@@ -338,11 +339,11 @@ int ckddasd_hresume  ( DEVBLK *dev, void *file );
 /* Functions in module fbadasd.c */
 FBA_DLL_IMPORT void fbadasd_syncblk_io (DEVBLK *dev, BYTE type, int blknum,
         int blksize, BYTE *iobuf, BYTE *unitstat, U16 *residual);
-FBA_DLL_IMPORT void fbadasd_read_block 
-      ( DEVBLK *dev, int blknum, int blksize, int blkfactor, 
+FBA_DLL_IMPORT void fbadasd_read_block
+      ( DEVBLK *dev, int blknum, int blksize, int blkfactor,
         BYTE *iobuf, BYTE *unitstat, U16 *residual );
-FBA_DLL_IMPORT void fbadasd_write_block 
-      ( DEVBLK *dev, int blknum, int blksize, int blkfactor, 
+FBA_DLL_IMPORT void fbadasd_write_block
+      ( DEVBLK *dev, int blknum, int blksize, int blkfactor,
         BYTE *iobuf, BYTE *unitstat, U16 *residual );
 int fbadasd_init_handler ( DEVBLK *dev, int argc, char *argv[]);
 void fbadasd_execute_ccw ( DEVBLK *dev, BYTE code, BYTE flags,

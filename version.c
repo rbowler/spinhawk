@@ -124,7 +124,8 @@ static const char *build_info[] = {
  && !defined( ASSIST_CMPXCHG16 ) \
  && !defined( ASSIST_FETCH_DW  ) \
  && !defined( ASSIST_STORE_DW  ) \
- && !defined( MULTI_BYTE_ASSIST)
+ && !defined( MULTI_BYTE_ASSIST) \
+ && CAN_IAF2 == IAF2_ATOMICS_UNAVAILABLE
     " (none)",
 #else
   #if defined( ASSIST_CMPXCHG1 )
@@ -147,6 +148,20 @@ static const char *build_info[] = {
   #endif
   #if defined( MULTI_BYTE_ASSIST )
                     " multi_byte"
+  #endif
+  #if     CAN_IAF2 != IAF2_ATOMICS_UNAVAILABLE
+                    " hatomics"
+    #if   CAN_IAF2 == IAF2_C11_STANDARD_ATOMICS
+      "=C11"
+    #elif CAN_IAF2 == IAF2_MICROSOFT_INTRINSICS
+      "=msvcIntrinsics"
+    #elif CAN_IAF2 == IAF2_ATOMIC_INTRINSICS
+      "=atomicIntrinsics"
+    #elif CAN_IAF2 == IAF2_SYNC_BUILTINS
+      "=syncBuiltins"
+    #else
+      "=UNKNOWN"
+    #endif
   #endif
     ,
 #endif

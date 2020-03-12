@@ -2019,6 +2019,7 @@ int ctc_cmd( int argc, char *argv[], char *cmdline )
     U16      lcss;
     U16      devnum;
     BYTE     onoff;
+    BYTE     startup;
 
     UNREFERENCED( cmdline );
 
@@ -2028,8 +2029,9 @@ int ctc_cmd( int argc, char *argv[], char *cmdline )
         || argc < 3
         ||  strcasecmp( argv[1], "debug" ) != 0
         || (1
-            && strcasecmp( argv[2], "on"  ) != 0
-            && strcasecmp( argv[2], "off" ) != 0
+            && strcasecmp( argv[2], "on"      ) != 0
+            && strcasecmp( argv[2], "off"     ) != 0
+            && strcasecmp( argv[2], "startup" ) != 0
            )
         || argc > 4
         || (1
@@ -2044,6 +2046,7 @@ int ctc_cmd( int argc, char *argv[], char *cmdline )
     }
 
     onoff = (strcasecmp( argv[2], "on" ) == 0);
+    startup = (strcasecmp( argv[2], "startup" ) == 0);
 
     if (argc < 4 || strcasecmp( argv[3], "ALL" ) == 0)
     {
@@ -2052,7 +2055,7 @@ int ctc_cmd( int argc, char *argv[], char *cmdline )
             if (0
                 || !dev->allocated
                 || 0x3088 != dev->devtype
-                || (CTC_CTCI != dev->ctctype && CTC_LCS != dev->ctctype)
+                || (CTC_CTCI != dev->ctctype && CTC_LCS != dev->ctctype && CTC_CTCE != dev->ctctype)
             )
                 continue;
 
@@ -2060,6 +2063,21 @@ int ctc_cmd( int argc, char *argv[], char *cmdline )
             {
                 pCTCBLK = dev->dev_data;
                 pCTCBLK->fDebug = onoff;
+            }
+            else if (CTC_CTCE == dev->ctctype)
+            {
+                if (onoff)
+                {
+                    dev->ctce_trace_cntr = CTCE_TRACE_ON;
+                }
+                else if (startup)
+                {
+                    dev->ctce_trace_cntr = CTCE_TRACE_STARTUP;
+                }
+                else
+                {
+                    dev->ctce_trace_cntr = CTCE_TRACE_OFF;
+                }
             }
             else // (CTC_LCS == dev->ctctype)
             {
@@ -2069,8 +2087,8 @@ int ctc_cmd( int argc, char *argv[], char *cmdline )
             }
         }
 
-        logmsg( _("HHCPNXXXI CTC debugging now %s for all CTCI/LCS device groups.\n"),
-                  onoff ? _("ON") : _("OFF") );
+        logmsg( _("HHCPNXXXI CTC debugging now %s for all CTCI/LCS device groups / CTCE devices.\n"),
+                  startup ? _("STARTUP") : onoff ? _("ON") : _("OFF") );
     }
     else
     {
@@ -2105,17 +2123,32 @@ int ctc_cmd( int argc, char *argv[], char *cmdline )
                 pLCSBLK->fDebug = onoff;
             }
         }
+        else if (CTC_CTCE == dev->ctctype)
+        {
+            if (onoff)
+            {
+                dev->ctce_trace_cntr = CTCE_TRACE_ON;
+            }
+            else if (startup)
+            {
+                dev->ctce_trace_cntr = CTCE_TRACE_STARTUP;
+            }
+            else
+            {
+                dev->ctce_trace_cntr = CTCE_TRACE_OFF;
+            }
+        }
         else
         {
-            logmsg( _("HHCPN034E Device %d:%4.4X is not a CTCI or LCS device\n"),
+            logmsg( _("HHCPN034E Device %d:%4.4X is not a CTCI or LCS or CTCE device\n"),
                       lcss, devnum );
             return -1;
         }
 
-        logmsg( _("HHCPNXXXI CTC debugging now %s for %s device %d:%4.4X group.\n"),
-                  onoff ? _("ON") : _("OFF"),
-                  CTC_LCS == dev->ctctype ? "LCS" : "CTCI",
-                  lcss, devnum );
+        logmsg( _("HHCPNXXXI CTC debugging now %s for %s device %d:%4.4X %s\n"),
+                  startup ? _("STARTUP") : onoff ? _("ON") : _("OFF"),
+                  CTC_CTCE == dev->ctctype ? "CTCE" : CTC_LCS == dev->ctctype ? "LCS" : "CTCI",
+                  lcss, devnum, CTC_CTCE == dev->ctctype ? "" : " group");
     }
 
     return 0;
@@ -4922,7 +4955,7 @@ int ascsimnt_cmd(int argc, char *argv[], char *cmdline)
 /*-------------------------------------------------------------------*/
 /* devinit command - assign/open a file for a configured device      */
 /*-------------------------------------------------------------------*/
-int devinit_cmd(int argc, char *argv[], char *cmdline)
+DLL_EXPORT int devinit_cmd(int argc, char *argv[], char *cmdline)
 {
 DEVBLK*  dev;
 U16      devnum;
@@ -4930,6 +4963,7 @@ U16      lcss;
 int      i, rc;
 int      init_argc;
 char   **init_argv;
+char   **save_argv = NULL;
 
     UNREFERENCED(cmdline);
 
@@ -4955,6 +4989,19 @@ char   **init_argv;
     /* Obtain the device lock */
     obtain_lock (&dev->lock);
 
+    /* wait up to 0.1 seconds for the busy to go away */
+    {
+        int i = 20;
+        while(i-- > 0 && (dev->busy
+                         || IOPENDING(dev)
+                         || (dev->scsw.flag3 & SCSW3_SC_PEND)))
+        {
+            release_lock(&dev->lock);
+            usleep(5000);
+            obtain_lock(&dev->lock);
+        }
+    }
+
     /* Reject if device is busy or interrupt pending */
     if (dev->busy || IOPENDING(dev)
      || (dev->scsw.flag3 & SCSW3_SC_PEND))
@@ -4963,12 +5010,6 @@ char   **init_argv;
         logmsg( _("HHCPN096E Device %d:%4.4X busy or interrupt pending\n"),
                   lcss, devnum );
         return -1;
-    }
-
-    /* Close the existing file, if any */
-    if (dev->fd < 0 || dev->fd > 2)
-    {
-        (dev->hnd->close)(dev);
     }
 
     /* Build the device initialization arguments array */
@@ -4985,34 +5026,26 @@ char   **init_argv;
         if (init_argc)
         {
             init_argv = malloc ( init_argc * sizeof(char*) );
+            save_argv = malloc ( init_argc * sizeof(char*) );
             for (i = 0; i < init_argc; i++)
+            {
                 if (dev->argv[i])
                     init_argv[i] = strdup(dev->argv[i]);
                 else
                     init_argv[i] = NULL;
+                save_argv[i] = init_argv[i];
+            }
         }
         else
             init_argv = NULL;
     }
 
-    /* Call the device init routine to do the hard work */
-    if ((rc = (dev->hnd->init)(dev, init_argc, init_argv)) < 0)
-    {
-        logmsg( _("HHCPN097E Initialization failed for device %d:%4.4X\n"),
-                  lcss, devnum );
-    } else {
-        logmsg( _("HHCPN098I Device %d:%4.4X initialized\n"), lcss, devnum );
-    }
-
     /* Save arguments for next time */
-    if (rc == 0)
-    {
         for (i = 0; i < dev->argc; i++)
             if (dev->argv[i])
                 free(dev->argv[i]);
         if (dev->argv)
             free(dev->argv);
-
         dev->argc = init_argc;
         if (init_argc)
         {
@@ -5025,10 +5058,30 @@ char   **init_argv;
         }
         else
             dev->argv = NULL;
-    }
+
+    /* Call the device init routine to do the hard work */
+    dev->reinit = 1;
+    if ((rc = (dev->hnd->init)(dev, init_argc, init_argv)) < 0)
+    {
+        logmsg( _("HHCPN097E Initialization failed for device %d:%4.4X\n"),
+                  lcss, devnum );
+    } else {
+        logmsg( _("HHCPN098I Device %d:%4.4X initialized\n"), lcss, devnum );
+    }    
+    dev->reinit = 0;
 
     /* Release the device lock */
     release_lock (&dev->lock);
+
+    /* Free work memory */
+    if (save_argv)
+    {
+        for (i=0; i < init_argc; i++)
+            if (save_argv[i])
+                free(save_argv[i]);
+        free(save_argv);
+        free(init_argv);
+    }
 
     /* Raise unsolicited device end interrupt for the device */
     if (rc == 0)

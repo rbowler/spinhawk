@@ -80,7 +80,10 @@
 #define FEATURE_INTEGRATED_3270_CONSOLE
 //#define FEATURE_INTEGRATED_ASCII_CONSOLE
 #define FEATURE_INTERLOCKED_ACCESS_FACILITY                     /*810*/
-//#define FEATURE_INTERLOCKED_ACCESS_FACILITY_2                   /*912*/
+#if CAN_IAF2 != IAF2_ATOMICS_UNAVAILABLE
+   /* Feature is available on z processors                           */
+   #define FEATURE_INTERLOCKED_ACCESS_FACILITY_2
+#endif
 #define FEATURE_INTERPRETIVE_EXECUTION
 #define FEATURE_IO_ASSIST
 #define FEATURE_IPTE_RANGE_FACILITY                             /*810*/
@@ -114,7 +117,7 @@
 #define FEATURE_PFPO                                            /*407*/
 #define FEATURE_POPULATION_COUNT_FACILITY                       /*810*/
 #define FEATURE_PRIVATE_SPACE
-//#define FEATURE_PROCESSOR_ASSIST_FACILITY                       /*912*/
+#define FEATURE_PROCESSOR_ASSIST_FACILITY                       /*912*/
 //#define FEATURE_PROGRAM_DIRECTED_REIPL /*DIAG308 incomplete*/  /*@Z9*/
 #define FEATURE_PROTECTION_INTERCEPTION_CONTROL
 #define FEATURE_QUEUED_DIRECT_IO

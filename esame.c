@@ -7058,21 +7058,19 @@ DEF_INST(and_immediate_y)
 BYTE    i2;                             /* Immediate byte of opcode  */
 int     b1;                             /* Base of effective addr    */
 VADR    effective_addr1;                /* Effective address         */
-BYTE    rbyte;                          /* Result byte               */
+BYTE   *dest;                           /* Pointer to target byte    */
 
     SIY(inst, regs, i2, b1, effective_addr1);
 
-    /* Fetch byte from operand address */
-    rbyte = ARCH_DEP(vfetchb) ( effective_addr1, b1, regs );
+    ITIMER_SYNC(effective_addr1, 0, regs);
 
-    /* AND with immediate operand */
-    rbyte &= i2;
+    /* Get byte mainstor address */
+    dest = MADDR (effective_addr1, b1, regs, ACCTYPE_WRITE, regs->psw.pkey );
 
-    /* Store result at operand address */
-    ARCH_DEP(vstoreb) ( rbyte, effective_addr1, b1, regs );
+    /* AND byte with immediate operand, setting condition code */
+    regs->psw.cc = (H_ATOMIC_OP(dest, i2, and, And, &) != 0);
 
-    /* Set condition code */
-    regs->psw.cc = rbyte ? 1 : 0;
+    ITIMER_UPDATE(effective_addr1,0,regs);
 
 } /* end DEF_INST(and_immediate_y) */
 #endif /*defined(FEATURE_LONG_DISPLACEMENT)*/
@@ -7440,21 +7438,19 @@ DEF_INST(exclusive_or_immediate_y)
 BYTE    i2;                             /* Immediate operand         */
 int     b1;                             /* Base of effective addr    */
 VADR    effective_addr1;                /* Effective address         */
-BYTE    rbyte;                          /* Result byte               */
+BYTE   *dest;                           /* Pointer to target byte    */
 
     SIY(inst, regs, i2, b1, effective_addr1);
 
-    /* Fetch byte from operand address */
-    rbyte = ARCH_DEP(vfetchb) ( effective_addr1, b1, regs );
+    ITIMER_SYNC(effective_addr1, 0, regs);
 
-    /* XOR with immediate operand */
-    rbyte ^= i2;
+    /* Get byte mainstor address */
+    dest = MADDR (effective_addr1, b1, regs, ACCTYPE_WRITE, regs->psw.pkey );
 
-    /* Store result at operand address */
-    ARCH_DEP(vstoreb) ( rbyte, effective_addr1, b1, regs );
+    /* XOR byte with immediate operand, setting condition code */
+    regs->psw.cc = (H_ATOMIC_OP(dest, i2, xor, Xor, ^) != 0);
 
-    /* Set condition code */
-    regs->psw.cc = rbyte ? 1 : 0;
+    ITIMER_UPDATE(effective_addr1,0,regs);
 
 } /* end DEF_INST(exclusive_or_immediate_y) */
 #endif /*defined(FEATURE_LONG_DISPLACEMENT)*/
@@ -7810,21 +7806,19 @@ DEF_INST(or_immediate_y)
 BYTE    i2;                             /* Immediate operand byte    */
 int     b1;                             /* Base of effective addr    */
 VADR    effective_addr1;                /* Effective address         */
-BYTE    rbyte;                          /* Result byte               */
+BYTE   *dest;                           /* Pointer to target byte    */
 
     SIY(inst, regs, i2, b1, effective_addr1);
 
-    /* Fetch byte from operand address */
-    rbyte = ARCH_DEP(vfetchb) ( effective_addr1, b1, regs );
+    ITIMER_SYNC(effective_addr1, 0, regs);
 
-    /* OR with immediate operand */
-    rbyte |= i2;
+    /* Get byte mainstor address */
+    dest = MADDR (effective_addr1, b1, regs, ACCTYPE_WRITE, regs->psw.pkey );
 
-    /* Store result at operand address */
-    ARCH_DEP(vstoreb) ( rbyte, effective_addr1, b1, regs );
+    /* OR byte with immediate operand, setting condition code */
+    regs->psw.cc = (H_ATOMIC_OP(dest, i2, or, Or, |) != 0);
 
-    /* Set condition code */
-    regs->psw.cc = rbyte ? 1 : 0;
+    ITIMER_UPDATE(effective_addr1,0,regs);
 
 } /* end DEF_INST(or_immediate_y) */
 #endif /*defined(FEATURE_LONG_DISPLACEMENT)*/
@@ -8856,6 +8850,28 @@ U64     effective_addr2;                /* Effective address         */
 
 } /* end DEF_INST(load_program_parameter) */
 #endif /*defined(FEATURE_LOAD_PROGRAM_PARAMETER_FACILITY)*/     /*810*/
+
+#if defined(FEATURE_PROCESSOR_ASSIST_FACILITY)                /* 912 */
+/*-------------------------------------------------------------------*/
+/* B2E8 PPA - PERFORM PROCESSOR ASSIST                         [RRF] */
+/*-------------------------------------------------------------------*/
+DEF_INST(perform_processor_assist)
+{
+int     r1, r2;                         /* Register numbers          */
+int     m3;                             /* Mask bits                 */
+int     code;                           /* PPA code                  */
+    RRF_M(inst, regs, r1, r2, m3);
+    code = m3 & 0x0f;
+    switch(code)
+    {
+        case 1:	/* Transaction Abort Assist */
+            /* ARCH_DEP(transaction_abort_assist)(regs,r1); */
+            break;
+        default:
+            break;
+    }
+}
+#endif /* defined(FEATURE_PROCESSOR_ASSIST_FACILITY */        /* 912 */
 
 #if !defined(_GEN_ARCH)
 
