@@ -3342,11 +3342,20 @@ BYTE    b1, b2;                 /* 2741 overstrike rewriting */
                             /* If there was a DLE on previous pass */
                             if(gotdle)
                             {
-                                /* check for DLE/ETX */
+                                /* check for DLE/STX */
                                 if(b==0x02)
                                 {
                                     /* Indicate transparent mode on */
                                     turnxpar=1;
+                                }
+                                gotdle=0;
+                            }
+                            else
+                            {
+                                if((b==0x03) || (b==0x26))
+                                {
+                                    commadpt_ring_push(&dev->commadpt->outbfr,b);
+                                    break;
                                 }
                             }
                         }
