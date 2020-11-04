@@ -16,10 +16,12 @@ AM_CONFIG_HEADER(config.h)              # (the file the resulting configure scri
 AM_MAINTAINER_MODE()
 AC_CANONICAL_HOST()                     # (sets $host_cpu, $host_vendor, and $host_os)
 
+# Work around a bug in CPU detection on Cortex CPUs
 AS_IF([test "x$host_cpu" = 'xarmv7l'],[
-       host_cpu=cortex-a53
+       host_cpu=$(LANG=en_US lscpu | grep "Model name" | cut -d: -f2 | tr '[:upper:]' '[:lower:]')
 ])
 AC_SUBST([host_cpu])
+
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
 ###############################################################################
