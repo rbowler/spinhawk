@@ -15,6 +15,11 @@ AM_INIT_AUTOMAKE(hercules,3.13)         # (the version of our software package)
 AM_CONFIG_HEADER(config.h)              # (the file the resulting configure script will produce)
 AM_MAINTAINER_MODE()
 AC_CANONICAL_HOST()                     # (sets $host_cpu, $host_vendor, and $host_os)
+
+AS_IF([test "x$host_cpu" = 'xarmv7l'],[
+       host_cpu=cortex-a53
+])
+AC_SUBST([host_cpu])
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
 ###############################################################################
