@@ -2533,6 +2533,13 @@ static int commadpt_close_device ( DEVBLK *dev )
         dev->commadpt->have_cthread=0;
     }
 
+    /* Close sockets */
+    if (dev->commadpt->lfd >= 0) close_socket(dev->commadpt->lfd);
+    if (dev->commadpt->sfd >= 0) close_socket(dev->commadpt->sfd);
+
+    /* Close both ends of the IPC pipe */
+    close_pipe(dev->commadpt->pipe[0]);
+    close_pipe(dev->commadpt->pipe[1]);
 
     /* Free all work storage */
     /* The CA lock will be released by the cleanup routine */
