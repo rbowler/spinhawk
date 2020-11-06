@@ -1242,12 +1242,12 @@ static void *commadpt_thread(void *vca)
                     FD_ZERO(&rfd);
                     FD_ZERO(&wfd);
                     FD_ZERO(&xfd);
-                    FD_SET(ca->pipe[1],&rfd);
+                    FD_SET(ca->pipe[0],&rfd);
                     tv.tv_sec=5;
                     tv.tv_usec=0;
 
                     release_lock(&ca->lock);
-                    rc=select(ca->pipe[1]+1,&rfd,&wfd,&wfd,&tv);
+                    rc=select(ca->pipe[0]+1,&rfd,&wfd,&xfd,&tv);
                     obtain_lock(&ca->lock);
                     /*
                      * Check for a shutdown condition again after the sleep
@@ -1262,7 +1262,7 @@ static void *commadpt_thread(void *vca)
                     if(rc!=0)
                     {
                         /* Ignore any other command at this stage */
-                        read_pipe(ca->pipe[1],&b,1);
+                        read_pipe(ca->pipe[0],&b,1);
                         ca->curpending=COMMADPT_PEND_IDLE;
                         signal_condition(&ca->ipc);
                     }
