@@ -1242,12 +1242,12 @@ static void *commadpt_thread(void *vca)
                     FD_ZERO(&rfd);
                     FD_ZERO(&wfd);
                     FD_ZERO(&xfd);
-                    FD_SET(ca->pipe[1],&rfd);
+                    FD_SET(ca->pipe[0],&rfd);
                     tv.tv_sec=5;
                     tv.tv_usec=0;
 
                     release_lock(&ca->lock);
-                    rc=select(ca->pipe[1]+1,&rfd,&wfd,&wfd,&tv);
+                    rc=select(ca->pipe[0]+1,&rfd,&wfd,&xfd,&tv);
                     obtain_lock(&ca->lock);
                     /*
                      * Check for a shutdown condition again after the sleep
@@ -1262,7 +1262,7 @@ static void *commadpt_thread(void *vca)
                     if(rc!=0)
                     {
                         /* Ignore any other command at this stage */
-                        read_pipe(ca->pipe[1],&b,1);
+                        read_pipe(ca->pipe[0],&b,1);
                         ca->curpending=COMMADPT_PEND_IDLE;
                         signal_condition(&ca->ipc);
                     }
@@ -2533,6 +2533,13 @@ static int commadpt_close_device ( DEVBLK *dev )
         dev->commadpt->have_cthread=0;
     }
 
+    /* Close sockets */
+    if (dev->commadpt->lfd >= 0) close_socket(dev->commadpt->lfd);
+    if (dev->commadpt->sfd >= 0) close_socket(dev->commadpt->sfd);
+
+    /* Close both ends of the IPC pipe */
+    close_pipe(dev->commadpt->pipe[0]);
+    close_pipe(dev->commadpt->pipe[1]);
 
     /* Free all work storage */
     /* The CA lock will be released by the cleanup routine */
