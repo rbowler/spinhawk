@@ -124,13 +124,15 @@ DLL_EXPORT int parse_args (char* p, int maxargc, char** pargv, int* pargc)
 
     while (*p && *pargc < maxargc)
     {
-        while (*p && isspace(*p)) p++; if (!*p) break; // find start of arg
+        while (*p && isspace(*p)) p++; // find start of arg
+        if (!*p) break;        // give up if no arg present 
 
         if (*p == '#') break; // stop on comments
 
         *pargv = p; ++*pargc; // count new arg
 
-        while (*p && !isspace(*p) && *p != '\"' && *p != '\'') p++; if (!*p) break; // find end of arg
+        while (*p && !isspace(*p) && *p != '\"' && *p != '\'') p++;
+        if (!*p) break; // find end of arg
 
         if (*p == '\"' || *p == '\'')
         {
