@@ -3181,172 +3181,181 @@ BYTE    b1, b2;                 /* 2741 overstrike rewriting */
         /*---------------------------------------------------------------*/
         case 0x01:
         case 0x0d:       /* also CCW=BREAK */
-                logdump("Writ",dev,iobuf,count);
-                *residual=count;
+            logdump("Writ",dev,iobuf,count);
+            *residual=count;
 
-                /* Check if we have an opened path */
-                if(!dev->commadpt->connect)
+            /* Check if we have an opened path */
+            if(!dev->commadpt->connect)
+            {
+                *unitstat=CSW_CE|CSW_DE|CSW_UC;
+                dev->sense[0]=SENSE_IR;
+                break;
+            }
+
+            /* Check if the line has been enabled */
+            if(!dev->commadpt->enabled)
+            {
+                *unitstat=CSW_CE|CSW_DE|CSW_UC;
+                dev->sense[0]=SENSE_CR;
+                break;
+            }
+
+            dev->commadpt->haltpending = 0; /* circumvent APL\360 2741 race cond II */
+            /* read 1 byte to check for pending input */
+            i=read_socket(dev->commadpt->sfd,&b,1);
+            if (IS_ASYNC_LNCTL(dev->commadpt))
+            {
+                if(i>0)
                 {
-                    *unitstat=CSW_CE|CSW_DE|CSW_UC;
-                    dev->sense[0]=SENSE_IR;
+                    logdump("RCV0",dev,&b,1);
+                    commadpt_read_tty(dev->commadpt,&b,1);
+                }
+            }
+            else
+            {
+                if(i>0)
+                {
+                /* Push it in the communication input buffer ring */
+                    commadpt_ring_push(&dev->commadpt->inbfr,b);
+                }
+                /* Set UX on write if line has pending inbound data */
+                if(dev->commadpt->inbfr.havedata)
+                {
+                    dev->commadpt->datalostcond=1;
+                    *unitstat=CSW_CE|CSW_DE|CSW_UX;
                     break;
                 }
+            }  /* end of else (async) */
+            /*
+             * Fill in the Write Buffer
+             */
 
-                /* Check if the line has been enabled */
-                if(!dev->commadpt->enabled)
-                {
-                    *unitstat=CSW_CE|CSW_DE|CSW_UC;
-                    dev->sense[0]=SENSE_CR;
-                    break;
-                }
+            /* To start : not transparent mode, no DLE received yet */
+            turnxpar=0;
+            gotdle=0;
+            if(IS_ASYNC_LNCTL(dev->commadpt) && dev->commadpt->telnet_int
+               /* ugly hack for TSO ATTN to fix IEA000I 0C3,IOE,01,0E40,40008900002C,,,TCAM */
+               && !(iobuf[0] == 0xdf && iobuf[1] == 0xdf && iobuf[2] == 0xdf && count == 3))
+            {
+                   dev->commadpt->telnet_int = 0;
+                   *residual=count;
+                   *unitstat=CSW_CE|CSW_DE|CSW_UC;
+                   dev->sense[0]=SENSE_IR;
+                   break;
+            }
 
-                dev->commadpt->haltpending = 0; /* circumvent APL\360 2741 race cond II */
-                /* read 1 byte to check for pending input */
-                i=read_socket(dev->commadpt->sfd,&b,1);
-                if (IS_ASYNC_LNCTL(dev->commadpt)) 
+            /* Scan the I/O buffer */
+            for(i=0;i<count;i++)
+            {
+                /* Get 1 byte */
+                b=iobuf[i];
+
+                if (IS_ASYNC_LNCTL(dev->commadpt))
                 {
-                    if(i>0) 
+                    if (dev->commadpt->byte_skip_table[b])
+                    continue;
+                    if (dev->commadpt->term == COMMADPT_TERM_TTY)
                     {
-                        logdump("RCV0",dev,&b,1);
-                        commadpt_read_tty(dev->commadpt,&b,1);
+                        b = byte_reverse_table[b] & 0x7f;
                     }
-                } 
-                else 
-                {
-                    if(i>0)
-                    {
-                    /* Push it in the communication input buffer ring */
-                        commadpt_ring_push(&dev->commadpt->inbfr,b);
-                    }
-                    /* Set UX on write if line has pending inbound data */
-                    if(dev->commadpt->inbfr.havedata)
-                    {
-                        dev->commadpt->datalostcond=1;
-                        *unitstat=CSW_CE|CSW_DE|CSW_UX;
-                        break;
-                    }
-                }  /* end of else (async) */
-                /*
-                 * Fill in the Write Buffer
-                 */
-
-                /* To start : not transparent mode, no DLE received yet */
-                turnxpar=0;
-                gotdle=0;
-                if(IS_ASYNC_LNCTL(dev->commadpt) && dev->commadpt->telnet_int
-                   /* ugly hack for TSO ATTN to fix IEA000I 0C3,IOE,01,0E40,40008900002C,,,TCAM */
-                   && !(iobuf[0] == 0xdf && iobuf[1] == 0xdf && iobuf[2] == 0xdf && count == 3))
-                {
-                       dev->commadpt->telnet_int = 0;
-                       *residual=count;
-                       *unitstat=CSW_CE|CSW_DE|CSW_UC;
-                       dev->sense[0]=SENSE_IR;
-                       break;
-                }
-
-                /* Scan the I/O buffer */
-                for(i=0;i<count;i++)
-                {
-                    /* Get 1 byte */
-                    b=iobuf[i];
-
-                    if (IS_ASYNC_LNCTL(dev->commadpt)) 
-                    {
-                        if (dev->commadpt->byte_skip_table[b])
-                        continue;
-                        if (dev->commadpt->term == COMMADPT_TERM_TTY) 
+                    else
+                    { /* 2741 */
+                        if (count == 1 && b == CIRCLE_D)
                         {
-                            b = byte_reverse_table[b] & 0x7f;
-                        } 
-                        else 
-                        { /* 2741 */
-                            if (count == 1 && b == CIRCLE_D)
-                            {
-                                b = 0x00; /* map initial Circle-D to NUL */
+                            b = 0x00; /* map initial Circle-D to NUL */
+                        }
+                        else if (dev->commadpt->rxvt4apl)
+                        {
+                            if (dev->commadpt->overstrike_flag == 1 && (b & 0x7f) == 0x5d)
+                            { /* char is another backspace but overstrike was expected */
+                                dev->commadpt->overstrike_flag = 0;
+                                dev->commadpt->saved_char = b;
+                                b = rxvt4apl_from_2741[b];
                             }
-                            else if (dev->commadpt->rxvt4apl)
+                            else if (dev->commadpt->overstrike_flag == 1)
                             {
-                                if (dev->commadpt->overstrike_flag == 1 && (b & 0x7f) == 0x5d)
-                                { /* char is another backspace but overstrike was expected */
-                                    dev->commadpt->overstrike_flag = 0;
-                                    dev->commadpt->saved_char = b;
-                                    b = rxvt4apl_from_2741[b];
-                                }
-                                else if (dev->commadpt->overstrike_flag == 1)
+                                dev->commadpt->overstrike_flag = 0;
+                                if (((u_int)dev->commadpt->saved_char) > ((u_int)b))
                                 {
-                                    dev->commadpt->overstrike_flag = 0;
-                                    if (((u_int)dev->commadpt->saved_char) > ((u_int)b))
-                                    {
-                                        b1 = b;
-                                        b2 = dev->commadpt->saved_char;
-                                    }
-                                    else
-                                    {
-                                        b1 = dev->commadpt->saved_char;
-                                        b2 = b;
-                                    }
-                                    b = '?';
-                                    for (j = 0; j < sizeof(overstrike_2741_pairs); j+=2) {
-                                        if (overstrike_2741_pairs[j] == b1 && overstrike_2741_pairs[j+1] == b2) {
-                                            b = overstrike_rxvt4apl_chars[j>>1];
-                                        }
-                                    }
-                                }
-                                else if ((b & 0x7f) == 0x5d /* 2741 backspace */
-                                      && (dev->commadpt->saved_char & 0x7f) != 0x5d
-                                      && (dev->commadpt->saved_char & 0x7f) != 0x3b
-                                      && (dev->commadpt->saved_char & 0x7f) != 0x7f)
-                                {
-                                    dev->commadpt->overstrike_flag = 1;
-                                    b = rxvt4apl_from_2741[b];
+                                    b1 = b;
+                                    b2 = dev->commadpt->saved_char;
                                 }
                                 else
                                 {
-                                    dev->commadpt->overstrike_flag = 0;
-                                    dev->commadpt->saved_char = b;
-                                    b = rxvt4apl_from_2741[b];
-                                    if (b == 0x0d && dev->commadpt->crlf_opt) /* ascii CR? */
-                                    {   /* 2741 NL has been mapped to CR, we need to append LF to this (sigh) */
-                                        commadpt_ring_push(&dev->commadpt->outbfr,b);
-                                        b = 0x0a;
+                                    b1 = dev->commadpt->saved_char;
+                                    b2 = b;
+                                }
+                                b = '?';
+                                for (j = 0; j < sizeof(overstrike_2741_pairs); j+=2) {
+                                    if (overstrike_2741_pairs[j] == b1 && overstrike_2741_pairs[j+1] == b2) {
+                                        b = overstrike_rxvt4apl_chars[j>>1];
                                     }
                                 }
                             }
-                            else if (dev->commadpt->code_table_toebcdic)
+                            else if ((b & 0x7f) == 0x5d /* 2741 backspace */
+                                  && (dev->commadpt->saved_char & 0x7f) != 0x5d
+                                  && (dev->commadpt->saved_char & 0x7f) != 0x3b
+                                  && (dev->commadpt->saved_char & 0x7f) != 0x7f)
                             {
-                                b = dev->commadpt->code_table_toebcdic[b];  // first translate to EBCDIC
-                                b = guest_to_host(b) & 0x7f; // then EBCDIC to ASCII
-                            }
-                        }
-                    } 
-                    else 
-                    {   /* line is BSC */
-                        /* If we are in transparent mode, we must double the DLEs */
-                        if(turnxpar)
-                        {
-                            /* Check for a DLE */
-                            if(b==0x10)
-                            {
-                                /* put another one in the output buffer */
-                                commadpt_ring_push(&dev->commadpt->outbfr,0x10);
-                            }
-                        }
-                        else        /* non transparent mode */
-                        {
-                            if(b==0x10)
-                            {
-                                gotdle=1;   /* Indicate we have a DLE for next pass */
+                                dev->commadpt->overstrike_flag = 1;
+                                b = rxvt4apl_from_2741[b];
                             }
                             else
                             {
-                                /* If there was a DLE on previous pass */
-                                if(gotdle)
+                                dev->commadpt->overstrike_flag = 0;
+                                dev->commadpt->saved_char = b;
+                                b = rxvt4apl_from_2741[b];
+                                if (b == 0x0d && dev->commadpt->crlf_opt) /* ascii CR? */
+                                {   /* 2741 NL has been mapped to CR, we need to append LF to this (sigh) */
+                                    commadpt_ring_push(&dev->commadpt->outbfr,b);
+                                    b = 0x0a;
+                                }
+                            }
+                        }
+                        else if (dev->commadpt->code_table_toebcdic)
+                        {
+                            b = dev->commadpt->code_table_toebcdic[b];  // first translate to EBCDIC
+                            b = guest_to_host(b) & 0x7f; // then EBCDIC to ASCII
+                        }
+                    }
+                }
+                else
+                {   /* line is BSC */
+                    /* If we are in transparent mode, we must double the DLEs */
+                    if(turnxpar)
+                    {
+                        /* Check for a DLE */
+                        if(b==0x10)
+                        {
+                            /* put another one in the output buffer */
+                            commadpt_ring_push(&dev->commadpt->outbfr,0x10);
+                        }
+                    }
+                    else        /* non transparent mode */
+                    {
+                        if(b==0x10)
+                        {
+                            gotdle=1;   /* Indicate we have a DLE for next pass */
+                        }
+                        else
+                        {
+                            /* If there was a DLE on previous pass */
+                            if(gotdle)
                             {
-                                /* check for DLE/ETX */
+                                /* check for DLE/STX */
                                 if(b==0x02)
                                 {
                                     /* Indicate transparent mode on */
                                     turnxpar=1;
+                                }
+                                gotdle=0;
+                            }
+                            else
+                            {
+                                if((b==0x03) || (b==0x26))
+                                {
+                                    commadpt_ring_push(&dev->commadpt->outbfr,b);
+                                    break;
                                 }
                             }
                         }
