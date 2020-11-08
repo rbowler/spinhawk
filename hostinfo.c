@@ -100,7 +100,8 @@ DLL_EXPORT void display_hostinfo ( HOST_INFO* pHostInfo, FILE *f, int httpfd )
     get_hostinfo_str(pHostInfo, host_info_str, sizeof(host_info_str));
     if(httpfd<0)
     {
-        if (!f) f = stdout; if (f != stdout)
+        if (!f) f = stdout;
+        if (f != stdout)
              fprintf(f, "%s\n", host_info_str);
         else logmsg(    "%s\n", host_info_str);
     }
