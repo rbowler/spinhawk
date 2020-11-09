@@ -1495,9 +1495,9 @@ void tapedev_query_device ( DEVBLK *dev, char **class,
 
     GetDisplayMsg( dev, dispmsg, sizeof(dispmsg) );
 
-    if (strchr(dev->filename,' ')) strlcat( devparms, "\"",          sizeof(devparms));
-                                   strlcat( devparms, dev->filename, sizeof(devparms));
-    if (strchr(dev->filename,' ')) strlcat( devparms, "\"",          sizeof(devparms));
+    if (strchr(dev->filename,' ')) strlcat( devparms, "\"", sizeof(devparms));
+    strlcat( devparms, dev->filename, sizeof(devparms));
+    if (strchr(dev->filename,' ')) strlcat( devparms, "\"", sizeof(devparms));
 
 #if defined( OPTION_TAPE_AUTOMOUNT )
 
