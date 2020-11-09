@@ -12,12 +12,12 @@
 //-----------------------------------------------------------------------------
 //
 //                            VT100 User Guide
-// 
+//
 //                   Table 3-6 Cursor Control Key Codes
-// 
+//
 // Cursor Key   VT52       ANSI and Cursor Key Mode   ANSI and Cursor Key Mode
 //  (Arrow)     Mode       Reset    (Normal mode)     Set  (Application mode)
-// 
+//
 //   Up         ESC A      ESC [ A                    ESC O A
 //   Down       ESC B      ESC [ B                    ESC O B
 //   Right      ESC C      ESC [ C                    ESC O C
@@ -103,6 +103,10 @@ extern  void  translate_keystroke( char kbbuf[], int* pkblen );
 
 extern  int   console_beep( FILE* confp );
 extern  int   get_console_dim( FILE* confp, int* rows, int* cols );
+
+/* Set by SIGWINCH handler if our window size changed */
+extern  int  window_changed;
+
 #ifdef OPTION_EXTCURS
 extern  int   get_cursor_pos( int keybrd_fd, FILE* confp, short* row, short* col );
 #endif // OPTION_EXTCURS
