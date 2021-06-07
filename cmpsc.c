@@ -223,15 +223,6 @@ struct ec                              /* Expand context                      */
   REGS *regs;                          /* Registers                           */
   unsigned smbsz;                      /* Symbol size                         */
   BYTE *src;                           /* Source MADDR page address           */
-
-#ifdef OPTION_CMPSC_DEBUG
-  unsigned dbgac;                      /* Alphabet characters                 */
-  unsigned dbgbi;                      /* bytes in                            */
-  unsigned dbgbo;                      /* bytes out                           */
-  unsigned dbgch;                      /* Cache hits                          */
-  unsigned dbgiss;                     /* Expanded iss                        */
-#endif /* #ifdef OPTION_CMPSC_DEBUG */
-
 };
 #endif /* #ifndef NO_2ND_COMPILE */
 
@@ -1444,14 +1435,6 @@ static void ARCH_DEP(cmpsc_expand)(int r1, int r2, REGS *regs, REGS *iregs)
   ec.smbsz = GR0_smbsz(regs);
   ec.src = NULL;
 
-#ifdef OPTION_CMPSC_DEBUG
-  ec.dbgac = 0;
-  ec.dbgbi = 0;
-  ec.dbgbo = 0;
-  ec.dbgch = 0;
-  ec.dbgiss = 0;
-#endif /* #ifdef OPTION_CMPSC_DEBUG */
-
   /*--------------------------------------------------------------------------*/
   /* Process individual index symbols until cbn becomes zero                  */
   while(unlikely(GR1_cbn(ec.iregs)))
@@ -1471,7 +1454,6 @@ static void ARCH_DEP(cmpsc_expand)(int r1, int r2, REGS *regs, REGS *iregs)
 
 #ifdef OPTION_CMPSC_DEBUG
       logmsg("expand   : is %04X (%d)\n", iss[i], i);
-      ec.dbgiss++;
 #endif /* #ifdef OPTION_CMPSC_DEBUG */
 
       if(unlikely(!ec.ecl[iss[i]]))
@@ -1480,22 +1462,8 @@ static void ARCH_DEP(cmpsc_expand)(int r1, int r2, REGS *regs, REGS *iregs)
       {
         memcpy(&ec.oc[ec.ocl], &ec.ec[ec.eci[iss[i]]], ec.ecl[iss[i]]);
         ec.ocl += ec.ecl[iss[i]];
-
-#ifdef OPTION_CMPSC_DEBUG
-        if(iss[i] < 0x100)
-          ec.dbgac++;
-        else
-          ec.dbgch++;
-#endif /* #ifdef OPTION_CMPSC_DEBUG */
-
       }
     }
-
-#ifdef OPTION_CMPSC_DEBUG
-    ec.dbgbi += ec.smbsz;
-    ec.dbgbo += ec.ocl;
-    logmsg("Stats: iss %6u; ach %6u: %3d%; hts %6u: %3d%; bin %6u, out %6u: %6d%\n", ec.dbgiss, ec.dbgac, ec.dbgac * 100 / ec.dbgiss, ec.dbgch, ec.dbgch * 100 / ec.dbgiss, ec.dbgbi, ec.dbgbo, ec.dbgbo * 100 / ec.dbgbi);
-#endif /* #ifdef OPTION_CMPSC_DEBUG */
 
     /* Write and commit, cbn unchanged, so no commit for GR1 needed */
     if(unlikely(ARCH_DEP(cmpsc_vstore)(&ec, ec.oc, ec.ocl)))
