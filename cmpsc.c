@@ -1,4 +1,4 @@
-/* CMPSC.C      (c) Bernard van der Helm, 2000-2015                  */
+/* CMPSC.C      (c) Bernard van der Helm, 2000-2021                  */
 /*              S/390 compression call instruction                   */
 
 /*----------------------------------------------------------------------------*/
@@ -18,7 +18,7 @@
 /*   Compression dead end determination and elimination.                      */
 /*   Proactive dead end determination and elimination.                        */
 /*                                                                            */
-/*                              (c) Copyright Bernard van der Helm, 2000-2015 */
+/*                              (c) Copyright Bernard van der Helm, 2000-2021 */
 /*                              Noordwijkerhout, The Netherlands.             */
 /*                                                                            */
 /*----------------------------------------------------------------------------*/
