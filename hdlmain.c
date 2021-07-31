@@ -206,6 +206,7 @@ HDL_DEVICE_SECTION;
 
     /* Communication line devices */
     HDL_DEVICE(2703, comadpt_device_hndinfo );
+    HDL_DEVICE(3705, com3705_device_hndinfo );
     HDL_DEVICE(TCPNJE, tcpnje_device_hndinfo );
 
     /* Card readers */
