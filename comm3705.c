@@ -313,7 +313,7 @@ BYTE print_chars[17];
 #endif
 
 
-#if 1
+#if 0
 struct sockaddr_in * get_inet_socket(char *host_serv)
 {
 char *host = NULL;
