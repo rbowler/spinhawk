@@ -885,7 +885,7 @@ static void tcpnje_ttc(int fd, const BYTE *type, int reason, TCPNJE *tn)
 #if defined(_MSVC_)
     int socknamelen;
 #else /* defined(_MSVC_) */
-    size_t socknamelen;
+    socklen_t socknamelen;
 #endif /* defined(_MSVC_) */
     int rc;
     char typestring[9], lnodestring[9], rnodestring[9];
@@ -1036,7 +1036,7 @@ static void tcpnje_process_request(struct TNBUFFER *buffer, struct TCPNJE *tn)
 #if defined(_MSVC_)
         int socknamelen;
 #else /* defined(_MSVC_) */
-        size_t socknamelen;
+        socklen_t socknamelen;
 #endif /* defined(_MSVC_) */
 
         DBGMSG(8, "HHCTN123D %4.4X:TCPNJE - unrecognised TCPNJE control statement \"%s\"", tn->dev->devnum,
