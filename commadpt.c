@@ -1415,6 +1415,7 @@ static void *commadpt_thread(void *vca)
                     maxfd=maxfd<ca->sfd?ca->sfd:maxfd;
                 }
                 /* DO NOT BREAK - Continue with WRITE processing */
+                /* Fall through */
             case COMMADPT_PEND_WRITE:
                 if(!writecont)
                 {

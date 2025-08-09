@@ -5872,6 +5872,7 @@ static char *ordername[] = {
             channelset_reset(tregs);
             /* fallthrough*/
 #endif /* defined(FEATURE_S370_CHANNEL) */
+            /* Fall through */
         case SIGP_RESET:
             /* Signal CPU reset function */
             tregs->sigpreset = 1;

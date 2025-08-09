@@ -171,6 +171,7 @@ int chainf3(int *size, BYTE *ptr, int *count, char *fname, char *sfname)
                            *size += extents_array(&(f3dscb->ds3extnt[0]), 4, count, cifx->heads);
                            *size += extents_array(&(f3dscb->ds3adext[0]), 9, count, cifx->heads);
                        }
+                       /* Fall through */
             case 0xf2: ptr = &(f3dscb->ds3ptrds[0]); /* same offset for both F2 and F3 DSCBs */
                        continue; /* continue while loop */
             } /* end of switch */
@@ -285,7 +286,9 @@ int list_contents(CIFBLK *cif, char *volser, DSXTENT *extent, char *fname, char 
                     switch (f1dscb->ds1recfm & RECFM_FORMAT_U)
                     {
                       case RECFM_FORMAT_F:                      tmpstr = (char*)(tmpstr + 2);
+                                                                /* Fall through */
                       case RECFM_FORMAT_V:                      tmpstr = (char*)(tmpstr + 2);
+                                                                /* Fall through */
                       case RECFM_FORMAT_U:                      ;
                     }
                     strcpy(txtrecfm, tmpstr);
@@ -350,7 +353,9 @@ int list_contents(CIFBLK *cif, char *volser, DSXTENT *extent, char *fname, char 
                     {
                       case DS1SCALO_UNITS_ABSTR: printf(" %-11s", "ABSTR"); break;
                       case DS1SCALO_UNITS_BLK:   tmpstr = (char*)(tmpstr + 4);
+                                                 /* Fall through */
                       case DS1SCALO_UNITS_TRK:   tmpstr = (char*)(tmpstr + 4);
+                                                 /* Fall through */
                       case DS1SCALO_UNITS_CYL:   printf(" %3s%8d", tmpstr,
                                                         (((f1dscb->ds1scalo[1] << 8) +
                                                           f1dscb->ds1scalo[2]) << 8) +
