@@ -3667,7 +3667,7 @@ list_files_by_dir (dirnam, pargz, pargz_len)
       struct dirent *dp = 0;
 
       while ((dp = readdir (dirp)))
-    if (dp->d_name[0] != '.')
+      if (dp->d_name[0] != '.')
       if (lt_argz_insertdir (pargz, pargz_len, dirnam, dp))
         {
           ++errors;
