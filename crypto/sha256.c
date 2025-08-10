@@ -457,7 +457,7 @@ SHA256_Update(SHA256_CTX *context, const u_int8_t *data, size_t len)
 }
 
 void
-SHA256_Final(u_int8_t digest[], SHA256_CTX *context)
+SHA256_Final(u_int8_t digest[SHA256_DIGEST_LENGTH], SHA256_CTX *context)
 {
  u_int32_t *d = (u_int32_t *)digest;
  unsigned int usedspace;
@@ -794,7 +794,7 @@ SHA512_Last(SHA512_CTX *context)
 }
 
 void
-SHA512_Final(u_int8_t digest[], SHA512_CTX *context)
+SHA512_Final(u_int8_t digest[SHA512_DIGEST_LENGTH], SHA512_CTX *context)
 {
  u_int64_t *d = (u_int64_t *)digest;
 
@@ -835,7 +835,7 @@ SHA384_Update(SHA384_CTX *context, const u_int8_t *data, size_t len)
 }
 
 void
-SHA384_Final(u_int8_t digest[], SHA384_CTX *context)
+SHA384_Final(u_int8_t digest[SHA384_DIGEST_LENGTH], SHA384_CTX *context)
 {
  u_int64_t *d = (u_int64_t *)digest;
 
