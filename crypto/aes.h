@@ -57,8 +57,8 @@ void     rijndael_encrypt(rijndael_ctx *, u_char *, u_char *);
 
 int     rijndaelKeySetupEnc(unsigned int [], const unsigned char [], int);
 int     rijndaelKeySetupDec(unsigned int [], const unsigned char [], int);
-void    rijndaelEncrypt(const unsigned int [], int, const unsigned char [],
-            unsigned char []);
+void    rijndaelEncrypt(const unsigned int [], int, const unsigned char [16],
+            unsigned char [16]);
 
 /* Additional definitions for dyncrypt */
 typedef rijndael_ctx    aes_context;
