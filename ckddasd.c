@@ -1464,8 +1464,11 @@ int shift;  /* num of bits to shift left 'high cyl' in sense6 */
                                    shift = 6; /* 3330-1 */
              else
                                    shift = 5; /* 3330-11 */
+             break;
         case 0x3340: case 0x3350:  shift = 5;
+             break;
         case 0x3375:               shift = 6;
+             break;
         default:                   shift = 4;
        }
         dev->sense[6] = ( (dev->ckdcurcyl >> 8) << shift )
@@ -3784,7 +3787,7 @@ BYTE            trk_ovfl;               /* == 1 if track ovfl write  */
         {
             if (!(((dev->ckdloper & CKDOPER_CODE) == CKDOPER_WRITE
                        && dev->ckdlcount ==
-                            (dev->ckdlaux & CKDLAUX_RDCNTSUF) ? 2 : 1)
+                           ((dev->ckdlaux & CKDLAUX_RDCNTSUF) ? 2 : 1))
                   || (dev->ckdloper & CKDOPER_CODE) == CKDOPER_WRTTRK))
             {
                 ckd_build_sense (dev, SENSE_CR, 0, 0,
@@ -3996,7 +3999,7 @@ BYTE            trk_ovfl;               /* == 1 if track ovfl write  */
         {
             if (!(((dev->ckdloper & CKDOPER_CODE) == CKDOPER_WRITE
                        && dev->ckdlcount ==
-                            (dev->ckdlaux & CKDLAUX_RDCNTSUF) ? 2 : 1)
+                           ((dev->ckdlaux & CKDLAUX_RDCNTSUF) ? 2 : 1))
                   || (dev->ckdloper & CKDOPER_CODE) == CKDOPER_WRTTRK))
             {
                 ckd_build_sense (dev, SENSE_CR, 0, 0,
