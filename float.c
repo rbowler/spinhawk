@@ -2873,7 +2873,7 @@ static const unsigned short sqtab[] = {
     for (;;) {
         xj = (((U32)(a / xi)) + xi) >> 1;
 
-        if ((xj == xi) || (abs(xj - xi) == 1)) {
+        if ((xj == xi) || ((xj - xi) == 1) || ((xi - xj) == 1)) {
             break;
         }
         xi = xj;
@@ -5342,7 +5342,7 @@ U64     msj, lsj;
             for (;;) {
                 xj = (div_U128(mmsa, msa, xi) + xi) >> 1;
 
-                if ((xj == xi) || (abs(xj - xi) == 1)) {
+                if ((xj == xi) || ((xj - xi) == 1) || ((xi - xj) == 1)) {
                     break;
                 }
                 xi = xj;
