@@ -44,13 +44,13 @@ int     cfba_used(DEVBLK *dev);
 int     cckd_read_trk(DEVBLK *dev, int trk, int ra, BYTE *unitstat);
 void    cckd_readahead(DEVBLK *dev, int trk);
 int     cckd_readahead_scan(int *answer, int ix, int i, void *data);
-void    cckd_ra();
+void    *cckd_ra();
 void    cckd_flush_cache(DEVBLK *dev);
 int     cckd_flush_cache_scan(int *answer, int ix, int i, void *data);
 void    cckd_flush_cache_all();
 void    cckd_purge_cache(DEVBLK *dev);
 int     cckd_purge_cache_scan(int *answer, int ix, int i, void *data);
-void    cckd_writer(void *arg);
+void    *cckd_writer(void *arg);
 int     cckd_writer_scan(int *o, int ix, int i, void *data);
 off_t   cckd_get_space(DEVBLK *dev, int *size, int flags);
 void    cckd_rel_space(DEVBLK *dev, off_t pos, int len, int size);
@@ -90,7 +90,7 @@ DLL_EXPORT void   *cckd_sf_stats(void *data);
 int     cckd_disable_syncio(DEVBLK *dev);
 void    cckd_lock_devchain(int flag);
 void    cckd_unlock_devchain();
-void    cckd_gcol();
+void    *cckd_gcol();
 int     cckd_gc_percolate(DEVBLK *dev, unsigned int size);
 int     cckd_gc_l2(DEVBLK *dev, BYTE *buf);
 DEVBLK *cckd_find_device_by_devnum (U16 devnum);
@@ -1482,7 +1482,7 @@ int             k;                      /* Index                     */
 /*-------------------------------------------------------------------*/
 /* Asynchronous readahead thread                                     */
 /*-------------------------------------------------------------------*/
-void cckd_ra ()
+void *cckd_ra ()
 {
 CCKDDASD_EXT   *cckd;                   /* -> cckd extension         */
 DEVBLK         *dev;                    /* Readahead devblk          */
@@ -1499,7 +1499,7 @@ TID             tid;                    /* Readahead thread id       */
     {
         --cckdblk.ras;
         release_lock (&cckdblk.ralock);
-        return;
+        return NULL;
     }
 
     if (!cckdblk.batch)
@@ -1560,6 +1560,7 @@ TID             tid;                    /* Readahead thread id       */
     --cckdblk.ras;
     if (!cckdblk.ras) signal_condition(&cckdblk.termcond);
     release_lock(&cckdblk.ralock);
+    return NULL;
 
 } /* end thread cckd_ra_thread */
 
@@ -1664,7 +1665,7 @@ DEVBLK         *dev = data;             /* -> device block           */
 /*-------------------------------------------------------------------*/
 /* Writer thread                                                     */
 /*-------------------------------------------------------------------*/
-void cckd_writer(void *arg)
+void *cckd_writer(void *arg)
 {
 DEVBLK         *dev;                    /* Device block              */
 CCKDDASD_EXT   *cckd;                   /* -> cckd extension         */
@@ -1700,7 +1701,7 @@ BYTE            buf2[65536];            /* Compress buffer           */
     {
         --cckdblk.wrs;
         release_lock (&cckdblk.wrlock);
-        return;
+        return NULL;
     }
 
     if (!cckdblk.batch)
@@ -1832,6 +1833,7 @@ BYTE            buf2[65536];            /* Compress buffer           */
     cckdblk.wrs--;
     if (cckdblk.wrs == 0) signal_condition(&cckdblk.termcond);
     release_lock(&cckdblk.wrlock);
+    return NULL;
 } /* end thread cckd_writer */
 
 int cckd_writer_scan (int *o, int ix, int i, void *data)
@@ -4468,7 +4470,7 @@ void cckd_unlock_devchain()
 /*-------------------------------------------------------------------*/
 /* Garbage Collection thread                                         */
 /*-------------------------------------------------------------------*/
-void cckd_gcol()
+void *cckd_gcol()
 {
 int             gcol;                   /* Identifier                */
 int             rc;                     /* Return code               */
@@ -4495,7 +4497,7 @@ int             gctab[5]= {             /* default gcol parameters   */
     {
         --cckdblk.gcs;
         release_lock (&cckdblk.gclock);
-        return;
+        return NULL;
     }
 
     if (!cckdblk.batch)
@@ -4615,6 +4617,7 @@ int             gctab[5]= {             /* default gcol parameters   */
     cckdblk.gcs--;
     if (!cckdblk.gcs) signal_condition (&cckdblk.termcond);
     release_lock (&cckdblk.gclock);
+    return NULL;
 } /* end thread cckd_gcol */
 
 /*-------------------------------------------------------------------*/

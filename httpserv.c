@@ -461,7 +461,7 @@ static void http_download(WEBBLK *webblk, char *filename)
 }
 
 
-static void *http_request(int sock)
+static void *http_request(int *sock)
 {
     WEBBLK *webblk;
     int authok = !sysblk.httpauth;
@@ -476,7 +476,7 @@ static void *http_request(int sock)
         http_exit(webblk);
 
     memset(webblk,0,sizeof(WEBBLK));
-    webblk->sock = sock;
+    webblk->sock = *sock;
 
     while (hgets(line, sizeof(line), webblk->sock))
     {
