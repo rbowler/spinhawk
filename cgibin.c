@@ -1033,7 +1033,7 @@ int i,j;
 
     for(i = 0; i < MAX_CPU; i++)
     {
-    char cpuname[8], *cpustate;
+    char cpuname[16], *cpustate;
     int  cpuonline = -1;
 
         sprintf(cpuname,"cpu%d",i);
