@@ -1878,7 +1878,6 @@ if test "$hc_cv_auto_optimize" = "yes"; then
             hc_cv_is_intel_x86_arch=yes
             hc_cv_intel_cpu_type=k8
             ;;
-
         i386-yes|i486-yes|i586-yes|i686-yes|i786-yes)
 
             hc_cv_is_intel_x86_arch=yes
@@ -1904,6 +1903,11 @@ if test "$hc_cv_auto_optimize" = "yes"; then
             ;;
 
         xscale-yes|arm*-yes)
+
+            # this works around a problem with CPU detection on Cortex CPUs running in 32bit mode
+            if test $host_cpu = armv7l; then
+                host_cpu=$(LANG=en_US lscpu | grep 'Model name' | cut -d: -f2 | xargs | tr '[:upper:]' '[:lower:]')
+            fi
 
             hc_cv_is_intel_x86_arch=no
             hc_cv_optimization_flags="$hc_cv_optimization_flags -mcpu=$host_cpu -mtune=$host_cpu -frename-registers"
