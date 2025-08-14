@@ -857,21 +857,21 @@ BYTE            chanstat = 0;           /* Subchannel status         */
 
     /* Obtain status, CCW address, and residual byte count */
 #ifdef FEATURE_S370_CHANNEL
-    lastccw = (dev->csw[1] << 16) || (dev->csw[2] << 8)
-                || dev->csw[3];
+    lastccw = (dev->csw[1] << 16) | (dev->csw[2] << 8)
+                | dev->csw[3];
     unitstat = dev->csw[4];
     chanstat = dev->csw[5];
-    residual = (dev->csw[6] << 8) || dev->csw[7];
+    residual = (dev->csw[6] << 8) | dev->csw[7];
 #endif /*FEATURE_S370_CHANNEL*/
 
 #ifdef FEATURE_CHANNEL_SUBSYSTEM
     lastccw = (dev->scsw.ccwaddr[0] << 24)
-                || (dev->scsw.ccwaddr[1] << 16)
-                || (dev->scsw.ccwaddr[2] << 8)
-                || dev->scsw.ccwaddr[3];
+                | (dev->scsw.ccwaddr[1] << 16)
+                | (dev->scsw.ccwaddr[2] << 8)
+                | dev->scsw.ccwaddr[3];
     unitstat = dev->scsw.unitstat;
     chanstat = dev->scsw.chanstat;
-    residual = (dev->scsw.count[0] << 8) || dev->scsw.count[1];
+    residual = (dev->scsw.count[0] << 8) | dev->scsw.count[1];
 #endif /*FEATURE_CHANNEL_SUBSYSTEM*/
 
     /* Clear the interrupt pending and device busy conditions */

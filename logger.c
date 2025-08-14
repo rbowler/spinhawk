@@ -219,7 +219,7 @@ static void logger_logfile_timestamp()
 #endif
 
 
-static void logger_thread(void *arg)
+static void *logger_thread(void *arg)
 {
 int bytes_read;
 
@@ -427,6 +427,7 @@ int bytes_read;
     broadcast_condition(&logger_cond);
 
     release_lock(&logger_lock);
+    return NULL;
 }
 
 

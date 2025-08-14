@@ -1772,6 +1772,8 @@ BYTE    *m1, *m2;                       /* Mainstor addresses        */
                     return;
                 }
 
+                /* Fall through */
+
             default:
                 /* (1d) - other compare */
                 rc = memcmp(m1, m2, len + 1);

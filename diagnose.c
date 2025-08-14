@@ -636,8 +636,8 @@ char *ipltype;                          /* "ipl" or "iplc"           */
             /* If diag8cmd is not enabled then we are not allowed
              * to manipulate the real machine i.e. hercules itself
              */
-        if(!(sysblk.diag8cmd & DIAG8CMD_ENABLE))
-            ARCH_DEP(program_interrupt)(regs, PGM_SPECIFICATION_EXCEPTION);
+            if(!(sysblk.diag8cmd & DIAG8CMD_ENABLE))
+                ARCH_DEP(program_interrupt)(regs, PGM_SPECIFICATION_EXCEPTION);
 
             regs->cpustate = CPUSTATE_STOPPING;
             ON_IC_INTERRUPT(regs);

@@ -92,7 +92,7 @@ void sclp_attention(U16 type)
 }
 
 
-void sclp_attn_thread(U16 *type)
+void *sclp_attn_thread(U16 *type)
 {
 
     OBTAIN_INTLOCK(NULL);
@@ -113,6 +113,7 @@ void sclp_attn_thread(U16 *type)
     free(type);
 
     RELEASE_INTLOCK(NULL);
+    return NULL;
 }
 
 

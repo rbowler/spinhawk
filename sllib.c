@@ -588,7 +588,7 @@ sl_fmtdate( char *dest, char *src, int fromto )
     char wbuf[ 9 ];
     char sbuf[ 9 ];
     char *ptr;
-    time_t curtime;
+    time_t curtime = 0;
     struct tm tm;
     int ret;
 

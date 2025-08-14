@@ -593,7 +593,7 @@ char    fname[MAX_PATH];
 /*-------------------------------------------------------------------*/
 /* Thread to perform service processor I/O functions                 */
 /*-------------------------------------------------------------------*/
-static void ARCH_DEP(scedio_thread)(SCCB_SCEDIO_BK *scedio_bk)
+static void *ARCH_DEP(scedio_thread)(SCCB_SCEDIO_BK *scedio_bk)
 {
 SCCB_SCEDIOV_BK *scediov_bk;
 SCCB_SCEDIOR_BK *scedior_bk;
@@ -635,6 +635,7 @@ SCCB_SCEDIOR_BK *scedior_bk;
     scedio_tid = 0;
 
     RELEASE_INTLOCK(NULL);
+    return NULL;
 }
 
 

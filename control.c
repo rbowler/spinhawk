@@ -3426,7 +3426,10 @@ int     rc;                             /* return code from load_psw */
 
             /* Program check if ASN translation exception */
             if (xcode != 0)
+            {
                 ARCH_DEP(program_interrupt) (&newregs, xcode);
+                return;  /* Hint for compiler that above call doesn't return */
+            }
 
             /* When ASN-and-LX-reuse is installed and enabled by CR0,
                the PASTEIN previously loaded from the state entry (by
@@ -3740,7 +3743,10 @@ CREG    newcr12 = 0;                    /* CR12 upon completion      */
            AFX- or ASX-translation exception condition */
         xcode = ARCH_DEP(translate_asn) (pasn, regs, &pasteo, aste);
         if (xcode != 0)
+        {
             ARCH_DEP(program_interrupt) (regs, xcode);
+            return;  /* Hint for compiler that above call doesn't return */
+        }
 
         /* For PT-ss only, generate a special operation exception
            if ASN-and-LX-reuse is enabled and the reusable-ASN bit
@@ -4777,7 +4783,10 @@ CREG    newcr12 = 0;                    /* CR12 upon completion      */
 
         /* Program check if ASN translation exception */
         if (xcode != 0)
+        {
             ARCH_DEP(program_interrupt) (regs, xcode);
+            return;  /* Hint for compiler that above call doesn't return */
+        }
 
         /* For SSAR-ss only, generate a special operation exception
            if ASN-and-LX-reuse is enabled and the reusable-ASN bit
@@ -5872,6 +5881,7 @@ static char *ordername[] = {
             channelset_reset(tregs);
             /* fallthrough*/
 #endif /* defined(FEATURE_S370_CHANNEL) */
+            /* Fall through */
         case SIGP_RESET:
             /* Signal CPU reset function */
             tregs->sigpreset = 1;

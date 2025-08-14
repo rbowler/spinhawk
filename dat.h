@@ -1245,6 +1245,7 @@ U16     sx, px;                         /* Segment and page index,
                 /* Fall through to perform region-second translation */
 
             /* Perform region-second translation */
+                /* Fall through */
             case TT_R2TABL:
 
                 /* Region-second translation exception if table offset is
@@ -1298,6 +1299,7 @@ U16     sx, px;                         /* Segment and page index,
                 /* Fall through to perform region-third translation */
 
             /* Perform region-third translation */
+                /* Fall through */
             case TT_R3TABL:
 
                 /* Region-third translation exception if table offset is
