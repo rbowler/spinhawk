@@ -62,6 +62,8 @@ static int
 con1052_init_handler ( DEVBLK *dev, int argc, char *argv[] )
 {
     int ac=0;
+    int return_code = 0;
+    int changed_prefix = 0;
 
     /* Integrated console is always connected */
     dev->connected = 1;
@@ -81,21 +83,31 @@ con1052_init_handler ( DEVBLK *dev, int argc, char *argv[] )
     /* Default command character is "/" */
     strcpy(dev->filename,"/");
 
-    /* Is there an argument? */
-    if (argc > 0)
-    {
-        /* Look at the argument and set noprompt flag if specified. */
-        if (strcasecmp(argv[ac], "noprompt") == 0)
-        {
-            dev->prompt1052 = 0;
-            ac++; argc--;
-        }
-        else
-            strlcpy(dev->filename,argv[ac],sizeof(dev->filename));
-    }
-
     if(!sscanf(dev->typname,"%hx",&(dev->devtype)))
         dev->devtype = 0x1052;
+
+    /* Is there one or more argument? */
+    for (ac = 0; ac < argc; ac++)
+    {
+        /* Look at the argument and set noprompt flag if specified. */
+        if (dev->prompt1052 && !strcasecmp(argv[ac], "noprompt"))
+        {
+            dev->prompt1052 = 0;
+        } else if (!changed_prefix && strlen(dev->filename) == 1) {
+            /* First command prefix seen */
+            changed_prefix = 1;
+            strlcpy(dev->filename,argv[ac],sizeof(dev->filename));
+        } else {
+             // FIXME: Mommy, where do little error message numbers come from?
+             logmsg(_("HHCCF037S Configuration error for %s integrated console at address %4.4X:"
+                    " invalid/extra parameter \"%s\"\n"),
+                    dev->typname,
+                    dev->devnum,
+                    argv[ac]);
+              return_code = -1;
+              break;
+        }
+    }
 
     /* Initialize the device identifier bytes */
     dev->devid[0] = 0xFF;
@@ -107,7 +119,7 @@ con1052_init_handler ( DEVBLK *dev, int argc, char *argv[] )
     dev->devid[6] = 0x00;
     dev->numdevid = 7;
 
-    return 0;
+    return return_code;
 } /* end function con1052_init_handler */
 
 
