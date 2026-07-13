@@ -526,6 +526,10 @@ int w32_set_console_title( char* pszTitle )
 static struct termios saved_kbattr;  // (saved value so we can later restore it)
 #endif
 
+
+/* Set by SIGWINCH signal handler.  Starts set so we look it up. */
+int window_changed = 1;
+
 // 'save_and_set' = 1 --> just what it says; 0 --> restore from saved value.
 
 int set_or_reset_console_mode( int keybrd_fd, short save_and_set )
@@ -872,6 +876,9 @@ int  get_console_dim( FILE* confp, int* rows, int* cols )
     char* env;
 #if defined(TIOCGWINSZ)
     struct winsize winsize;
+
+    static int save_rows, save_cols;
+    static int success = 0;                 /* Force ioctl first pass */
 #else
     UNREFERENCED( confp );
 #endif
@@ -883,10 +890,22 @@ int  get_console_dim( FILE* confp, int* rows, int* cols )
     }
 
 #if defined(TIOCGWINSZ)
-    if (ioctl(fileno(confp), TIOCGWINSZ, &winsize) >= 0)
+    if (window_changed || !success) {
+        window_changed = 0;
+
+        if (ioctl(fileno(confp), TIOCGWINSZ, &winsize) >= 0) {
+            save_rows = winsize.ws_row;
+            save_cols = winsize.ws_col;
+            success = 1;
+        } else {
+            success = 0;
+        }
+    }
+
+    if (success)
     {
-        *rows = winsize.ws_row;
-        *cols = winsize.ws_col;
+        *rows = save_rows;
+        *cols = save_cols;
     }
     else
 #endif

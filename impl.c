@@ -17,6 +17,7 @@
 #include "hercules.h"
 #include "opcode.h"
 #include "devtype.h"
+#include "hconsole.h"
 #include "herc_getopt.h"
 #include "hostinfo.h"
 #include "history.h"
@@ -89,6 +90,21 @@ static void sigterm_handler (int signo)
 
     return;
 } /* end function sigterm_handler */
+
+/*-------------------------------------------------------------------*/
+/* Signal handler for SIGWINCH signal                                 */
+/*-------------------------------------------------------------------*/
+static void sigwinch_handler (int signo)
+{
+//  logmsg ("impl.c: sigwinch handler entered for thread %lu\n",/*debug*/
+//          thread_id());                                       /*debug*/
+
+    UNREFERENCED(signo);
+
+     window_changed = 1;
+
+    return;
+} /* end function sigwinch_handler */
 
 #if defined( _MSVC_ )
 
@@ -493,6 +509,14 @@ TID     logcbtid;                       /* RC file thread identifier */
     if ( signal (SIGTERM, sigterm_handler) == SIG_ERR )
     {
         logmsg(_("HHCIN009S Cannot register SIGTERM handler: %s\n"),
+                strerror(errno));
+        delayed_exit(1);
+    }
+
+    /* Register the SIGWINCH handler */
+    if ( signal (SIGWINCH, sigwinch_handler) == SIG_ERR )
+    {
+        logmsg(_("HHCIN010S Cannot register SIGWINCH handler: %s\n"),
                 strerror(errno));
         delayed_exit(1);
     }
