@@ -1683,10 +1683,9 @@ char    pathname[MAX_PATH];             /* file path in host format  */
         /* Parse devnum */
         rc=parse_and_attach_devices(sdevnum,sdevtype,addargc,addargv);
 
-        if(rc==-2)
-        {
-            logmsg(_("HHCCF036S Error in %s line %d: "
-                    "%s is not a valid device number(s) specification\n"),
+        if (rc != 0) {
+            logmsg(_("HHCCF087S Configuration error in %s line %d: "
+                    "see previous message for details.\n"),
                     fname, inc_stmtnum[inc_level], sdevnum);
             delayed_exit(1);
         }

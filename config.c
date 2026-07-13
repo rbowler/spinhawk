@@ -379,7 +379,7 @@ int     i;                              /* Loop index                */
     if (find_device_by_devnum(lcss,devnum) != NULL)
     {
         logmsg (_("HHCCF041E Device %d:%4.4X already exists\n"), lcss,devnum);
-        return 1;
+        return -1;
     }
 
     /* obtain device block */
@@ -391,7 +391,7 @@ int     i;                              /* Loop index                */
 
         ret_devblk(dev);
 
-        return 1;
+        return -1;
     }
 
     dev->typname = strdup(type);
@@ -415,9 +415,6 @@ int     i;                              /* Loop index                */
 
     if (rc < 0)
     {
-        logmsg (_("HHCCF044E Initialization failed for device %4.4X\n"),
-                devnum);
-
         for (i = 0; i < dev->argc; i++)
             if (dev->argv[i])
                 free(dev->argv[i]);
@@ -428,7 +425,7 @@ int     i;                              /* Loop index                */
 
         ret_devblk(dev);
 
-        return 1;
+        return rc;
     }
 
     /* Obtain device data buffer */
@@ -451,7 +448,7 @@ int     i;                              /* Loop index                */
 
             ret_devblk(dev);
 
-            return 1;
+            return -1;
         }
     }
 
@@ -1193,12 +1190,11 @@ parse_and_attach_devices(const char *sdevnum,
                         char **addargv)
 {
         DEVNUMSDESC dnd;
-        int         baddev;
         size_t      devncount;
         DEVARRAY    *da;
         int         i;
         U16         devnum;
-        int         rc;
+        int         rc = 0;
 
 #if defined(OPTION_CONFIG_SYMBOLS)
         int         j;
@@ -1210,6 +1206,8 @@ parse_and_attach_devices(const char *sdevnum,
 
         if(devncount==0)
         {
+            logmsg(_("%s is not a valid device number(s) specification\n"),
+                     sdevnum);
             return -2;
         }
 
@@ -1217,10 +1215,10 @@ parse_and_attach_devices(const char *sdevnum,
         newargv=malloc(MAX_ARGS*sizeof(char *));
         orig_newargv=malloc(MAX_ARGS*sizeof(char *));
 #endif /* #if defined(OPTION_CONFIG_SYMBOLS) */
-        for(baddev=0,i=0;i<(int)devncount;i++)
+        for(rc=0,i=0;rc == 0 && i<(int)devncount;i++)
         {
             da=dnd.da;
-            for(devnum=da[i].cuu1;devnum<=da[i].cuu2;devnum++)
+            for(devnum=da[i].cuu1;rc == 0 && devnum<=da[i].cuu2;devnum++)
             {
 #if defined(OPTION_CONFIG_SYMBOLS)
                char wrkbfr[16];
@@ -1238,34 +1236,27 @@ parse_and_attach_devices(const char *sdevnum,
                {
                    orig_newargv[j]=newargv[j]=resolve_symbol_string(addargv[j]);
                }
-                /* Build the device configuration block */
+
+               /* Build the device configuration block */
                rc=attach_device(dnd.lcss, devnum, sdevtype, addargc, newargv);
                for(j=0;j<addargc;j++)
                {
                    free(orig_newargv[j]);
                }
 #else /* #if defined(OPTION_CONFIG_SYMBOLS) */
-                /* Build the device configuration block (no syms) */
+               /* Build the device configuration block (no syms) */
                rc=attach_device(dnd.lcss, devnum, sdevtype, addargc, addargv);
 #endif /* #if defined(OPTION_CONFIG_SYMBOLS) */
-               if(rc!=0)
-               {
-                   baddev=1;
-                   break;
-               }
-            }
-            if(baddev)
-            {
-                break;
             }
         }
 #if defined(OPTION_CONFIG_SYMBOLS)
         free(newargv);
         free(orig_newargv);
 #endif /* #if defined(OPTION_CONFIG_SYMBOLS) */
+
         free(dnd.da);
-        return baddev?0:-1;
-} 
+        return rc;
+}
 
 #define MAX_LOGO_LINES 256
 void
