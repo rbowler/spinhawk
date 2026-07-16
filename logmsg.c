@@ -260,7 +260,14 @@ DLL_EXPORT void log_write(int panel,char *msg)
     release_lock(&log_route_lock);
     if(slot<0 || panel>0)
     {
-        write_pipe( logger_syslogfd[LOG_WRITE], msg, strlen(msg) );
+        /* Only write to logger pipe if the file descriptor is valid
+           and not pointing to stdin (fd 0). This prevents writing log
+           messages to stdin when the logger is not properly initialized,
+           which can happen in standalone utilities like dasdls. */
+        if(logger_syslogfd[LOG_WRITE] > 0)
+            write_pipe( logger_syslogfd[LOG_WRITE], msg, strlen(msg) );
+        else
+            fwrite( msg, strlen(msg), 1, stderr );
         if(slot<0)
             return;
     }
