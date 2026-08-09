@@ -1168,6 +1168,7 @@ if test "$GCC" = "yes"; then
 
                             -g -O2 -fomit-frame-pointer
                     */
+		    #include <string.h>
 
                     int foo ()
                     {

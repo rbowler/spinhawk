@@ -291,6 +291,7 @@ AC_DEFUN([_HC_CHECK_NEED_GETOPT_WRAPPER],
                    Will the linker complain about duplicate
                    symbols for getopt? We'll soon find out!
                 */
+		int getopt(int, char *const[], const char *);
                 extern char *optarg;
                 extern int optind;
 
@@ -315,6 +316,7 @@ DUPGETOPT1
                    needs getopt. Will linker complain about
                    duplicate symbols for getopt? Let's see.
                 */
+		int getopt(int, char *const[], const char *);
                 extern char *optarg;
                 extern int optind;
                 extern int test2();
@@ -385,7 +387,7 @@ AC_DEFUN([HC_CHECK_NEED_GETOPT_OPTRESET],
         [hc_cv_need_getopt_optreset],
         [
             AC_TRY_LINK(
-                [],
+                [int getopt(int, char *const[], const char *);],
                 [
                     extern int optreset;
                     optreset=1;
